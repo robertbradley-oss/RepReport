@@ -1,0 +1,300 @@
+:root {
+  color: #1f2933;
+  background: #f4f5f7;
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #c9d1d9;
+  border-radius: 6px;
+  color: #1f2933;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 11px;
+}
+
+button:hover:not(:disabled) {
+  border-color: #60758a;
+}
+
+button:disabled {
+  color: #8a96a3;
+  cursor: not-allowed;
+}
+
+.primaryButton {
+  background: #1d6f42;
+  border-color: #1d6f42;
+  color: #ffffff;
+}
+
+.appShell {
+  margin: 0 auto;
+  max-width: 1600px;
+  padding: 18px;
+}
+
+.appHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.brandBlock {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brandLogo {
+  display: block;
+  height: 54px;
+  object-fit: contain;
+  width: 180px;
+}
+
+.appHeader h1 {
+  font-size: 26px;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.appHeader p {
+  color: #5b6773;
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.modeTabs {
+  border-bottom: 1px solid #cfd6dd;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.modeTab {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: -1px;
+}
+
+.modeTab.active {
+  background: #ffffff;
+  border-bottom-color: #ffffff;
+  color: #1d6f42;
+}
+
+.reviewLogGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(320px, 0.8fr) minmax(560px, 1.4fr);
+}
+
+.inputPanel,
+.resultsPanel {
+  background: #ffffff;
+  border: 1px solid #cfd6dd;
+  border-radius: 8px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.panelLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.inputPanel textarea {
+  border: 1px solid #c9d1d9;
+  border-radius: 6px;
+  min-height: 570px;
+  padding: 10px;
+  resize: vertical;
+  width: 100%;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.actionsBar {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.summaryPanel {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  max-width: 360px;
+  width: 100%;
+}
+
+.summaryPanel div {
+  border: 1px solid #d7dde3;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.summaryPanel span {
+  color: #5b6773;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.summaryPanel strong {
+  font-size: 18px;
+}
+
+.tableWrap {
+  border: 1px solid #cfd6dd;
+  border-radius: 6px;
+  max-height: 530px;
+  overflow: auto;
+}
+
+.reviewTable,
+.flagsPanel table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.reviewTable th,
+.reviewTable td,
+.flagsPanel th,
+.flagsPanel td {
+  border: 1px solid #d7dde3;
+  font-size: 13px;
+  padding: 7px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.reviewTable th,
+.flagsPanel th {
+  background: #f7f8fa;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.reviewTable textarea {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  min-width: 150px;
+  padding: 6px;
+  resize: vertical;
+  width: 100%;
+}
+
+.reviewTable textarea:focus {
+  border-color: #60758a;
+  outline: none;
+}
+
+.reviewTable td:nth-child(7) textarea,
+.reviewTable td:nth-child(8) textarea {
+  min-width: 240px;
+}
+
+.emptyState {
+  align-items: center;
+  border: 1px dashed #b8c2cc;
+  border-radius: 6px;
+  color: #5b6773;
+  display: flex;
+  min-height: 220px;
+  padding: 24px;
+}
+
+.statusLine {
+  color: #315b3c;
+  min-height: 22px;
+  padding-top: 8px;
+}
+
+.flagsPanel {
+  margin-top: 12px;
+}
+
+.flagsPanel h2 {
+  font-size: 17px;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+}
+
+.flagsPanel p {
+  color: #5b6773;
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .reviewLogGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .inputPanel textarea {
+    min-height: 320px;
+  }
+
+  .actionsBar {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .appShell {
+    padding: 12px;
+  }
+
+  .brandBlock {
+    align-items: flex-start;
+    display: block;
+  }
+
+  .brandLogo {
+    height: auto;
+    margin-bottom: 6px;
+    width: min(190px, 100%);
+  }
+
+  .summaryPanel {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+}

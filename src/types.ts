@@ -1,0 +1,38 @@
+export type YesNo = "Y" | "N";
+
+export type ReviewRow = {
+  ticketLink: string;
+  reviewLink: string;
+  modelNumber: string;
+  verifiedFiveStar: YesNo;
+  containsVideo: YesNo;
+  containsPictures: YesNo;
+  customerContactTicketLink: string;
+  replacementSent: string;
+  platform: string;
+  ticketNumber?: string;
+  customerName?: string;
+  reviewDateOrStatus?: string;
+  ratingOrStatus?: string;
+  reviewText?: string;
+  flags: string[];
+};
+
+export type FlagItem = {
+  rowNumber: number;
+  platform: string;
+  message: string;
+};
+
+export const REVIEW_COLUMNS = [
+  { key: "ticketLink", label: "Ticket Link" },
+  { key: "reviewLink", label: "Link to review" },
+  { key: "modelNumber", label: "Model Number" },
+  { key: "verifiedFiveStar", label: "Verified 5 star?" },
+  { key: "containsVideo", label: "Contains video?" },
+  { key: "containsPictures", label: "Contains pictures?" },
+  { key: "customerContactTicketLink", label: "Customer contact/Ticket link" },
+  { key: "replacementSent", label: "Replacement sent" },
+] as const;
+
+export type ReviewColumnKey = (typeof REVIEW_COLUMNS)[number]["key"];
