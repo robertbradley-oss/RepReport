@@ -7,8 +7,8 @@ export default function App() {
       <header className="appHeader">
         <div className="brandBlock">
           <img className="brandLogo" src="/assets/repreport-logo.png" alt="RepReport" />
-          <div>
-            <h1>RepReport</h1>
+          <div className="brandText">
+            <h1 className="srOnly">RepReport</h1>
             <p>Review Log Mode</p>
           </div>
         </div>

@@ -16,6 +16,18 @@ body {
   min-height: 100vh;
 }
 
+.srOnly {
+  clip: rect(0 0 0 0);
+  border: 0;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 button,
 textarea {
   font: inherit;
@@ -58,26 +70,39 @@ button:disabled {
 
 .appHeader {
   align-items: center;
+  background: #071824;
+  border: 1px solid #12334a;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
+  min-height: 118px;
+  padding: 14px 18px;
 }
 
 .brandBlock {
   align-items: center;
   display: flex;
-  gap: 14px;
+  gap: 18px;
   min-width: 0;
 }
 
 .brandLogo {
   display: block;
-  height: 54px;
+  height: auto;
+  max-width: 340px;
   object-fit: contain;
-  width: 180px;
+  width: min(340px, 45vw);
+}
+
+.brandText {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  padding-left: 16px;
 }
 
 .appHeader h1 {
+  color: #ffffff;
   font-size: 26px;
   letter-spacing: 0;
   line-height: 1.1;
@@ -85,9 +110,10 @@ button:disabled {
 }
 
 .appHeader p {
-  color: #5b6773;
-  font-size: 14px;
-  margin: 4px 0 0;
+  color: #c8d4df;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .modeTabs {
@@ -282,6 +308,11 @@ button:disabled {
     padding: 12px;
   }
 
+  .appHeader {
+    min-height: 0;
+    padding: 12px;
+  }
+
   .brandBlock {
     align-items: flex-start;
     display: block;
@@ -289,8 +320,14 @@ button:disabled {
 
   .brandLogo {
     height: auto;
-    margin-bottom: 6px;
-    width: min(190px, 100%);
+    margin-bottom: 8px;
+    max-width: 340px;
+    width: min(340px, 80vw);
+  }
+
+  .brandText {
+    border-left: 0;
+    padding-left: 0;
   }
 
   .summaryPanel {
