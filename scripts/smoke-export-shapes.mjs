@@ -41,6 +41,21 @@ assertEqual(
 );
 assertEqual(batchPasteRowsSheet.rowCount, batchReviewRows.length + 1, "Batch review workbook should include one row per sample review plus header.");
 
+const batchSummarySheet = batchReviewWorkbook.getWorksheet("Summary");
+assert(batchSummarySheet, "Batch review workbook should include Summary sheet.");
+assertEqual(batchSummarySheet.getRow(2).getCell(1).value, "Total reviews", "Summary sheet should include total reviews.");
+assertEqual(batchSummarySheet.getRow(2).getCell(2).value, 10, "Summary sheet should count all batch reviews.");
+assertEqual(batchSummarySheet.getRow(3).getCell(1).value, "Estimated bonus total", "Summary sheet should include estimated bonus total.");
+assertEqual(batchSummarySheet.getRow(3).getCell(2).value, 145, "Summary sheet should calculate the batch bonus total.");
+assertEqual(summaryValue("Amazon"), 3, "Summary sheet should include Amazon platform count.");
+assertEqual(summaryValue("Google"), 3, "Summary sheet should include Google platform count.");
+assertEqual(summaryValue("Trustpilot"), 2, "Summary sheet should include Trustpilot platform count.");
+assertEqual(summaryValue("Costco"), 1, "Summary sheet should include Costco platform count.");
+assertEqual(summaryValue("Unknown"), 1, "Summary sheet should include unknown platform count.");
+assertEqual(summaryValue("Verified Amazon count"), 2, "Summary sheet should include verified Amazon count.");
+assertEqual(summaryValue("Unverified Amazon count"), 1, "Summary sheet should include unverified Amazon count.");
+assertEqual(summaryValue("Photo review count"), 2, "Summary sheet should include photo review count.");
+
 const reviewBuffer = await reviewWorkbook.xlsx.writeBuffer();
 const batchReviewBuffer = await batchReviewWorkbook.xlsx.writeBuffer();
 const kpiBuffer = await kpiWorkbook.xlsx.writeBuffer();
@@ -61,4 +76,15 @@ function assertEqual(actual, expected, message) {
   if (actual !== expected) {
     throw new Error(`${message}\nExpected: ${String(expected)}\nActual: ${String(actual)}`);
   }
+}
+
+function summaryValue(label) {
+  for (let rowNumber = 1; rowNumber <= batchSummarySheet.rowCount; rowNumber += 1) {
+    const row = batchSummarySheet.getRow(rowNumber);
+    if (row.getCell(1).value === label) {
+      return row.getCell(2).value;
+    }
+  }
+
+  return undefined;
 }

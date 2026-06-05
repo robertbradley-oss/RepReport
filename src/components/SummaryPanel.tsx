@@ -1,23 +1,42 @@
+import type { BonusSummary } from "../lib/reviewParser";
+
 type SummaryPanelProps = {
-  rowCount: number;
+  summary: BonusSummary;
   flagCount: number;
-  estimatedBonus: number;
 };
 
-export function SummaryPanel({ rowCount, flagCount, estimatedBonus }: SummaryPanelProps) {
+export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
+  const platformCounts = summary.platformCounts.map(({ platform, count }) => `${platform}: ${count}`).join(", ");
+
   return (
     <section className="summaryPanel" aria-label="Review summary">
       <div>
-        <span>Rows</span>
-        <strong>{rowCount}</strong>
+        <span>Total reviews</span>
+        <strong>{summary.totalReviews}</strong>
+      </div>
+      <div>
+        <span>Platforms</span>
+        <strong className="platformCounts">{platformCounts || "None"}</strong>
+      </div>
+      <div>
+        <span>Verified Amazon</span>
+        <strong>{summary.verifiedAmazonCount}</strong>
+      </div>
+      <div>
+        <span>Unverified Amazon</span>
+        <strong>{summary.unverifiedAmazonCount}</strong>
+      </div>
+      <div>
+        <span>Photo reviews</span>
+        <strong>{summary.photoReviewCount}</strong>
       </div>
       <div>
         <span>Flags</span>
         <strong>{flagCount}</strong>
       </div>
       <div>
-        <span>Bonus</span>
-        <strong>${estimatedBonus}</strong>
+        <span>Estimated bonus</span>
+        <strong>${summary.estimatedBonusTotal}</strong>
       </div>
     </section>
   );

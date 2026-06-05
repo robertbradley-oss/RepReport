@@ -238,8 +238,8 @@ button:disabled {
 .summaryPanel {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(3, minmax(82px, 1fr));
-  max-width: 360px;
+  grid-template-columns: repeat(4, minmax(98px, 1fr));
+  max-width: 620px;
   width: 100%;
 }
 
@@ -258,6 +258,11 @@ button:disabled {
 
 .summaryPanel strong {
   font-size: 18px;
+}
+
+.summaryPanel .platformCounts {
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .tableWrap {

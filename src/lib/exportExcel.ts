@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { KPI_COLUMNS, REVIEW_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
+import { calculateBonusSummary } from "./reviewParser";
 
 const fontName = "Arial";
 const fontSize = 10;
@@ -134,8 +135,8 @@ function addSummarySheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
 
   sheet.addRows(summaryRows);
 
-  sheet.columns = [{ width: 34 }, { width: 14 }, { width: 14 }, { width: 14 }];
-  setColumnWidths(sheet, [34, 14, 14, 14]);
+  sheet.columns = [{ width: 34 }, { width: 14 }, { width: 14 }];
+  setColumnWidths(sheet, [34, 14, 14]);
   styleWorksheet(sheet);
   sheet.getRow(1).font = boldFont();
   sheet.getRow(4).font = boldFont();
@@ -204,35 +205,19 @@ function styleHeaderRow(row: ExcelJS.Row, useHeaderFill = false): void {
 }
 
 function buildSummaryRows(rows: ReviewRow[]): Array<Array<string | number | null>> {
-  const googleWithPhoto = rows.filter((row) => row.platform === "Google" && row.containsPictures === "Y").length;
-  const google = rows.filter((row) => row.platform === "Google" && row.containsPictures !== "Y").length;
-  const trustpilot = rows.filter((row) => row.platform === "Trustpilot").length;
-  const verifiedAmazonWithPhoto = rows.filter(
-    (row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y" && row.containsPictures === "Y",
-  ).length;
-  const verifiedAmazon = rows.filter(
-    (row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y" && row.containsPictures !== "Y",
-  ).length;
-  const unverifiedAmazon = rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length;
-  const costco = rows.filter((row) => row.platform === "Costco").length;
-
-  const bonusRows = [
-    ["Google reviews", google, 10],
-    ["Google reviews with photo", googleWithPhoto, 20],
-    ["Trustpilot reviews", trustpilot, 10],
-    ["Verified Amazon reviews", verifiedAmazon, 25],
-    ["Unverified Amazon reviews", unverifiedAmazon, 15],
-    ["Verified Amazon reviews with photo", verifiedAmazonWithPhoto, 30],
-    ["Costco reviews", costco, 15],
-  ] as const;
-  const totalBonus = bonusRows.reduce((sum, [, count, rate]) => sum + count * rate, 0);
+  const summary = calculateBonusSummary(rows);
 
   return [
-    ["RepReport Review Log Summary", null, null, null],
-    ["Total reviews parsed", rows.length, "Bonus total", totalBonus],
-    [null, null, null, null],
-    ["Review type", "Count", "Rate", "Total"],
-    ...bonusRows.map(([label, count, rate]) => [label, count, rate, count * rate]),
+    ["RepReport Review Log Summary", null, null],
+    ["Total reviews", summary.totalReviews, null],
+    ["Estimated bonus total", summary.estimatedBonusTotal, null],
+    ["Platform counts", null, null],
+    ...summary.platformCounts.map(({ platform, count }) => [platform, count, null]),
+    [null, null, null],
+    ["Amazon/photo counts", null, null],
+    ["Verified Amazon count", summary.verifiedAmazonCount, null],
+    ["Unverified Amazon count", summary.unverifiedAmazonCount, null],
+    ["Photo review count", summary.photoReviewCount, null],
   ];
 }
 

@@ -24,9 +24,20 @@ const flagMessages = {
   ratingUnclear: "Rating unclear",
   googleRatingNeedsReview: "Google rating/status needs review",
   mentionUnclear: "Mention status unclear",
+  bonusRuleUnclear: "Bonus rule unclear",
 };
 
 const defaultGoogleRating = "5 out of 5 stars";
+const bonusRulePlatforms = new Set(["Amazon", "Costco", "Google", "Trustpilot"]);
+
+export type BonusSummary = {
+  totalReviews: number;
+  platformCounts: Array<{ platform: string; count: number }>;
+  verifiedAmazonCount: number;
+  unverifiedAmazonCount: number;
+  photoReviewCount: number;
+  estimatedBonusTotal: number;
+};
 
 export function parseReviewNotes(input: string): ReviewRow[] {
   return splitBlocks(normalizePastedNotes(input)).map(parseBlock);
@@ -64,6 +75,24 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   return 0;
+}
+
+export function calculateBonusSummary(rows: ReviewRow[]): BonusSummary {
+  const platformCounts = new Map<string, number>();
+
+  for (const row of rows) {
+    const platform = row.platform || "Unknown";
+    platformCounts.set(platform, (platformCounts.get(platform) ?? 0) + 1);
+  }
+
+  return {
+    totalReviews: rows.length,
+    platformCounts: Array.from(platformCounts, ([platform, count]) => ({ platform, count })).sort(comparePlatformCounts),
+    verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y").length,
+    unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length,
+    photoReviewCount: rows.filter((row) => row.containsPictures === "Y").length,
+    estimatedBonusTotal: rows.reduce((sum, row) => sum + calculateBonus(row), 0),
+  };
 }
 
 function splitBlocks(input: string): string[] {
@@ -143,6 +172,7 @@ function parseBlock(block: string): ReviewRow {
   const mentionStatus = parseMentionStatus(reviewText);
 
   if (platform === "Unknown") flags.push(flagMessages.platform);
+  if (platform !== "Unknown" && !bonusRulePlatforms.has(platform)) flags.push(flagMessages.bonusRuleUnclear);
   if (!reviewLink) flags.push(flagMessages.reviewLinkMissing);
   if (ticketNumber && supportTicketId && ticketNumber !== supportTicketId) flags.push(flagMessages.ticketMismatch);
   if (!customerModel) flags.push(flagMessages.customerModel);
@@ -455,4 +485,19 @@ function isBlockStart(line: string): boolean {
 
 function stripTrailingPunctuation(value: string): string {
   return value.replace(/[),.;]+$/g, "");
+}
+
+function comparePlatformCounts(
+  left: { platform: string; count: number },
+  right: { platform: string; count: number },
+): number {
+  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Unknown"];
+  const leftIndex = preferredOrder.indexOf(left.platform);
+  const rightIndex = preferredOrder.indexOf(right.platform);
+
+  if (leftIndex !== -1 || rightIndex !== -1) {
+    return (leftIndex === -1 ? preferredOrder.length : leftIndex) - (rightIndex === -1 ? preferredOrder.length : rightIndex);
+  }
+
+  return left.platform.localeCompare(right.platform);
 }

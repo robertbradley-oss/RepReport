@@ -1,4 +1,4 @@
-import { parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { REVIEW_COLUMNS } from "../src/types.ts";
 import { readFileSync } from "node:fs";
 
@@ -16,8 +16,20 @@ const expectedReviewLabels = [
 const reviewNotes = readFileSync(new URL("./fixtures/batch-review-notes.txt", import.meta.url), "utf8");
 
 const rows = parseReviewNotes(reviewNotes);
+const bonusSummary = calculateBonusSummary(rows);
 
 assertEqual(rows.length, 10, "Review parser should return all 10 batch fixture rows.");
+assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 145, "Batch review fixture bonus total changed.");
+assertEqual(bonusSummary.totalReviews, 10, "Batch bonus summary should include total review count.");
+assertEqual(bonusSummary.estimatedBonusTotal, 145, "Batch bonus summary should include estimated bonus total.");
+assertEqual(platformCount("Amazon"), 3, "Batch bonus summary should count Amazon reviews.");
+assertEqual(platformCount("Google"), 3, "Batch bonus summary should count Google reviews.");
+assertEqual(platformCount("Trustpilot"), 2, "Batch bonus summary should count Trustpilot reviews.");
+assertEqual(platformCount("Costco"), 1, "Batch bonus summary should count Costco reviews.");
+assertEqual(platformCount("Unknown"), 1, "Batch bonus summary should count unknown-platform reviews.");
+assertEqual(bonusSummary.verifiedAmazonCount, 2, "Batch bonus summary should count verified Amazon reviews.");
+assertEqual(bonusSummary.unverifiedAmazonCount, 1, "Batch bonus summary should count unverified Amazon reviews.");
+assertEqual(bonusSummary.photoReviewCount, 2, "Batch bonus summary should count photo reviews.");
 assertEqual(
   REVIEW_COLUMNS.map((column) => column.label).join("|"),
   expectedReviewLabels.join("|"),
@@ -116,7 +128,25 @@ assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should expor
 assert(missingLinkRow.flags.includes("Platform unclear"), "Missing review link row should flag unclear platform.");
 assert(missingLinkRow.flags.includes("Review link missing"), "Missing review link row should flag missing review link.");
 
+const unclearBonusRows = parseReviewNotes([
+  "Ticket #100011",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100011",
+  "https://www.homedepot.com/p/reviews/home-depot-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "Helpful support and clear setup advice.",
+  "Hank Depot - HD123",
+].join("\n"));
+assertEqual(unclearBonusRows.length, 1, "Known platform without a bonus rule should still parse.");
+assertEqual(unclearBonusRows[0].platform, "Home Depot", "Home Depot platform should be detected.");
+assertEqual(calculateBonus(unclearBonusRows[0]), 0, "Unclear bonus rule should not guess a dollar value.");
+assert(unclearBonusRows[0].flags.includes("Bonus rule unclear"), "Known platform without a bonus rule should be flagged.");
+
 console.log("smoke:review passed");
+
+function platformCount(platform) {
+  return bonusSummary.platformCounts.find((entry) => entry.platform === platform)?.count ?? 0;
+}
 
 function rowByTicket(ticketNumber) {
   const row = rows.find((candidate) => candidate.ticketNumber === ticketNumber);

@@ -6,7 +6,7 @@ import { SummaryPanel } from "./SummaryPanel";
 import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
 import { downloadCsv, buildTsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
-import { calculateBonus, collectFlags, parseReviewNotes } from "../lib/reviewParser";
+import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
 import type { ReviewRow } from "../types";
 
 export function ReviewLogMode() {
@@ -19,7 +19,7 @@ export function ReviewLogMode() {
   const [isTemplateVisible, setIsTemplateVisible] = useState(false);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
-  const estimatedBonus = useMemo(() => rows.reduce((sum, row) => sum + calculateBonus(row), 0), [rows]);
+  const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
 
   function handleParse() {
     const parsedRows = parseReviewNotes(notes);
@@ -135,7 +135,7 @@ export function ReviewLogMode() {
 
       <div className="resultsPanel">
         <div className="actionsBar">
-          <SummaryPanel rowCount={rows.length} flagCount={flags.length} estimatedBonus={estimatedBonus} />
+          <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
           <div className="buttonRow">
             <button type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
               <ClipboardCopy size={16} aria-hidden="true" />
