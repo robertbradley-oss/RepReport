@@ -278,6 +278,11 @@ button:disabled {
   width: 100%;
 }
 
+.reviewTable {
+  min-width: 1180px;
+  table-layout: fixed;
+}
+
 .reviewTable th,
 .reviewTable td,
 .flagsPanel th,
@@ -293,7 +298,9 @@ button:disabled {
 .flagsPanel th {
   background: #f7f8fa;
   font-weight: 700;
+  line-height: 1.25;
   position: sticky;
+  white-space: normal;
   top: 0;
   z-index: 1;
 }
@@ -302,7 +309,7 @@ button:disabled {
   border: 1px solid transparent;
   border-radius: 4px;
   line-height: 1.35;
-  min-width: 150px;
+  min-width: 0;
   padding: 7px;
   resize: vertical;
   width: 100%;
@@ -311,11 +318,6 @@ button:disabled {
 .reviewTable textarea:focus {
   border-color: #60758a;
   outline: none;
-}
-
-.reviewTable td:nth-child(7) textarea,
-.reviewTable td:nth-child(8) textarea {
-  min-width: 240px;
 }
 
 .kpiTable textarea {
@@ -348,7 +350,14 @@ button:disabled {
   align-items: center;
   display: flex;
   gap: 8px;
+  justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.flagsTitle {
+  align-items: center;
+  display: flex;
+  gap: 8px;
 }
 
 .flagsHeader h2 {
@@ -372,6 +381,13 @@ button:disabled {
 .flagsPanel p {
   color: #5b6773;
   margin: 0;
+}
+
+.flagsStatus {
+  color: #315b3c;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 18px;
 }
 
 .flagsPanel tbody tr:nth-child(even) {

@@ -1,4 +1,5 @@
 import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
+import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName } from "../lib/reviewTableLayout";
 
 type EditableReviewTableProps = {
   rows: ReviewRow[];
@@ -26,10 +27,21 @@ export function EditableReviewTable({ rows, onRowsChange }: EditableReviewTableP
   return (
     <div className="tableWrap">
       <table className="reviewTable">
+        <colgroup>
+          {REVIEW_COLUMNS.map((column) => (
+            <col
+              key={column.key}
+              className={getReviewTableColumnClassName(column.key)}
+              style={{ width: `${REVIEW_TABLE_COLUMN_WIDTHS[column.key]}%` }}
+            />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             {REVIEW_COLUMNS.map((column) => (
-              <th key={column.key}>{column.label}</th>
+              <th key={column.key} className={getReviewTableColumnClassName(column.key)} scope="col">
+                {column.label}
+              </th>
             ))}
           </tr>
         </thead>
@@ -37,7 +49,7 @@ export function EditableReviewTable({ rows, onRowsChange }: EditableReviewTableP
           {rows.map((row, rowIndex) => (
             <tr key={`${row.reviewLink}-${rowIndex}`}>
               {REVIEW_COLUMNS.map((column) => (
-                <td key={column.key}>
+                <td key={column.key} className={getReviewTableColumnClassName(column.key)}>
                   <textarea
                     aria-label={`${column.label} row ${rowIndex + 1}`}
                     value={row[column.key]}

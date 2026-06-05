@@ -1,3 +1,5 @@
+import { formatFlagsForClipboard } from "../src/lib/flagClipboard.ts";
+import { REVIEW_TABLE_COLUMN_WIDTHS } from "../src/lib/reviewTableLayout.ts";
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { REVIEW_COLUMNS } from "../src/types.ts";
 import { readFileSync } from "node:fs";
@@ -35,6 +37,34 @@ assertEqual(
   expectedReviewLabels.join("|"),
   "Review Log export column order changed.",
 );
+assertEqual(
+  Object.values(REVIEW_TABLE_COLUMN_WIDTHS).reduce((total, width) => total + width, 0),
+  100,
+  "Review table column widths should fill the table exactly.",
+);
+assert(
+  REVIEW_TABLE_COLUMN_WIDTHS.verifiedFiveStar >= 10,
+  "Verified 5 star? should keep enough Review Log table width for the full header.",
+);
+assert(
+  REVIEW_TABLE_COLUMN_WIDTHS.customerContactTicketLink > REVIEW_TABLE_COLUMN_WIDTHS.containsPictures &&
+    REVIEW_TABLE_COLUMN_WIDTHS.replacementSent > REVIEW_TABLE_COLUMN_WIDTHS.containsVideo,
+  "Review Log table should keep contact and replacement columns wider than photo/video columns.",
+);
+assert(
+  REVIEW_TABLE_COLUMN_WIDTHS.containsVideo <= 6.5 && REVIEW_TABLE_COLUMN_WIDTHS.containsPictures <= 6.5,
+  "Review Log table should keep photo/video columns narrow.",
+);
+assertEqual(
+  formatFlagsForClipboard([
+    { rowNumber: 3, platform: "Trustpilot", message: "Model missing" },
+    { rowNumber: 7, platform: "Unknown", message: "Platform unclear" },
+    { rowNumber: 9, platform: "Unknown", message: "Review link missing" },
+  ]),
+  ["Row 3 - Model missing", "Row 7 - Platform unclear", "Row 9 - Review link missing"].join("\n"),
+  "Copy Flags clipboard format changed.",
+);
+assertEqual(formatFlagsForClipboard([]), "No flags.", "Copy Flags empty-state text changed.");
 
 for (const [index, row] of rows.entries()) {
   for (const column of REVIEW_COLUMNS) {
