@@ -3,7 +3,7 @@ import type { FlagItem, ReviewRow } from "../types";
 const urlRegex = /https?:\/\/[^\s]+/gi;
 const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
 const ticketLineRegex = /^(?:ticket\s*#?\s*|#)(\d{3,})\b/i;
-const supportTicketIdRegex = /(?:ticket|tickets|case|cases)[/=/-]*(\d{3,})|\/(\d{3,})(?:[/?#]|$)/i;
+const supportTicketIdRegex = /[?&]id=(\d{3,})|(?:ticket|tickets|case|cases)[/=/-]*(\d{3,})|\/(\d{3,})(?:[/?#]|$)/i;
 
 const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /amazon\.com/i],
@@ -26,7 +26,7 @@ const flagMessages = {
 };
 
 export function parseReviewNotes(input: string): ReviewRow[] {
-  return splitBlocks(input).map(parseBlock);
+  return splitBlocks(normalizePastedNotes(input)).map(parseBlock);
 }
 
 export function collectFlags(rows: ReviewRow[]): FlagItem[] {
@@ -92,6 +92,28 @@ function splitBlocks(input: string): string[] {
   }
 
   return blocks.map((block) => block.join("\n"));
+}
+
+function normalizePastedNotes(input: string): string {
+  const expanded = input
+    .replace(/\r\n/g, "\n")
+    .replace(/(Ticket\s*#?\s*\d+|#\d{3,})(\s*-\s*PHOTO)?/gi, (_match, ticket: string, photo: string | undefined) =>
+      photo ? `${ticket}\n***PHOTO***\n` : `${ticket}\n`,
+    )
+    .replace(/(https?:\/\/)/gi, "\n$1")
+    .replace(/(dpr=1)(\d{1,2}\/\d{1,2}\/\d{2,4})(?=\S)/gi, "$1\n$2\n")
+    .replace(/(ie=UTF8)(?=\S)/gi, "$1\n")
+    .replace(/\b(5\s+out\s+of\s+5\s+stars)(?=\S)/gi, "$1\n")
+    .replace(/([a-z])Verified Purchase/gi, "$1\nVerified Purchase")
+    .replace(/(Verified Purchase)(?=\S)/gi, "$1\n")
+    .replace(/(Reviewed\b)/gi, "\n$1");
+
+  return expanded
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap(splitGluedCustomerModelLine)
+    .join("\n");
 }
 
 function parseBlock(block: string): ReviewRow {
@@ -164,7 +186,7 @@ function parseTicketNumber(lines: string[]): string | undefined {
 
 function parseSupportTicketId(url: string): string | undefined {
   const match = url.match(supportTicketIdRegex);
-  return match?.[1] ?? match?.[2];
+  return match?.[1] ?? match?.[2] ?? match?.[3];
 }
 
 function isSupportTicketUrl(url: string): boolean {
@@ -192,9 +214,45 @@ function parseCustomerModel(lines: string[]): { customerName: string; modelNumbe
   return undefined;
 }
 
+function splitGluedCustomerModelLine(line: string): string[] {
+  const modelMatch = line.match(/\s+-\s+([A-Za-z0-9][A-Za-z0-9._/-]*)$/);
+  if (!modelMatch || modelMatch.index === undefined) {
+    return [line];
+  }
+
+  const beforeModel = line.slice(0, modelMatch.index).trim();
+  const customerName = extractTrailingCustomerName(beforeModel);
+  if (!customerName) {
+    return [line];
+  }
+
+  const reviewText = beforeModel.slice(0, beforeModel.length - customerName.length).trim();
+  const customerModelLine = `${customerName} - ${modelMatch[1]}`;
+
+  return reviewText ? [reviewText, customerModelLine] : [customerModelLine];
+}
+
+function extractTrailingCustomerName(value: string): string {
+  const patterns = [
+    /(Mr\.?\s*&\s*Mrs\.?\s+[A-Z][A-Za-z.'’]*)$/,
+    /[.!?)]\s*([A-Z][A-Za-z'’]*(?:\s+[A-Z][A-Za-z'’]*){0,4})$/,
+    /[a-z]([A-Z][A-Za-z'’]*(?:\s+[A-Z][A-Za-z'’]*){1,4})$/,
+    /[.!?)]\s*([a-z][a-z'’]*(?:\s+[a-z][a-z'’]*){1,3})$/,
+    /^([A-Z][A-Za-z'’]*(?:\s+[A-Z][A-Za-z'’]*){0,4})$/,
+    /^([a-z][a-z'’]*(?:\s+[a-z][a-z'’]*){1,3})$/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+    if (match) return match[1].trim();
+  }
+
+  return "";
+}
+
 function parseRating(lines: string[]): string {
   for (const line of lines) {
-    const match = line.match(/\b(5\s*-?\s*stars?|five\s*-?\s*stars?|★★★★★|5\/5)\b/i);
+    const match = line.match(/\b(5\s+out\s+of\s+5\s+stars|5\s*-?\s*stars?|five\s*-?\s*stars?|★★★★★|5\/5)\b/i);
     if (match) return match[1];
   }
 
@@ -202,12 +260,17 @@ function parseRating(lines: string[]): string {
 }
 
 function parseDateOrStatus(lines: string[], ratingOrStatus: string): string {
-  const dateLike = lines.find((line) => {
-    if (line === ratingOrStatus || singleUrlRegex.test(line) || ticketLineRegex.test(line)) return false;
-    return /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/i.test(line);
-  });
+  for (const line of lines) {
+    if (line === ratingOrStatus || singleUrlRegex.test(line) || ticketLineRegex.test(line)) continue;
 
-  return dateLike ?? "";
+    const reviewedMatch = line.match(/\bReviewed\b.*?\bon\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4})/i);
+    if (reviewedMatch) return reviewedMatch[0];
+
+    const dateMatch = line.match(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/i);
+    if (dateMatch) return dateMatch[0];
+  }
+
+  return "";
 }
 
 function parseReviewText(
