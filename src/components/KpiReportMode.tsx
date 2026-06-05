@@ -12,6 +12,7 @@ export function KpiReportMode() {
   const [issues, setIssues] = useState<string[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
+  const [formatStatus, setFormatStatus] = useState("");
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
@@ -19,6 +20,7 @@ export function KpiReportMode() {
     setIssues(result.issues);
     setCopyStatus("");
     setExportStatus("");
+    setFormatStatus(result.issues.length > 0 ? `Formatted KPI row with ${result.issues.length} issue${result.issues.length === 1 ? "" : "s"}.` : "Formatted 1 KPI row.");
   }
 
   function handleClear() {
@@ -27,16 +29,20 @@ export function KpiReportMode() {
     setIssues([]);
     setCopyStatus("");
     setExportStatus("");
+    setFormatStatus("");
   }
 
   function handleLoadSample() {
     setNotes(sampleKpiNotes);
     setCopyStatus("");
     setExportStatus("");
+    setFormatStatus("Sample KPI notes loaded.");
   }
 
   function updateCell(key: KpiColumnKey, value: string) {
     setRow((currentRow) => ({ ...currentRow, [key]: value }));
+    setCopyStatus("");
+    setExportStatus("");
   }
 
   async function handleCopyRow() {
@@ -136,7 +142,7 @@ export function KpiReportMode() {
         </div>
 
         <div className="statusLine" aria-live="polite">
-          {[copyStatus, exportStatus].filter(Boolean).join(" ")}
+          {[formatStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
 
         {issues.length > 0 && (

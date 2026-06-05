@@ -20,7 +20,7 @@ export function EditableReviewTable({ rows, onRowsChange }: EditableReviewTableP
   }
 
   if (rows.length === 0) {
-    return <div className="emptyState">No parsed rows yet.</div>;
+    return <div className="emptyState">No rows yet. Paste notes and parse, or add a blank row.</div>;
   }
 
   return (

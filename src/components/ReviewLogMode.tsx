@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ClipboardCopy, Download, FileDown, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, FileDown, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
@@ -14,14 +14,21 @@ export function ReviewLogMode() {
   const [rows, setRows] = useState<ReviewRow[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
+  const [parseStatus, setParseStatus] = useState("");
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const estimatedBonus = useMemo(() => rows.reduce((sum, row) => sum + calculateBonus(row), 0), [rows]);
 
   function handleParse() {
-    setRows(parseReviewNotes(notes));
+    const parsedRows = parseReviewNotes(notes);
+    setRows(parsedRows);
     setCopyStatus("");
     setExportStatus("");
+    setParseStatus(
+      parsedRows.length > 0
+        ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} flag${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
+        : "No review rows found.",
+    );
   }
 
   function handleClear() {
@@ -29,17 +36,39 @@ export function ReviewLogMode() {
     setRows([]);
     setCopyStatus("");
     setExportStatus("");
+    setParseStatus("");
   }
 
   function handleLoadSample() {
     setNotes(sampleReviewNotes);
     setCopyStatus("");
     setExportStatus("");
+    setParseStatus("Sample review notes loaded.");
+  }
+
+  function handleRowsChange(nextRows: ReviewRow[]) {
+    setRows(nextRows);
+    setCopyStatus("");
+    setExportStatus("");
+    setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
+  }
+
+  function handleAddBlankRow() {
+    handleRowsChange([...rows, createBlankReviewRow()]);
+  }
+
+  function handleDeleteLastRow() {
+    handleRowsChange(rows.slice(0, -1));
   }
 
   async function handleCopyRows() {
     const copied = await copyText(buildTsv(rows));
     setCopyStatus(copied ? `Copied ${rows.length} row${rows.length === 1 ? "" : "s"}.` : "Copy failed. Select the table cells and copy manually.");
+  }
+
+  function handleDownloadCsv() {
+    downloadCsv(rows);
+    setExportStatus("Review CSV downloaded.");
   }
 
   async function handleExportExcel() {
@@ -85,7 +114,7 @@ export function ReviewLogMode() {
               <ClipboardCopy size={16} aria-hidden="true" />
               Copy Rows
             </button>
-            <button type="button" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
+            <button type="button" onClick={handleDownloadCsv} disabled={rows.length === 0}>
               <Download size={16} aria-hidden="true" />
               Download CSV
             </button>
@@ -93,17 +122,40 @@ export function ReviewLogMode() {
               <FileDown size={16} aria-hidden="true" />
               Export Excel
             </button>
+            <button type="button" onClick={handleAddBlankRow}>
+              <Plus size={16} aria-hidden="true" />
+              Add Blank Row
+            </button>
+            <button type="button" onClick={handleDeleteLastRow} disabled={rows.length === 0}>
+              <Trash2 size={16} aria-hidden="true" />
+              Delete Last Row
+            </button>
           </div>
         </div>
 
-        <EditableReviewTable rows={rows} onRowsChange={setRows} />
+        <EditableReviewTable rows={rows} onRowsChange={handleRowsChange} />
         <div className="statusLine" aria-live="polite">
-          {[copyStatus, exportStatus].filter(Boolean).join(" ")}
+          {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
         <FlagsPanel flags={flags} />
       </div>
     </section>
   );
+}
+
+function createBlankReviewRow(): ReviewRow {
+  return {
+    ticketLink: "",
+    reviewLink: "",
+    modelNumber: "",
+    verifiedFiveStar: "N",
+    containsVideo: "N",
+    containsPictures: "N",
+    customerContactTicketLink: "",
+    replacementSent: "",
+    platform: "",
+    flags: [],
+  };
 }
 
 async function copyText(text: string): Promise<boolean> {

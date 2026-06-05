@@ -133,6 +133,7 @@ button:disabled {
   background: #ffffff;
   border-bottom-color: #ffffff;
   color: #1d6f42;
+  box-shadow: inset 0 3px 0 #1d6f42;
 }
 
 .reviewLogGrid,
@@ -174,6 +175,7 @@ button:disabled {
 .inputPanel textarea {
   border: 1px solid #c9d1d9;
   border-radius: 6px;
+  line-height: 1.35;
   min-height: 570px;
   padding: 10px;
   resize: vertical;
@@ -185,6 +187,11 @@ button:disabled {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+
+.resultsPanel .buttonRow {
+  justify-content: flex-end;
+  margin-top: 0;
 }
 
 .actionsBar {
@@ -256,8 +263,9 @@ button:disabled {
 .reviewTable textarea {
   border: 1px solid transparent;
   border-radius: 4px;
+  line-height: 1.35;
   min-width: 150px;
-  padding: 6px;
+  padding: 7px;
   resize: vertical;
   width: 100%;
 }
@@ -288,6 +296,8 @@ button:disabled {
 
 .statusLine {
   color: #315b3c;
+  font-size: 13px;
+  font-weight: 700;
   min-height: 22px;
   padding-top: 8px;
 }
@@ -296,10 +306,29 @@ button:disabled {
   margin-top: 12px;
 }
 
-.flagsPanel h2 {
+.flagsHeader {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.flagsHeader h2 {
   font-size: 17px;
   letter-spacing: 0;
-  margin: 0 0 8px;
+  margin: 0;
+}
+
+.flagsHeader span {
+  background: #eef2f5;
+  border: 1px solid #cfd6dd;
+  border-radius: 999px;
+  color: #3e4c59;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 26px;
+  padding: 2px 8px;
+  text-align: center;
 }
 
 .flagsPanel p {
@@ -307,10 +336,20 @@ button:disabled {
   margin: 0;
 }
 
+.flagsPanel tbody tr:nth-child(even) {
+  background: #fbfcfd;
+}
+
 .kpiIssues ul {
   color: #5b6773;
   margin: 0;
   padding-left: 20px;
+}
+
+.kpiIssues h2 {
+  font-size: 17px;
+  letter-spacing: 0;
+  margin: 0 0 8px;
 }
 
 @media (max-width: 980px) {

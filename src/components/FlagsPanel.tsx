@@ -7,9 +7,12 @@ type FlagsPanelProps = {
 export function FlagsPanel({ flags }: FlagsPanelProps) {
   return (
     <section className="flagsPanel" aria-label="Manual review flags">
-      <h2>Flags</h2>
+      <div className="flagsHeader">
+        <h2>Flags</h2>
+        <span>{flags.length}</span>
+      </div>
       {flags.length === 0 ? (
-        <p>No flags.</p>
+        <p>No manual review flags.</p>
       ) : (
         <table>
           <thead>

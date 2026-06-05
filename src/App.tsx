@@ -7,6 +7,7 @@ type AppMode = "reviewLog" | "kpiReport";
 
 export default function App() {
   const [activeMode, setActiveMode] = useState<AppMode>("reviewLog");
+  const activeModeLabel = activeMode === "reviewLog" ? "Review Log Mode" : "KPI Report Mode";
 
   return (
     <main className="appShell">
@@ -15,7 +16,7 @@ export default function App() {
           <img className="brandLogo" src="/assets/repreport-logo.png" alt="RepReport" />
           <div className="brandText">
             <h1 className="srOnly">RepReport</h1>
-            <p>Review Log Mode</p>
+            <p>{activeModeLabel}</p>
           </div>
         </div>
       </header>
