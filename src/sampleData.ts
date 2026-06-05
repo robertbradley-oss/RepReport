@@ -6,7 +6,7 @@ Robert helped me find the right filter setup and it arrived quickly.
 Mario Anzueto - RCC7AK
 
 https://www.google.com/maps/reviews/example-review
-May 18, 2026 - 5 stars
+May 18, 2026
 Great customer support and the replacement filter works perfectly.
 Janet Brooks - WGB32B
 

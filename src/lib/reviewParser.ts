@@ -22,8 +22,11 @@ const flagMessages = {
   reviewLinkMissing: "Review link missing",
   nonAmazonTextMissing: "Non-Amazon review text missing",
   ratingUnclear: "Rating unclear",
+  googleRatingNeedsReview: "Google rating/status needs review",
   mentionUnclear: "Mention status unclear",
 };
+
+const defaultGoogleRating = "5 out of 5 stars";
 
 export function parseReviewNotes(input: string): ReviewRow[] {
   return splitBlocks(normalizePastedNotes(input)).map(parseBlock);
@@ -130,7 +133,8 @@ function parseBlock(block: string): ReviewRow {
   const reviewLink = allUrls.find((url) => !isSupportTicketUrl(url) && detectPlatform(url) !== "Unknown") ?? "";
   const platform = reviewLink ? detectPlatform(reviewLink) : "Unknown";
   const customerModel = parseCustomerModel(lines);
-  const ratingOrStatus = parseRating(lines);
+  const parsedRating = parseRating(lines, platform);
+  const ratingOrStatus = parsedRating.value;
   const reviewDateOrStatus = parseDateOrStatus(lines, ratingOrStatus);
   const reviewText = parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus);
   const containsPictures = /\*\*\*PHOTO\*\*\*/i.test(block) ? "Y" : "N";
@@ -143,6 +147,7 @@ function parseBlock(block: string): ReviewRow {
   if (ticketNumber && supportTicketId && ticketNumber !== supportTicketId) flags.push(flagMessages.ticketMismatch);
   if (!customerModel) flags.push(flagMessages.customerModel);
   if (customerModel && !customerModel.modelNumber) flags.push(flagMessages.modelMissing);
+  if (parsedRating.needsReview) flags.push(flagMessages.googleRatingNeedsReview);
   if (!ratingOrStatus) flags.push(flagMessages.ratingUnclear);
   if (!mentionStatus) flags.push(flagMessages.mentionUnclear);
   if (platform !== "Amazon" && platform !== "Unknown" && !reviewText) flags.push(flagMessages.nonAmazonTextMissing);
@@ -250,13 +255,104 @@ function extractTrailingCustomerName(value: string): string {
   return "";
 }
 
-function parseRating(lines: string[]): string {
-  for (const line of lines) {
-    const match = line.match(/\b(5\s+out\s+of\s+5\s+stars|5\s*-?\s*stars?|five\s*-?\s*stars?|★★★★★|5\/5)\b/i);
-    if (match) return match[1];
+function parseRating(lines: string[], platform: string): { value: string; needsReview: boolean } {
+  if (platform === "Google") {
+    const googleRating = parseGoogleRating(lines);
+    if (googleRating.value) return googleRating;
+
+    return {
+      value: defaultGoogleRating,
+      needsReview: false,
+    };
   }
 
-  return "";
+  for (const line of lines) {
+    const match = line.match(/\b(5\s+out\s+of\s+5\s+stars|5\s*-?\s*stars?|five\s*-?\s*stars?|★★★★★|5\/5)\b/i);
+    if (match) {
+      return {
+        value: match[1],
+        needsReview: false,
+      };
+    }
+  }
+
+  return {
+    value: "",
+    needsReview: false,
+  };
+}
+
+function parseGoogleRating(lines: string[]): { value: string; needsReview: boolean } {
+  const ratings = lines.flatMap(extractGoogleStarRatings);
+  const ratingValues = new Set(ratings.map((rating) => rating.value));
+
+  if (ratings.length > 0) {
+    return {
+      value: ratings[0].label,
+      needsReview: ratingValues.size > 1 || ratings.some((rating) => rating.value !== 5),
+    };
+  }
+
+  for (const line of lines) {
+    const statusMatch = line.match(/\b(review\s+pending|pending|not\s+posted|not\s+published|in\s+review|needs?\s+approval|negative\s+review|negative\s+rating)\b/i);
+    if (statusMatch) {
+      return {
+        value: statusMatch[1],
+        needsReview: true,
+      };
+    }
+  }
+
+  return {
+    value: "",
+    needsReview: false,
+  };
+}
+
+function extractGoogleStarRatings(line: string): Array<{ label: string; value: number }> {
+  const ratings: Array<{ label: string; value: number }> = [];
+
+  for (const match of line.matchAll(/\b([1-5])\s+out\s+of\s+5\s+stars?\b/gi)) {
+    ratings.push({
+      label: match[0],
+      value: Number(match[1]),
+    });
+  }
+
+  for (const match of line.matchAll(/\b([1-5])\/5\b/gi)) {
+    ratings.push({
+      label: match[0],
+      value: Number(match[1]),
+    });
+  }
+
+  for (const match of line.matchAll(/\b(one|two|three|four|five)\s*-?\s*stars?\b/gi)) {
+    ratings.push({
+      label: match[0],
+      value: wordToRatingValue(match[1]),
+    });
+  }
+
+  for (const match of line.matchAll(/\b([1-5])\s*-?\s*stars?\b/gi)) {
+    ratings.push({
+      label: match[0],
+      value: Number(match[1]),
+    });
+  }
+
+  return ratings;
+}
+
+function wordToRatingValue(value: string): number {
+  const ratings: Record<string, number> = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+  };
+
+  return ratings[value.toLowerCase()] ?? 0;
 }
 
 function parseDateOrStatus(lines: string[], ratingOrStatus: string): string {
