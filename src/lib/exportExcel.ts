@@ -178,7 +178,7 @@ function addReadMeSheet(workbook: ExcelJS.Workbook): void {
 
 function styleWorksheet(sheet: ExcelJS.Worksheet): void {
   sheet.eachRow((row) => {
-    row.eachCell((cell) => {
+    row.eachCell({ includeEmpty: true }, (cell) => {
       cell.font = baseFont();
       cell.alignment = { wrapText: true };
       cell.border = border;
