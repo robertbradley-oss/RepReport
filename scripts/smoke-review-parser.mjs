@@ -1,5 +1,6 @@
 import { formatFlagsForClipboard } from "../src/lib/flagClipboard.ts";
 import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_COLUMN_WIDTHS, REVIEW_TABLE_DENSITIES } from "../src/lib/reviewTableLayout.ts";
+import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
 import {
   buildVisibleReviewRows,
@@ -158,6 +159,35 @@ assertEqual(googleRow.verifiedFiveStar, "Y", "Google row should export verified 
 assertEqual(googleRow.ratingOrStatus, "5 out of 5 stars", "Google row without rating should default to 5 out of 5 stars.");
 assertEqual(googleRow.containsPictures, "N", "Google row without ***PHOTO*** should not mark pictures.");
 assert(googleRow.replacementSent.includes("Great customer service"), "Google Replacement sent should contain the review text.");
+assertEqual(
+  formatCustomerContactSummary(googleRow),
+  "Ticket #100004 - Dylan Google - Google - 6/1/26",
+  "Customer contact collapsed summary should use ticket, customer, platform, and date.",
+);
+assertEqual(
+  formatReplacementSummary(googleRow),
+  "Great customer service and the replacement filter works well.",
+  "Replacement collapsed summary should use compact review text.",
+);
+
+const longReplacementPreview = formatReplacementSummary({
+  ...googleRow,
+  replacementSent: "We purchased a 5 stage under the sink RO filter.\nRobert helped us identify the right replacement cartridge and sent clear steps.",
+});
+assertEqual(
+  longReplacementPreview,
+  "We purchased a 5 stage under the sink RO filter. Robert helped us identify the...",
+  "Replacement collapsed summary should flatten and trim long multiline text.",
+);
+
+const editedFromExpandedRow = updateReviewRowCell(googleRow, "replacementSent", "Expanded row edit\nkeeps full text.");
+assertEqual(
+  editedFromExpandedRow.replacementSent,
+  "Expanded row edit\nkeeps full text.",
+  "Expanded row text edits should update the row value without summarizing it.",
+);
+assertEqual(updateReviewRowCell(googleRow, "containsPictures", "yes").containsPictures, "N", "Yes/no edits should normalize non-Y values to N.");
+assertEqual(updateReviewRowCell(googleRow, "containsPictures", " y ").containsPictures, "Y", "Yes/no edits should normalize Y values.");
 
 const googlePhotoRow = rowByTicket("100005");
 assertEqual(googlePhotoRow.platform, "Google", "Google photo row should detect Google platform.");

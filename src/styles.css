@@ -29,6 +29,7 @@ body {
 }
 
 button,
+select,
 textarea {
   font: inherit;
 }
@@ -347,7 +348,7 @@ button:disabled {
 }
 
 .reviewTable {
-  min-width: 1040px;
+  min-width: 1120px;
   table-layout: fixed;
 }
 
@@ -389,6 +390,53 @@ button:disabled {
   width: 100%;
 }
 
+.reviewCol-expand {
+  text-align: center;
+  width: 42px;
+}
+
+.expandRowButton {
+  border-radius: 4px;
+  font-size: 16px;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0;
+  width: 28px;
+}
+
+.cellSummary {
+  display: block;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mutedSummary {
+  color: #4f6070;
+}
+
+.yesNoBadge {
+  align-items: center;
+  background: #eef2f5;
+  border: 1px solid #cfd6dd;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  min-height: 24px;
+  min-width: 28px;
+  padding: 4px 8px;
+}
+
+.yesNoBadge.yes {
+  background: #fff6b8;
+  border-color: #dfc84e;
+  color: #4f4200;
+}
+
 .reviewTable.compactTable textarea {
   line-height: 1.25;
   padding: 4px;
@@ -406,6 +454,72 @@ button:disabled {
 
 .flaggedRow td {
   background: #fffdf2;
+}
+
+.expandedReviewRow td {
+  background: #fbfcfd;
+  padding: 12px;
+}
+
+.expandedReviewRow.flaggedRow td {
+  background: #fffdf2;
+}
+
+.expandedReviewEditor {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.expandedField {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.expandedField span {
+  color: #3e4c59;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.expandedField textarea,
+.expandedField select {
+  background: #ffffff;
+  border: 1px solid #b8c2cc;
+  border-radius: 5px;
+  color: #1f2933;
+  line-height: 1.35;
+  min-width: 0;
+  padding: 7px;
+  width: 100%;
+}
+
+.expandedField textarea {
+  resize: vertical;
+}
+
+.expandedField textarea:focus,
+.expandedField select:focus {
+  border-color: #60758a;
+  outline: none;
+}
+
+.expandedField.reviewCol-ticketLink,
+.expandedField.reviewCol-reviewLink,
+.expandedField.reviewCol-customerContactTicketLink,
+.expandedField.reviewCol-replacementSent {
+  grid-column: span 6;
+}
+
+.expandedField.reviewCol-modelNumber {
+  grid-column: span 3;
+}
+
+.expandedField.reviewCol-verifiedFiveStar,
+.expandedField.reviewCol-containsVideo,
+.expandedField.reviewCol-containsPictures {
+  grid-column: span 3;
 }
 
 .urlCell {
@@ -555,6 +669,13 @@ button:disabled {
 
   .actionsBar {
     display: block;
+  }
+
+  .expandedField.reviewCol-ticketLink,
+  .expandedField.reviewCol-reviewLink,
+  .expandedField.reviewCol-customerContactTicketLink,
+  .expandedField.reviewCol-replacementSent {
+    grid-column: span 12;
   }
 }
 

@@ -1,0 +1,74 @@
+import type { ReviewColumnKey, ReviewRow, YesNo } from "../types";
+
+const knownPlatforms = ["Amazon", "Google", "Trustpilot", "Costco", "Home Depot", "Lowe's", "Unknown"];
+
+export function updateReviewRowCell(row: ReviewRow, key: ReviewColumnKey, value: string): ReviewRow {
+  return {
+    ...row,
+    [key]: key === "verifiedFiveStar" || key === "containsVideo" || key === "containsPictures" ? normalizeYesNo(value) : value,
+  };
+}
+
+export function formatCustomerContactSummary(row: ReviewRow): string {
+  const lines = splitDisplayLines(row.customerContactTicketLink);
+  const ticket = lines.find((line) => /^Ticket #\d+/i.test(line)) ?? (row.ticketNumber ? `Ticket #${row.ticketNumber}` : "");
+  const customer = findCustomerLine(lines, ticket) ?? row.customerName ?? "";
+  const platform = findKnownPlatform(lines) ?? (row.platform && row.platform !== "Unknown" ? row.platform : "");
+  const dateOrStatus = findDateOrStatusLine(lines) ?? row.reviewDateOrStatus ?? "";
+  const parts = [ticket, customer, platform, dateOrStatus].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" - ") : compactPreview(row.customerContactTicketLink, 80);
+}
+
+export function formatReplacementSummary(row: ReviewRow): string {
+  const summary = compactPreview(row.replacementSent, 82);
+  return summary || "No replacement text";
+}
+
+export function compactPreview(value: string, maxLength: number): string {
+  const compacted = value.replace(/\s+/g, " ").trim();
+
+  if (compacted.length <= maxLength) {
+    return compacted;
+  }
+
+  return `${compacted.slice(0, Math.max(0, maxLength - 3)).trimEnd()}...`;
+}
+
+function normalizeYesNo(value: string): YesNo {
+  return value.trim().toUpperCase() === "Y" ? "Y" : "N";
+}
+
+function splitDisplayLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function findCustomerLine(lines: string[], ticket: string): string | undefined {
+  return lines.find(
+    (line) =>
+      line !== ticket &&
+      !knownPlatforms.includes(line) &&
+      !/^Review (mentions|does not mention) name$/i.test(line) &&
+      !/^\d+(?:\.\d+)?\s*(?:out of\s*)?\d*\s*stars?$/i.test(line) &&
+      !isDateOrStatusLine(line),
+  );
+}
+
+function findKnownPlatform(lines: string[]): string | undefined {
+  return lines.find((line) => knownPlatforms.includes(line) && line !== "Unknown");
+}
+
+function findDateOrStatusLine(lines: string[]): string | undefined {
+  return lines.find(isDateOrStatusLine);
+}
+
+function isDateOrStatusLine(line: string): boolean {
+  return (
+    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(line) ||
+    /^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+\d{1,2},?\s+\d{2,4}$/i.test(line) ||
+    /pending|posted|updated|reviewed/i.test(line)
+  );
+}

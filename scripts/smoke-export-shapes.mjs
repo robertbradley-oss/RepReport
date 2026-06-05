@@ -3,6 +3,7 @@ import { buildKpiWorkbook, buildReviewWorkbook } from "../src/lib/exportExcel.ts
 import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
 import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
 import { getReviewLinkChipLabel, getTicketLinkChipLabel } from "../src/lib/reviewUrlDisplay.ts";
 import { buildVisibleReviewRows } from "../src/lib/reviewWorkspace.ts";
 import { kpiNotesTemplate, reviewLogTemplate } from "../src/sampleData.ts";
@@ -76,6 +77,38 @@ assertEqual(
   "Paste Rows TSV should preserve multiline customer contact cells.",
 );
 assert(packageTsvRecords[0][6].includes("\n"), "Parsed Paste Rows TSV should keep newline characters inside multiline cells.");
+
+const expandedEditedRows = [
+  updateReviewRowCell(
+    updateReviewRowCell(batchReviewRows[0], "customerContactTicketLink", "Ticket #238336\nConnor Zitzmann\nGoogle\n6/5/26\nReview mentions name"),
+    "replacementSent",
+    "We purchased a 5 stage under the sink RO filter.\nThe replacement was sent after support verified the issue.",
+  ),
+  ...batchReviewRows.slice(1),
+];
+const expandedEditedPackage = buildReviewExportPackage(expandedEditedRows);
+assertEqual(
+  formatCustomerContactSummary(expandedEditedRows[0]),
+  "Ticket #238336 - Connor Zitzmann - Google - 6/5/26",
+  "Edited customer contact collapsed summary should stay compact.",
+);
+assertEqual(
+  formatReplacementSummary(expandedEditedRows[0]),
+  "We purchased a 5 stage under the sink RO filter. The replacement was sent after...",
+  "Edited replacement collapsed summary should stay compact.",
+);
+assertEqual(
+  expandedEditedPackage.pasteRows.rows[0][6],
+  expandedEditedRows[0].customerContactTicketLink,
+  "Expanded-row customer contact edits should export the full edited value, not the summary.",
+);
+assertEqual(
+  expandedEditedPackage.pasteRows.rows[0][7],
+  expandedEditedRows[0].replacementSent,
+  "Expanded-row replacement edits should export the full edited value, not the preview.",
+);
+assert(expandedEditedPackage.pasteRows.rows[0][6].includes("\n"), "Edited customer contact export should keep multiline text.");
+assert(expandedEditedPackage.pasteRows.rows[0][7].includes("\n"), "Edited replacement export should keep multiline text.");
 
 const flaggedBonusEligibleRow = batchReviewRows.find((row) => row.platform === "Trustpilot" && row.flags.includes("Model missing"));
 assert(flaggedBonusEligibleRow, "Batch fixture should include a flagged Trustpilot row for summary coverage.");
