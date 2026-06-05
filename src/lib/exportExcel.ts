@@ -1,12 +1,18 @@
 import ExcelJS from "exceljs";
-import { calculateBonus, collectFlags } from "./reviewParser";
 import { REVIEW_COLUMNS, type ReviewRow } from "../types";
 
+const fontName = "Arial";
+const fontSize = 10;
+const whiteFill = "FFFFFFFF";
+const yellowFill = "FFFFFF00";
+const grayBorder = "FFD9D9D9";
+const linkBlue = "FF1155CC";
+
 const border: Partial<ExcelJS.Borders> = {
-  top: { style: "thin", color: { argb: "FFD0D5DD" } },
-  left: { style: "thin", color: { argb: "FFD0D5DD" } },
-  bottom: { style: "thin", color: { argb: "FFD0D5DD" } },
-  right: { style: "thin", color: { argb: "FFD0D5DD" } },
+  top: { style: "thin", color: { argb: grayBorder } },
+  left: { style: "thin", color: { argb: grayBorder } },
+  bottom: { style: "thin", color: { argb: grayBorder } },
+  right: { style: "thin", color: { argb: grayBorder } },
 };
 
 export async function exportExcel(rows: ReviewRow[]): Promise<void> {
@@ -33,39 +39,48 @@ export async function exportExcel(rows: ReviewRow[]): Promise<void> {
 
 function addPasteRowsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
   const sheet = workbook.addWorksheet("Paste Rows");
-  sheet.columns = REVIEW_COLUMNS.map((column) => ({
-    header: column.label,
-    key: column.key,
-    width: column.key === "customerContactTicketLink" || column.key === "replacementSent" ? 34 : 20,
-  }));
+  sheet.columns = [
+    { header: "Ticket Link", key: "ticketLink", width: 42 },
+    { header: "Link to review", key: "reviewLink", width: 48 },
+    { header: "Model Number", key: "modelNumber", width: 18 },
+    { header: "Verified 5 star?", key: "verifiedFiveStar", width: 14 },
+    { header: "Contains video?", key: "containsVideo", width: 14 },
+    { header: "Contains pictures?", key: "containsPictures", width: 14 },
+    { header: "Customer contact/Ticket link", key: "customerContactTicketLink", width: 36 },
+    { header: "Replacement sent", key: "replacementSent", width: 56 },
+  ];
+  setColumnWidths(sheet, [42, 48, 18, 14, 14, 14, 36, 56]);
 
   rows.forEach((row) => {
     sheet.addRow(REVIEW_COLUMNS.map((column) => row[column.key]));
   });
 
   styleWorksheet(sheet);
-  sheet.getRow(1).font = { name: "Arial", size: 10, bold: true };
-  sheet.views = [{ state: "frozen", ySplit: 1 }];
+  styleHeaderRow(sheet.getRow(1));
+  sheet.getRow(1).height = 34;
 
   rows.forEach((row, rowIndex) => {
     const excelRow = sheet.getRow(rowIndex + 2);
+    excelRow.height = 78;
     const ticketCell = excelRow.getCell(1);
     const reviewCell = excelRow.getCell(2);
 
     if (row.ticketLink) {
-      ticketCell.value = { text: row.ticketLink, hyperlink: row.ticketLink };
-      ticketCell.font = { name: "Arial", size: 10, color: { argb: "FF0563C1" }, underline: true };
+      ticketCell.font = linkFont();
     }
 
     if (row.reviewLink) {
-      reviewCell.value = { text: row.reviewLink, hyperlink: row.reviewLink };
-      reviewCell.font = { name: "Arial", size: 10, color: { argb: "FF0563C1" }, underline: true };
+      reviewCell.font = linkFont();
     }
+
+    [4, 5, 6].forEach((columnIndex) => {
+      excelRow.getCell(columnIndex).alignment = { horizontal: "center", wrapText: true };
+    });
 
     [5, 6].forEach((columnIndex) => {
       const cell = excelRow.getCell(columnIndex);
       if (cell.value === "Y") {
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF2CC" } };
+        cell.fill = solidFill(yellowFill);
       }
     });
   });
@@ -73,52 +88,118 @@ function addPasteRowsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void 
 
 function addSummarySheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
   const sheet = workbook.addWorksheet("Summary");
-  const totalBonus = rows.reduce((sum, row) => sum + calculateBonus(row), 0);
+  const summaryRows = buildSummaryRows(rows);
 
-  sheet.addRows([
-    ["Metric", "Value"],
-    ["Parsed rows", rows.length],
-    ["Estimated bonus total", totalBonus],
-    ["Rows with flags", rows.filter((row) => row.flags.length > 0).length],
-  ]);
+  sheet.addRows(summaryRows);
 
-  sheet.columns = [{ width: 24 }, { width: 18 }];
+  sheet.columns = [{ width: 34 }, { width: 14 }, { width: 14 }, { width: 14 }];
+  setColumnWidths(sheet, [34, 14, 14, 14]);
   styleWorksheet(sheet);
-  sheet.getRow(1).font = { name: "Arial", size: 10, bold: true };
+  sheet.getRow(1).font = boldFont();
+  sheet.getRow(4).font = boldFont();
 }
 
 function addFlagsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
   const sheet = workbook.addWorksheet("Flags");
-  sheet.addRow(["Row", "Platform", "Flag"]);
-  collectFlags(rows).forEach((flag) => {
-    sheet.addRow([flag.rowNumber, flag.platform, flag.message]);
+  sheet.addRow(["Source Row", "Customer", "Model", "Platform", "Flag"]);
+  rows.forEach((row, rowIndex) => {
+    row.flags.forEach((flag) => {
+      sheet.addRow([rowIndex + 1, row.customerName ?? "", row.modelNumber, row.platform, flag]);
+    });
   });
-  sheet.columns = [{ width: 12 }, { width: 18 }, { width: 46 }];
+  sheet.columns = [{ width: 12 }, { width: 24 }, { width: 18 }, { width: 14 }, { width: 55 }];
+  setColumnWidths(sheet, [12, 24, 18, 14, 55]);
   styleWorksheet(sheet);
-  sheet.getRow(1).font = { name: "Arial", size: 10, bold: true };
+  sheet.getRow(1).font = boldFont();
 }
 
 function addReadMeSheet(workbook: ExcelJS.Workbook): void {
   const sheet = workbook.addWorksheet("Read Me");
   sheet.addRows([
-    ["RepReport Review Log Export"],
-    ["Paste Rows contains only the eight default review-log columns."],
-    ["Replacement sent is used for non-Amazon written review text."],
-    ["Flags identify rows that may need manual review; they do not block copy or export."],
-    ["Parser is rule-based and should be checked before final spreadsheet submission."],
+    ["RepReport Export Notes"],
+    ["This workbook was regenerated from pasted Notepad source and includes parsed reviews."],
+    ["Default paste columns start at Ticket Link and omit Date, Rep, and Review Upgrade."],
+    ["The column labeled Replacement sent is treated as Non-Amazon Review Text. Amazon review rows leave it blank."],
+    ["All non-Amazon reviews are marked verified = Y. Amazon reviews are verified = Y only when the pasted text says Verified or Verified Purchase."],
+    ["Contains video and Contains pictures default to N unless explicitly noted; ***PHOTO*** marks Contains pictures = Y."],
+    ["Customer contact/Ticket link only includes Ticket # when an actual ticket number is present."],
+    ["Customer contact/Ticket link says Review mentions name only when Robert is clearly present in the pasted review text; otherwise it says Review does not mention name."],
+    ["Links are formatted blue to match the review log style; body font is Arial 10."],
+    ["Cells with Y in Contains video? or Contains pictures? are highlighted yellow."],
   ]);
-  sheet.columns = [{ width: 90 }];
+  sheet.columns = [{ width: 115 }];
+  setColumnWidths(sheet, [115]);
   styleWorksheet(sheet);
-  sheet.getRow(1).font = { name: "Arial", size: 10, bold: true };
+  sheet.getRow(1).font = boldFont();
 }
 
 function styleWorksheet(sheet: ExcelJS.Worksheet): void {
   sheet.eachRow((row) => {
     row.eachCell((cell) => {
-      cell.font = cell.font ?? { name: "Arial", size: 10 };
-      cell.alignment = { vertical: "top", wrapText: true };
+      cell.font = baseFont();
+      cell.alignment = { wrapText: true };
       cell.border = border;
-      cell.fill = cell.fill ?? { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      cell.fill = solidFill(whiteFill);
     });
   });
+}
+
+function setColumnWidths(sheet: ExcelJS.Worksheet, widths: number[]): void {
+  widths.forEach((width, index) => {
+    sheet.getColumn(index + 1).width = width;
+  });
+}
+
+function styleHeaderRow(row: ExcelJS.Row): void {
+  row.font = boldFont();
+  row.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+}
+
+function buildSummaryRows(rows: ReviewRow[]): Array<Array<string | number | null>> {
+  const googleWithPhoto = rows.filter((row) => row.platform === "Google" && row.containsPictures === "Y").length;
+  const google = rows.filter((row) => row.platform === "Google" && row.containsPictures !== "Y").length;
+  const trustpilot = rows.filter((row) => row.platform === "Trustpilot").length;
+  const verifiedAmazonWithPhoto = rows.filter(
+    (row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y" && row.containsPictures === "Y",
+  ).length;
+  const verifiedAmazon = rows.filter(
+    (row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y" && row.containsPictures !== "Y",
+  ).length;
+  const unverifiedAmazon = rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length;
+  const costco = rows.filter((row) => row.platform === "Costco").length;
+
+  const bonusRows = [
+    ["Google reviews", google, 10],
+    ["Google reviews with photo", googleWithPhoto, 20],
+    ["Trustpilot reviews", trustpilot, 10],
+    ["Verified Amazon reviews", verifiedAmazon, 25],
+    ["Unverified Amazon reviews", unverifiedAmazon, 15],
+    ["Verified Amazon reviews with photo", verifiedAmazonWithPhoto, 30],
+    ["Costco reviews", costco, 15],
+  ] as const;
+  const totalBonus = bonusRows.reduce((sum, [, count, rate]) => sum + count * rate, 0);
+
+  return [
+    ["RepReport Review Log Summary", null, null, null],
+    ["Total reviews parsed", rows.length, "Bonus total", totalBonus],
+    [null, null, null, null],
+    ["Review type", "Count", "Rate", "Total"],
+    ...bonusRows.map(([label, count, rate]) => [label, count, rate, count * rate]),
+  ];
+}
+
+function baseFont(): Partial<ExcelJS.Font> {
+  return { name: fontName, size: fontSize, color: { argb: "FF000000" } };
+}
+
+function boldFont(): Partial<ExcelJS.Font> {
+  return { ...baseFont(), bold: true };
+}
+
+function linkFont(): Partial<ExcelJS.Font> {
+  return { name: fontName, size: fontSize, color: { argb: linkBlue } };
+}
+
+function solidFill(argb: string): ExcelJS.Fill {
+  return { type: "pattern", pattern: "solid", fgColor: { argb } };
 }
