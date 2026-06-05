@@ -159,7 +159,7 @@ function parseBlock(block: string): ReviewRow {
   const ticketNumber = parseTicketNumber(lines);
   const ticketLink = allUrls.find(isSupportTicketUrl) ?? "";
   const supportTicketId = ticketLink ? parseSupportTicketId(ticketLink) : undefined;
-  const reviewLink = allUrls.find((url) => !isSupportTicketUrl(url) && detectPlatform(url) !== "Unknown") ?? "";
+  const reviewLink = allUrls.find((url) => !isSupportTicketUrl(url)) ?? "";
   const platform = reviewLink ? detectPlatform(reviewLink) : "Unknown";
   const customerModel = parseCustomerModel(lines);
   const parsedRating = parseRating(lines, platform);

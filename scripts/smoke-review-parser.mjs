@@ -128,6 +128,28 @@ assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should expor
 assert(missingLinkRow.flags.includes("Platform unclear"), "Missing review link row should flag unclear platform.");
 assert(missingLinkRow.flags.includes("Review link missing"), "Missing review link row should flag missing review link.");
 
+const unknownPlatformRows = parseReviewNotes([
+  "Ticket #100012",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100012",
+  "https://reviews.example.com/post/unknown-platform",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support followed up and the system works again.",
+  "Uma Unknown - RCC7",
+].join("\n"));
+assertEqual(unknownPlatformRows.length, 1, "Unknown platform review URL should still parse into one row.");
+assertEqual(unknownPlatformRows[0].platform, "Unknown", "Unknown platform review URL should keep Unknown platform.");
+assertEqual(
+  unknownPlatformRows[0].reviewLink,
+  "https://reviews.example.com/post/unknown-platform",
+  "Unknown platform review URL should stay in Link to review for manual fixing.",
+);
+assert(unknownPlatformRows[0].flags.includes("Platform unclear"), "Unknown platform review URL should still flag unclear platform.");
+assert(
+  !unknownPlatformRows[0].flags.includes("Review link missing"),
+  "Unknown platform review URL should not be flagged as a missing review link.",
+);
+
 const unclearBonusRows = parseReviewNotes([
   "Ticket #100011",
   "https://support.ispringfilter.com/scp/tickets.php?id=100011",
