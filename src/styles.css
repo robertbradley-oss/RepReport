@@ -584,6 +584,13 @@ button:disabled {
   padding: 24px;
 }
 
+.pasteFormatNote {
+  color: #5b6773;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 8px 0 0;
+}
+
 .statusLine {
   color: #315b3c;
   font-size: 13px;

@@ -51,6 +51,10 @@ assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review
 assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
 assert(!batchReviewPackage.pasteRows.tsv.startsWith("Ticket Link"), "Primary Paste Rows TSV should be body-only for review-log paste.");
 assert(batchReviewPackage.pasteRows.tsv.includes("\r\n"), "Paste Rows TSV should use CRLF row separators for spreadsheet clipboard paste.");
+assert(
+  !/[<>]/.test(batchReviewPackage.pasteRows.tsv),
+  "Copy Rows TSV should stay text-only and should not include HTML formatting.",
+);
 
 const packageTsvRecords = parseTsvRecords(batchReviewPackage.pasteRows.tsv);
 const packageTsvRecordsWithHeader = parseTsvRecords(batchReviewPackage.pasteRows.tsvWithHeader);
@@ -77,6 +81,10 @@ assertEqual(
   "Paste Rows TSV should preserve multiline customer contact cells.",
 );
 assert(packageTsvRecords[0][6].includes("\n"), "Parsed Paste Rows TSV should keep newline characters inside multiline cells.");
+assert(
+  flaggedDisplayRows.every(({ row }) => row.flags.join("|") === "Model missing"),
+  "Missing-model filter should include only model reminder rows.",
+);
 
 const expandedEditedRows = [
   updateReviewRowCell(

@@ -182,7 +182,7 @@ export function ReviewLogMode() {
         <div className="actionsBar">
           <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
           <div className="buttonRow">
-            <button type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
+            <button className="primaryButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
               <ClipboardCopy size={16} aria-hidden="true" />
               Copy Rows
             </button>
@@ -213,7 +213,7 @@ export function ReviewLogMode() {
             onClick={() => setFlaggedOnly((enabled) => !enabled)}
           >
             <Filter size={16} aria-hidden="true" />
-            Missing model only ({flags.length})
+            Show missing models ({flags.length})
           </button>
           <div className="densityToggle" role="group" aria-label="Table density">
             {REVIEW_TABLE_DENSITIES.map((density) => (
@@ -235,6 +235,7 @@ export function ReviewLogMode() {
           onRowsChange={handleVisibleRowsChange}
           emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
         />
+        <p className="pasteFormatNote">Copy Rows pastes text only. Yellow photo/video highlights are included in Excel export.</p>
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
