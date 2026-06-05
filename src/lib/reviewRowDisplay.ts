@@ -1,27 +1,31 @@
 import type { ReviewColumnKey, ReviewRow, YesNo } from "../types";
+import { stripInternalNoteMarkers } from "./internalNoteMarkers";
 
 const knownPlatforms = ["Amazon", "Google", "Trustpilot", "Costco", "Home Depot", "Lowe's", "Unknown"];
 
 export function updateReviewRowCell(row: ReviewRow, key: ReviewColumnKey, value: string): ReviewRow {
+  const nextValue = key === "customerContactTicketLink" || key === "replacementSent" ? stripInternalNoteMarkers(value) : value;
+
   return {
     ...row,
-    [key]: key === "verifiedFiveStar" || key === "containsVideo" || key === "containsPictures" ? normalizeYesNo(value) : value,
+    [key]: key === "verifiedFiveStar" || key === "containsVideo" || key === "containsPictures" ? normalizeYesNo(nextValue) : nextValue,
   };
 }
 
 export function formatCustomerContactSummary(row: ReviewRow): string {
-  const lines = splitDisplayLines(row.customerContactTicketLink);
+  const customerContactTicketLink = stripInternalNoteMarkers(row.customerContactTicketLink);
+  const lines = splitDisplayLines(customerContactTicketLink);
   const ticket = lines.find((line) => /^Ticket #\d+/i.test(line)) ?? (row.ticketNumber ? `Ticket #${row.ticketNumber}` : "");
   const customer = findCustomerLine(lines, ticket) ?? row.customerName ?? "";
   const platform = findKnownPlatform(lines) ?? (row.platform && row.platform !== "Unknown" ? row.platform : "");
   const dateOrStatus = findDateOrStatusLine(lines) ?? row.reviewDateOrStatus ?? "";
   const parts = [ticket, customer, platform, dateOrStatus].filter(Boolean);
 
-  return parts.length > 0 ? parts.join(" - ") : compactPreview(row.customerContactTicketLink, 80);
+  return parts.length > 0 ? parts.join(" - ") : compactPreview(customerContactTicketLink, 80);
 }
 
 export function formatReplacementSummary(row: ReviewRow): string {
-  const summary = compactPreview(row.replacementSent, 82);
+  const summary = compactPreview(stripInternalNoteMarkers(row.replacementSent), 82);
   return summary || "No replacement text";
 }
 

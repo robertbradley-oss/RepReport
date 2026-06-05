@@ -1,6 +1,7 @@
 import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
 import { copyRichText } from "./clipboard";
 import { buildReviewExportPackage } from "./exportPackage";
+import { stripInternalNoteMarkers } from "./internalNoteMarkers";
 
 const highlightColumnKeys = new Set<ReviewColumnKey>(["containsVideo", "containsPictures"]);
 
@@ -29,7 +30,7 @@ export function buildReviewClipboardHtml(rows: ReviewRow[]): string {
     .map(
       (row) =>
         `<tr>${REVIEW_COLUMNS.map((column) => {
-          const value = row[column.key];
+          const value = stripInternalNoteMarkers(row[column.key]);
           const shouldHighlight = highlightColumnKeys.has(column.key) && value === "Y";
           const style = shouldHighlight ? ' style="background-color:#ffff00;"' : "";
           return `<td${style}>${escapeHtml(value).replace(/\n/g, "<br>")}</td>`;

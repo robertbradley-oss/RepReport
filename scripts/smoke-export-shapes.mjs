@@ -13,10 +13,30 @@ import { readFileSync } from "node:fs";
 
 const reviewRows = parseReviewNotes(reviewLogTemplate);
 const batchReviewRows = parseReviewNotes(readFileSync(new URL("./fixtures/batch-review-notes.txt", import.meta.url), "utf8"));
+const markerExportRows = parseReviewNotes([
+  "Ticket #238343",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238343",
+  "https://www.google.com/maps/reviews/google-export-photo-marker",
+  "6/5/26",
+  "**PHOTO**",
+  "Robert helped with replacement setup and the review sentence can mention photos.",
+  "Quincy Export - RCC7",
+  "",
+  "Ticket #238344",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238344",
+  "https://www.trustpilot.com/reviews/trustpilot-export-photo-marker",
+  "Jun 5, 2026",
+  "5 stars",
+  "PHOTO",
+  "Support sent the missing fitting quickly.",
+  "Renee Export - PH100",
+].join("\n"));
 const { row: kpiRow } = parseKpiNotes(kpiNotesTemplate);
 const batchReviewPackage = buildReviewExportPackage(batchReviewRows);
+const markerExportPackage = buildReviewExportPackage(markerExportRows);
 const flaggedDisplayRows = buildVisibleReviewRows(batchReviewRows, true);
 const batchReviewClipboardPayload = buildReviewClipboardPayload(batchReviewRows);
+const markerClipboardPayload = buildReviewClipboardPayload(markerExportRows);
 
 const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
@@ -52,6 +72,18 @@ assert(
 assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review TSV should come from the same export package dataset.");
 assertEqual(batchReviewClipboardPayload.tsv, buildTsv(batchReviewRows), "Review clipboard plain TSV should remain unchanged.");
 assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
+assertNoInternalPhotoMarker(batchReviewPackage.pasteRows.tsv, "Batch Copy Rows TSV");
+assertNoInternalPhotoMarker(batchReviewPackage.pasteRows.csv, "Batch CSV export");
+assertNoInternalPhotoMarker(batchReviewClipboardPayload.html, "Batch formatted clipboard HTML");
+assertNoInternalPhotoMarker(markerExportPackage.pasteRows.tsv, "Marker variant Copy Rows TSV");
+assertNoInternalPhotoMarker(markerExportPackage.pasteRows.csv, "Marker variant CSV export");
+assertNoInternalPhotoMarker(markerClipboardPayload.html, "Marker variant formatted clipboard HTML");
+assertEqual(markerExportRows[0].containsPictures, "Y", "Marker variant export row should preserve photo detection for **PHOTO**.");
+assertEqual(markerExportRows[1].containsPictures, "Y", "Marker variant export row should preserve photo detection for standalone PHOTO.");
+assert(
+  markerExportPackage.pasteRows.tsv.includes("review sentence can mention photos"),
+  "Marker cleanup should keep normal review text that mentions photos in Copy Rows TSV.",
+);
 assert(!batchReviewPackage.pasteRows.tsv.startsWith("Ticket Link"), "Primary Paste Rows TSV should be body-only for review-log paste.");
 assert(batchReviewPackage.pasteRows.tsv.includes("\r\n"), "Paste Rows TSV should use CRLF row separators for spreadsheet clipboard paste.");
 assert(
@@ -147,14 +179,18 @@ for (const [index, row] of batchReviewRows.entries()) {
 
 const reviewWorkbook = buildReviewWorkbook(reviewRows);
 const batchReviewWorkbook = buildReviewWorkbook(batchReviewRows);
+const markerExportWorkbook = buildReviewWorkbook(markerExportRows);
 const kpiWorkbook = buildKpiWorkbook(kpiRow);
 
 assertEqual(reviewWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "Paste Rows|Summary|Flags|Read Me", "Review workbook sheet order changed.");
 assertEqual(batchReviewWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "Paste Rows|Summary|Flags|Read Me", "Batch review workbook sheet order changed.");
+assertEqual(markerExportWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "Paste Rows|Summary|Flags|Read Me", "Marker variant workbook sheet order changed.");
 assertEqual(kpiWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "KPI Report|Read Me", "KPI workbook sheet order changed.");
 
 const batchPasteRowsSheet = batchReviewWorkbook.getWorksheet("Paste Rows");
 assert(batchPasteRowsSheet, "Batch review workbook should include Paste Rows sheet.");
+const markerPasteRowsSheet = markerExportWorkbook.getWorksheet("Paste Rows");
+assert(markerPasteRowsSheet, "Marker variant workbook should include Paste Rows sheet.");
 assertEqual(
   batchPasteRowsSheet.getRow(1).values.slice(1).join("|"),
   batchReviewPackage.pasteRows.columns.join("|"),
@@ -170,6 +206,10 @@ assertLinkStyle(batchPasteRowsSheet.getRow(2).getCell(2), "Paste Rows review lin
 assertYellowFill(batchPasteRowsSheet.getRow(4).getCell(6), "Amazon photo Y cell F4");
 assertYellowFill(batchPasteRowsSheet.getRow(6).getCell(6), "Google photo Y cell F6");
 assertMultilineCell(batchPasteRowsSheet.getRow(2).getCell(7), "Paste Rows multiline contact cell G2");
+assertWorkbookNoInternalPhotoMarker(batchReviewWorkbook, "Batch review workbook");
+assertWorkbookNoInternalPhotoMarker(markerExportWorkbook, "Marker variant review workbook");
+assertYellowFill(markerPasteRowsSheet.getRow(2).getCell(6), "Marker **PHOTO** Y cell F2");
+assertYellowFill(markerPasteRowsSheet.getRow(3).getCell(6), "Marker standalone PHOTO Y cell F3");
 
 const highlightWorkbook = buildReviewWorkbook([
   {
@@ -243,10 +283,12 @@ assertCellBaseStyle(batchReadMeSheet.getRow(1).getCell(1), "Read Me title A1");
 
 const reviewBuffer = await reviewWorkbook.xlsx.writeBuffer();
 const batchReviewBuffer = await batchReviewWorkbook.xlsx.writeBuffer();
+const markerExportBuffer = await markerExportWorkbook.xlsx.writeBuffer();
 const kpiBuffer = await kpiWorkbook.xlsx.writeBuffer();
 
 assert(reviewBuffer.byteLength > 0, "Review Excel workbook should generate non-empty data.");
 assert(batchReviewBuffer.byteLength > 0, "Batch review Excel workbook should generate non-empty data.");
+assert(markerExportBuffer.byteLength > 0, "Marker variant Excel workbook should generate non-empty data.");
 assert(kpiBuffer.byteLength > 0, "KPI Excel workbook should generate non-empty data.");
 
 console.log("smoke:exports passed");
@@ -265,6 +307,33 @@ function assertEqual(actual, expected, message) {
 
 function countMatches(text, pattern) {
   return text.match(pattern)?.length ?? 0;
+}
+
+function assertNoInternalPhotoMarker(text, label) {
+  assert(!text.includes("***PHOTO***"), `${label} should not contain ***PHOTO***.`);
+  assert(!text.includes("**PHOTO**"), `${label} should not contain **PHOTO**.`);
+  assert(
+    !String(text)
+      .split(/\r?\n|<br>|<\/td>|<td[^>]*>/i)
+      .some((part) => part.trim() === "PHOTO"),
+    `${label} should not contain standalone PHOTO marker lines.`,
+  );
+}
+
+function assertWorkbookNoInternalPhotoMarker(workbook, label) {
+  for (const sheet of workbook.worksheets) {
+    sheet.eachRow((row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        assertNoInternalPhotoMarker(cellValueText(cell.value), `${label} ${sheet.name}!${cell.address}`);
+      });
+    });
+  }
+}
+
+function cellValueText(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
 }
 
 function summaryValue(label) {

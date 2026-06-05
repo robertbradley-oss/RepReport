@@ -1,4 +1,5 @@
 import type { FlagItem, ReviewRow } from "../types";
+import { containsInternalPhotoMarker, isInternalPhotoMarkerLine, stripInternalNoteMarkers } from "./internalNoteMarkers";
 
 const urlRegex = /https?:\/\/[^\s]+/gi;
 const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
@@ -157,8 +158,8 @@ function parseBlock(block: string): ReviewRow {
   const parsedRating = parseRating(lines, platform);
   const ratingOrStatus = parsedRating.value;
   const reviewDateOrStatus = parseDateOrStatus(lines, ratingOrStatus);
-  const reviewText = parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus);
-  const containsPictures = /\*\*\*PHOTO\*\*\*/i.test(block) ? "Y" : "N";
+  const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus));
+  const containsPictures = containsInternalPhotoMarker(block) ? "Y" : "N";
   const containsVideo = "N";
   const verifiedFiveStar = platform === "Amazon" ? (/\bverified(?:\s+purchase)?\b/i.test(block) ? "Y" : "N") : "Y";
   const mentionStatus = parseMentionStatus(reviewText);
@@ -414,7 +415,7 @@ function parseReviewText(
     if (line === customerModelLine) return false;
     if (line === ratingOrStatus) return false;
     if (line === reviewDateOrStatus) return false;
-    if (/^\*\*\*PHOTO\*\*\*$/i.test(line)) return false;
+    if (isInternalPhotoMarkerLine(line)) return false;
     if (/^verified purchase$/i.test(line)) return false;
     return true;
   });

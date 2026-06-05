@@ -149,7 +149,7 @@ function addReadMeSheet(workbook: ExcelJS.Workbook): void {
     ["Default paste columns start at Ticket Link and omit Date, Rep, and Review Upgrade."],
     ["The column labeled Replacement sent is treated as Non-Amazon Review Text. Amazon review rows leave it blank."],
     ["All non-Amazon reviews are marked verified = Y. Amazon reviews are verified = Y only when the pasted text says Verified or Verified Purchase."],
-    ["Contains video and Contains pictures default to N unless explicitly noted; ***PHOTO*** marks Contains pictures = Y."],
+    ["Contains video and Contains pictures default to N unless an internal photo marker appears in the source notes."],
     ["Customer contact/Ticket link only includes Ticket # when an actual ticket number is present."],
     ["Customer contact/Ticket link says Review mentions name only when Robert is clearly present in the pasted review text; otherwise it says Review does not mention name."],
     ["Links are formatted blue to match the review log style; body font is Arial 10."],

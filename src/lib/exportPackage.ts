@@ -1,4 +1,5 @@
 import { REVIEW_COLUMNS, type ReviewRow } from "../types";
+import { stripInternalNoteMarkers } from "./internalNoteMarkers";
 import { calculateBonusSummary, type BonusSummary } from "./reviewParser";
 
 export type ExportCell = string | number | null;
@@ -30,7 +31,7 @@ const flagColumns = ["Source Row", "Customer", "Model", "Platform", "Flag"];
 
 export function buildReviewExportPackage(rows: ReviewRow[]): ReviewExportPackage {
   const pasteColumns = REVIEW_COLUMNS.map((column) => column.label);
-  const pasteRows = rows.map((row) => REVIEW_COLUMNS.map((column) => row[column.key]));
+  const pasteRows = rows.map((row) => REVIEW_COLUMNS.map((column) => stripInternalNoteMarkers(row[column.key])));
   const summary = calculateBonusSummary(rows);
   const flagRows = buildFlagRows(rows);
 

@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
+import { stripInternalNoteMarkers } from "../lib/internalNoteMarkers";
 import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../lib/reviewRowDisplay";
 import { getReviewLinkChipLabel, getTicketLinkChipLabel, isHttpUrl } from "../lib/reviewUrlDisplay";
@@ -106,11 +107,11 @@ function CollapsedCell({ row, columnKey }: { row: ReviewRow; columnKey: ReviewCo
   }
 
   if (columnKey === "customerContactTicketLink") {
-    return <span className="cellSummary" title={row.customerContactTicketLink}>{formatCustomerContactSummary(row)}</span>;
+    return <span className="cellSummary" title={stripInternalNoteMarkers(row.customerContactTicketLink)}>{formatCustomerContactSummary(row)}</span>;
   }
 
   if (columnKey === "replacementSent") {
-    return <span className="cellSummary mutedSummary" title={row.replacementSent}>{formatReplacementSummary(row)}</span>;
+    return <span className="cellSummary mutedSummary" title={stripInternalNoteMarkers(row.replacementSent)}>{formatReplacementSummary(row)}</span>;
   }
 
   if (columnKey === "verifiedFiveStar" || columnKey === "containsVideo" || columnKey === "containsPictures") {
@@ -170,7 +171,7 @@ function ExpandedRowEditor({
           ) : (
             <textarea
               aria-label={`${column.label} row ${rowIndex + 1}`}
-              value={row[column.key]}
+              value={getEditableCellValue(row, column.key)}
               onChange={(event) => onChange(rowIndex, column.key, event.target.value)}
               rows={getExpandedTextareaRows(row, column.key)}
             />
@@ -181,9 +182,13 @@ function ExpandedRowEditor({
   );
 }
 
+function getEditableCellValue(row: ReviewRow, key: ReviewColumnKey): string {
+  return key === "customerContactTicketLink" || key === "replacementSent" ? stripInternalNoteMarkers(row[key]) : row[key];
+}
+
 function getExpandedTextareaRows(row: ReviewRow, key: ReviewColumnKey): number {
   if (key === "customerContactTicketLink" || key === "replacementSent") {
-    return Math.max(4, row[key].split(/\r?\n/).length + 1);
+    return Math.max(4, stripInternalNoteMarkers(row[key]).split(/\r?\n/).length + 1);
   }
 
   return key === "ticketLink" || key === "reviewLink" ? 2 : 1;

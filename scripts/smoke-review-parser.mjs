@@ -193,6 +193,51 @@ assertEqual(googlePhotoRow.platform, "Google", "Google photo row should detect G
 assertEqual(googlePhotoRow.containsPictures, "Y", "***PHOTO*** should set Contains pictures? to Y for Google.");
 assertEqual(googlePhotoRow.verifiedFiveStar, "Y", "Google photo row should export verified Y.");
 assert(googlePhotoRow.replacementSent.includes("Robert walked me"), "Google photo Replacement sent should contain review text.");
+assert(!googlePhotoRow.replacementSent.includes("***PHOTO***"), "Google photo Replacement sent should not include the internal photo marker.");
+assert(!googlePhotoRow.customerContactTicketLink.includes("***PHOTO***"), "Google photo customer contact cell should not include the internal photo marker.");
+assert(!googlePhotoRow.reviewText.includes("***PHOTO***"), "Google photo review text should not include the internal photo marker.");
+
+const photoMarkerVariantRows = parseReviewNotes([
+  "Ticket #238340",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238340",
+  "https://www.google.com/maps/reviews/google-double-star-photo",
+  "6/5/26",
+  "**PHOTO**",
+  "Robert helped us finish setup, and the normal sentence can mention photos without being removed.",
+  "Nora Doublestar - RCC7",
+  "",
+  "Ticket #238341",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238341",
+  "https://www.google.com/maps/reviews/google-standalone-photo",
+  "6/5/26",
+  "PHOTO",
+  "The filter is working well after support helped with the cartridge.",
+  "Owen Standalone - WGB32B",
+].join("\n"));
+assertEqual(photoMarkerVariantRows.length, 2, "Photo marker variant fixture should parse into two rows.");
+assertEqual(photoMarkerVariantRows[0].containsPictures, "Y", "**PHOTO** should set Contains pictures? to Y.");
+assertEqual(photoMarkerVariantRows[1].containsPictures, "Y", "Standalone PHOTO marker line should set Contains pictures? to Y.");
+assert(!photoMarkerVariantRows[0].replacementSent.includes("**PHOTO**"), "**PHOTO** marker should not stay in Replacement sent.");
+assert(!photoMarkerVariantRows[1].replacementSent.split(/\r?\n/).some((line) => line.trim() === "PHOTO"), "Standalone PHOTO marker should not stay in Replacement sent.");
+assert(
+  photoMarkerVariantRows[0].replacementSent.includes("normal sentence can mention photos"),
+  "Normal review text that mentions photos should not be removed.",
+);
+
+const normalPhotoSentenceRows = parseReviewNotes([
+  "Ticket #238342",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238342",
+  "https://www.google.com/maps/reviews/google-photo-word-only",
+  "6/5/26",
+  "I sent photos to support and they helped me identify the correct replacement.",
+  "Paula Photoword - F5-75",
+].join("\n"));
+assertEqual(normalPhotoSentenceRows.length, 1, "Photo word sentence fixture should parse into one row.");
+assertEqual(normalPhotoSentenceRows[0].containsPictures, "N", "A normal sentence mentioning photos should not set Contains pictures? to Y.");
+assert(
+  normalPhotoSentenceRows[0].replacementSent.includes("I sent photos to support"),
+  "A normal sentence mentioning photos should remain in Replacement sent.",
+);
 
 const trustpilotRow = rowByTicket("100006");
 assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect Trustpilot platform.");
