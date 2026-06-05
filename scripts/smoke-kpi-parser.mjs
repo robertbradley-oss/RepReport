@@ -30,7 +30,25 @@ for (const [index, value] of [row.worstTicket1, row.worstTicket2, row.worstTicke
   assert(value.startsWith("Ticket #"), `Worst ticket ${index + 1} should start with Ticket #.`);
 }
 
-assertEqual(buildKpiTsv(row).split("\t").length, 5, "KPI TSV copy shape should contain 5 columns.");
+const kpiTsv = buildKpiTsv(row);
+const kpiTsvRecords = parseTsvRecords(kpiTsv);
+assertEqual(kpiTsvRecords.length, 1, "KPI TSV copy shape should contain exactly 1 data row.");
+assertEqual(kpiTsvRecords[0].length, 5, "KPI TSV copy shape should contain exactly 5 cells.");
+assertEqual(kpiTsvRecords[0][0], row.top3Achievements, "KPI TSV should preserve multiline achievements inside one cell.");
+assertEqual(kpiTsvRecords[0][1], row.threeBestTickets, "KPI TSV should preserve multiline best tickets inside one cell.");
+assertEqual(kpiTsvRecords[0][2], row.worstTicket1, "KPI TSV should preserve multiline worst ticket 1 inside one cell.");
+assert(kpiTsvRecords[0][0].includes("\n"), "KPI TSV parsed achievements cell should retain line breaks.");
+assert(kpiTsvRecords[0][2].includes("\n"), "KPI TSV parsed worst-ticket cell should retain line breaks.");
+
+const quotedKpiTsvRecords = parseTsvRecords(
+  buildKpiTsv({
+    ...row,
+    top3Achievements: '1. Quoted "win"\n2. Follow-up\twith tab',
+  }),
+);
+assertEqual(quotedKpiTsvRecords.length, 1, "Quoted KPI TSV should still parse as 1 data row.");
+assertEqual(quotedKpiTsvRecords[0].length, 5, "Quoted KPI TSV should still parse as 5 cells.");
+assertEqual(quotedKpiTsvRecords[0][0], '1. Quoted "win"\n2. Follow-up with tab', "KPI TSV should escape quotes and keep tabs inside a cell from becoming column separators.");
 
 console.log("smoke:kpi passed");
 
@@ -44,4 +62,51 @@ function assertEqual(actual, expected, message) {
   if (actual !== expected) {
     throw new Error(`${message}\nExpected: ${String(expected)}\nActual: ${String(actual)}`);
   }
+}
+
+function parseTsvRecords(text) {
+  const records = [];
+  let record = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (inQuotes) {
+      if (char === '"' && text[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+
+    if (char === '"' && cell === "") {
+      inQuotes = true;
+    } else if (char === "\t") {
+      record.push(cell);
+      cell = "";
+    } else if (char === "\r" || char === "\n") {
+      record.push(cell);
+      records.push(record);
+      record = [];
+      cell = "";
+      if (char === "\r" && text[index + 1] === "\n") {
+        index += 1;
+      }
+    } else {
+      cell += char;
+    }
+  }
+
+  if (text.length > 0 || cell || record.length > 0) {
+    record.push(cell);
+    records.push(record);
+  }
+
+  return records;
 }

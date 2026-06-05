@@ -72,7 +72,17 @@ export function parseKpiNotes(notes: string): KpiParseResult {
 }
 
 export function buildKpiTsv(row: KpiReportRow): string {
-  return [row.top3Achievements, row.threeBestTickets, row.worstTicket1, row.worstTicket2, row.worstTicket3].join("\t");
+  return [row.top3Achievements, row.threeBestTickets, row.worstTicket1, row.worstTicket2, row.worstTicket3].map(escapeKpiTsvCell).join("\t");
+}
+
+function escapeKpiTsvCell(value: string): string {
+  const text = String(value ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\t/g, " ");
+
+  if (/["\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  return text;
 }
 
 function detectHeading(line: string): { section: KpiSection; remainder: string } | null {
