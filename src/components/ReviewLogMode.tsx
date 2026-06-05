@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { BookOpen, ClipboardCopy, Download, FileDown, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { BookOpen, ChevronDown, ClipboardCopy, Download, FileDown, Filter, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
@@ -9,6 +9,12 @@ import { exportExcel } from "../lib/exportExcel";
 import { copyText } from "../lib/clipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
 import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_DENSITIES, type ReviewTableDensity } from "../lib/reviewTableLayout";
+import {
+  buildVisibleReviewRows,
+  formatSourceNotesSummary,
+  mergeVisibleReviewRowEdits,
+  shouldCollapseSourceNotesAfterParse,
+} from "../lib/reviewWorkspace";
 import type { ReviewRow } from "../types";
 
 export function ReviewLogMode() {
@@ -20,13 +26,20 @@ export function ReviewLogMode() {
   const [templateStatus, setTemplateStatus] = useState("");
   const [isTemplateVisible, setIsTemplateVisible] = useState(false);
   const [tableDensity, setTableDensity] = useState<ReviewTableDensity>(DEFAULT_REVIEW_TABLE_DENSITY);
+  const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
+  const visibleReviewRows = useMemo(() => buildVisibleReviewRows(rows, flaggedOnly), [rows, flaggedOnly]);
+  const visibleRows = useMemo(() => visibleReviewRows.map(({ row }) => row), [visibleReviewRows]);
+  const sourceNotesSummary = formatSourceNotesSummary(rows.length);
 
   function handleParse() {
     const parsedRows = parseReviewNotes(notes);
     setRows(parsedRows);
+    setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));
+    setFlaggedOnly(false);
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
@@ -44,6 +57,8 @@ export function ReviewLogMode() {
     setExportStatus("");
     setParseStatus("");
     setTemplateStatus("");
+    setIsSourceNotesCollapsed(false);
+    setFlaggedOnly(false);
   }
 
   function handleLoadSample() {
@@ -52,14 +67,23 @@ export function ReviewLogMode() {
     setExportStatus("");
     setTemplateStatus("");
     setParseStatus("Sample review notes loaded.");
+    setIsSourceNotesCollapsed(false);
+    setFlaggedOnly(false);
   }
 
   function handleRowsChange(nextRows: ReviewRow[]) {
     setRows(nextRows);
+    if (nextRows.length === 0) {
+      setFlaggedOnly(false);
+    }
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
     setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
+  }
+
+  function handleVisibleRowsChange(nextVisibleRows: ReviewRow[]) {
+    handleRowsChange(flaggedOnly ? mergeVisibleReviewRowEdits(rows, visibleReviewRows, nextVisibleRows) : nextVisibleRows);
   }
 
   function handleAddBlankRow() {
@@ -92,48 +116,66 @@ export function ReviewLogMode() {
   }
 
   return (
-    <section className="reviewLogGrid" aria-label="Review Log Mode">
+    <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Review Log Mode">
       <div className="inputPanel">
-        <label className="panelLabel" htmlFor="review-notes">
-          Paste Notepad Review Notes
-        </label>
-        <textarea
-          id="review-notes"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          placeholder="Paste ticket and review notes here..."
-          spellCheck={false}
-        />
-        <div className="buttonRow">
-          <button className="primaryButton" type="button" onClick={handleParse}>
-            <Sparkles size={16} aria-hidden="true" />
-            Parse Reviews
-          </button>
-          <button type="button" onClick={handleClear}>
-            <Trash2 size={16} aria-hidden="true" />
-            Clear
-          </button>
-          <button type="button" onClick={handleLoadSample}>
-            <RotateCcw size={16} aria-hidden="true" />
-            Load Sample
-          </button>
-        </div>
-        <div className="templateHelper">
-          <div className="buttonRow templateActions">
-            <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
-              <BookOpen size={16} aria-hidden="true" />
-              {isTemplateVisible ? "Hide Template" : "Show Template"}
-            </button>
-            <button type="button" onClick={handleCopyTemplate}>
-              <ClipboardCopy size={16} aria-hidden="true" />
-              Copy Template
-            </button>
+        {isSourceNotesCollapsed ? (
+          <div className="sourceNotesBar">
+            <strong>{sourceNotesSummary}</strong>
+            <div className="sourceNotesActions">
+              <button type="button" onClick={() => setIsSourceNotesCollapsed(false)}>
+                <ChevronDown size={16} aria-hidden="true" />
+                Expand
+              </button>
+              <button type="button" onClick={handleClear}>
+                <Trash2 size={16} aria-hidden="true" />
+                Clear
+              </button>
+            </div>
           </div>
-          {isTemplateVisible && <pre className="templateBlock">{reviewLogTemplate}</pre>}
-          <div className="templateStatus" aria-live="polite">
-            {templateStatus}
-          </div>
-        </div>
+        ) : (
+          <>
+            <label className="panelLabel" htmlFor="review-notes">
+              Paste Notepad Review Notes
+            </label>
+            <textarea
+              id="review-notes"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="Paste ticket and review notes here..."
+              spellCheck={false}
+            />
+            <div className="buttonRow">
+              <button className="primaryButton" type="button" onClick={handleParse}>
+                <Sparkles size={16} aria-hidden="true" />
+                Parse Reviews
+              </button>
+              <button type="button" onClick={handleClear}>
+                <Trash2 size={16} aria-hidden="true" />
+                Clear
+              </button>
+              <button type="button" onClick={handleLoadSample}>
+                <RotateCcw size={16} aria-hidden="true" />
+                Load Sample
+              </button>
+            </div>
+            <div className="templateHelper">
+              <div className="buttonRow templateActions">
+                <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
+                  <BookOpen size={16} aria-hidden="true" />
+                  {isTemplateVisible ? "Hide Template" : "Show Template"}
+                </button>
+                <button type="button" onClick={handleCopyTemplate}>
+                  <ClipboardCopy size={16} aria-hidden="true" />
+                  Copy Template
+                </button>
+              </div>
+              {isTemplateVisible && <pre className="templateBlock">{reviewLogTemplate}</pre>}
+              <div className="templateStatus" aria-live="polite">
+                {templateStatus}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="resultsPanel">
@@ -164,6 +206,15 @@ export function ReviewLogMode() {
         </div>
 
         <div className="tableToolbar" aria-label="Review table display options">
+          <button
+            className={flaggedOnly ? "filterButton active" : "filterButton"}
+            type="button"
+            aria-pressed={flaggedOnly}
+            onClick={() => setFlaggedOnly((enabled) => !enabled)}
+          >
+            <Filter size={16} aria-hidden="true" />
+            Flagged only ({flags.length})
+          </button>
           <div className="densityToggle" role="group" aria-label="Table density">
             {REVIEW_TABLE_DENSITIES.map((density) => (
               <button
@@ -178,7 +229,12 @@ export function ReviewLogMode() {
             ))}
           </div>
         </div>
-        <EditableReviewTable density={tableDensity} rows={rows} onRowsChange={handleRowsChange} />
+        <EditableReviewTable
+          density={tableDensity}
+          rows={visibleRows}
+          onRowsChange={handleVisibleRowsChange}
+          emptyMessage={flaggedOnly ? "No flagged rows." : undefined}
+        />
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>

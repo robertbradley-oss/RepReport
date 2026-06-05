@@ -7,14 +7,14 @@ export const DEFAULT_REVIEW_TABLE_DENSITY: ReviewTableDensity = "compact";
 export const REVIEW_TABLE_DENSITIES: readonly ReviewTableDensity[] = ["compact", "comfortable"];
 
 export const REVIEW_TABLE_COLUMN_WIDTHS: Record<ReviewColumnKey, number> = {
-  ticketLink: 11,
-  reviewLink: 14,
-  modelNumber: 8,
+  ticketLink: 8,
+  reviewLink: 9,
+  modelNumber: 9,
   verifiedFiveStar: 10,
   containsVideo: 6.5,
   containsPictures: 6.5,
-  customerContactTicketLink: 24,
-  replacementSent: 20,
+  customerContactTicketLink: 28,
+  replacementSent: 23,
 };
 
 export function getReviewTableColumnClassName(key: ReviewColumnKey): string {

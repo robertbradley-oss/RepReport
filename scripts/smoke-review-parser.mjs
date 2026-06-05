@@ -1,6 +1,12 @@
 import { formatFlagsForClipboard } from "../src/lib/flagClipboard.ts";
 import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_COLUMN_WIDTHS, REVIEW_TABLE_DENSITIES } from "../src/lib/reviewTableLayout.ts";
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
+import {
+  buildVisibleReviewRows,
+  formatSourceNotesSummary,
+  mergeVisibleReviewRowEdits,
+  shouldCollapseSourceNotesAfterParse,
+} from "../src/lib/reviewWorkspace.ts";
 import { REVIEW_COLUMNS } from "../src/types.ts";
 import { readFileSync } from "node:fs";
 
@@ -19,6 +25,8 @@ const reviewNotes = readFileSync(new URL("./fixtures/batch-review-notes.txt", im
 
 const rows = parseReviewNotes(reviewNotes);
 const bonusSummary = calculateBonusSummary(rows);
+const flaggedVisibleRows = buildVisibleReviewRows(rows, true);
+const allVisibleRows = buildVisibleReviewRows(rows, false);
 
 assertEqual(rows.length, 10, "Review parser should return all 10 batch fixture rows.");
 assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 145, "Batch review fixture bonus total changed.");
@@ -57,6 +65,43 @@ assert(
 );
 assertEqual(DEFAULT_REVIEW_TABLE_DENSITY, "compact", "Review Log table should default to compact density.");
 assertEqual(REVIEW_TABLE_DENSITIES.join("|"), "compact|comfortable", "Review Log table density options changed.");
+assertEqual(allVisibleRows.length, rows.length, "Unfiltered Review Log display should include every parsed row.");
+assertEqual(
+  flaggedVisibleRows.length,
+  rows.filter((row) => row.flags.length > 0).length,
+  "Flagged-only display should include only rows with flags.",
+);
+assert(flaggedVisibleRows.every(({ row }) => row.flags.length > 0), "Flagged-only display should not include unflagged rows.");
+assert(
+  flaggedVisibleRows.length > 0 && flaggedVisibleRows.length < rows.length,
+  "Batch fixture should cover both flagged and unflagged rows for filtering.",
+);
+assertEqual(shouldCollapseSourceNotesAfterParse(rows.length), true, "Source notes should collapse after a successful parse.");
+assertEqual(shouldCollapseSourceNotesAfterParse(0), false, "Source notes should stay expanded when no rows parse.");
+assertEqual(formatSourceNotesSummary(6), "Source notes - 6 parsed", "Collapsed source notes summary text changed.");
+
+const editedFlaggedRows = flaggedVisibleRows.map(({ row }, visibleIndex) =>
+  visibleIndex === 0
+    ? {
+        ...row,
+        modelNumber: "EDITED-MODEL",
+      }
+    : row,
+);
+const mergedFlaggedEdits = mergeVisibleReviewRowEdits(rows, flaggedVisibleRows, editedFlaggedRows);
+assertEqual(mergedFlaggedEdits.length, rows.length, "Editing a filtered flagged row should preserve the full parsed dataset.");
+assertEqual(
+  mergedFlaggedEdits[flaggedVisibleRows[0].sourceIndex].modelNumber,
+  "EDITED-MODEL",
+  "Editing a filtered flagged row should update the matching source row.",
+);
+const firstUnflaggedIndex = rows.findIndex((row) => row.flags.length === 0);
+assert(firstUnflaggedIndex >= 0, "Batch fixture should include an unflagged row.");
+assertEqual(
+  mergedFlaggedEdits[firstUnflaggedIndex],
+  rows[firstUnflaggedIndex],
+  "Editing a filtered flagged row should not clear or replace unfiltered rows.",
+);
 assertEqual(
   formatFlagsForClipboard([
     { rowNumber: 3, platform: "Trustpilot", message: "Model missing" },

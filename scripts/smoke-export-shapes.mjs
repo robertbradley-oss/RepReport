@@ -3,6 +3,8 @@ import { buildKpiWorkbook, buildReviewWorkbook } from "../src/lib/exportExcel.ts
 import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
 import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { getReviewLinkChipLabel, getTicketLinkChipLabel } from "../src/lib/reviewUrlDisplay.ts";
+import { buildVisibleReviewRows } from "../src/lib/reviewWorkspace.ts";
 import { kpiNotesTemplate, reviewLogTemplate } from "../src/sampleData.ts";
 import { KPI_COLUMNS, REVIEW_COLUMNS } from "../src/types.ts";
 import { readFileSync } from "node:fs";
@@ -11,6 +13,7 @@ const reviewRows = parseReviewNotes(reviewLogTemplate);
 const batchReviewRows = parseReviewNotes(readFileSync(new URL("./fixtures/batch-review-notes.txt", import.meta.url), "utf8"));
 const { row: kpiRow } = parseKpiNotes(kpiNotesTemplate);
 const batchReviewPackage = buildReviewExportPackage(batchReviewRows);
+const flaggedDisplayRows = buildVisibleReviewRows(batchReviewRows, true);
 
 const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
@@ -30,6 +33,19 @@ assertEqual(
   "Review export package Paste Rows columns should match the 8 default columns.",
 );
 assertEqual(batchReviewPackage.pasteRows.rowCount, batchReviewRows.length, "Paste Rows package row count should match parsed reviews.");
+assert(
+  flaggedDisplayRows.length > 0 && flaggedDisplayRows.length < batchReviewRows.length,
+  "Batch fixture should include enough rows to prove flagged-only display is not the export source.",
+);
+assertEqual(
+  batchReviewPackage.pasteRows.rowCount,
+  batchReviewRows.length,
+  "Review export package should keep the full parsed dataset even when flagged-only display rows exist.",
+);
+assert(
+  batchReviewPackage.pasteRows.rowCount !== flaggedDisplayRows.length,
+  "Review export package should not shrink to the flagged-only display row count.",
+);
 assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review TSV should come from the same export package dataset.");
 assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
 assert(!batchReviewPackage.pasteRows.tsv.startsWith("Ticket Link"), "Primary Paste Rows TSV should be body-only for review-log paste.");
@@ -40,6 +56,20 @@ const packageTsvRecordsWithHeader = parseTsvRecords(batchReviewPackage.pasteRows
 assertEqual(packageTsvRecords.length, batchReviewRows.length, "Paste Rows TSV row count should match parsed review count.");
 assertEqual(packageTsvRecordsWithHeader.length, batchReviewRows.length + 1, "Paste Rows TSV with header should add exactly one header row.");
 assertEqual(packageTsvRecords[0].length, 8, "Paste Rows TSV records should keep exactly 8 cells.");
+assertEqual(getTicketLinkChipLabel(batchReviewRows[0]), "Ticket #100001", "Ticket Link display chip should use a compact ticket label.");
+assertEqual(getReviewLinkChipLabel(batchReviewRows[0]), "Open Review", "Review Link display chip should use a compact review label.");
+assertEqual(
+  batchReviewPackage.pasteRows.rows[0][0],
+  batchReviewRows[0].ticketLink,
+  "Ticket Link export should keep the full original URL, not the display chip label.",
+);
+assertEqual(
+  batchReviewPackage.pasteRows.rows[0][1],
+  batchReviewRows[0].reviewLink,
+  "Review Link export should keep the full original URL, not the display chip label.",
+);
+assert(batchReviewPackage.pasteRows.rows[0][0].startsWith("https://"), "Ticket Link export should still be a full URL.");
+assert(batchReviewPackage.pasteRows.rows[0][1].startsWith("https://"), "Review Link export should still be a full URL.");
 assertEqual(
   packageTsvRecords[0][6],
   batchReviewRows[0].customerContactTicketLink,

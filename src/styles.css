@@ -143,6 +143,10 @@ button:disabled {
   grid-template-columns: minmax(320px, 0.8fr) minmax(560px, 1.4fr);
 }
 
+.reviewLogGrid.sourceNotesCollapsed {
+  grid-template-columns: minmax(210px, 0.28fr) minmax(720px, 1.72fr);
+}
+
 .inputPanel,
 .resultsPanel {
   background: #ffffff;
@@ -150,6 +154,34 @@ button:disabled {
   border-radius: 8px;
   min-width: 0;
   padding: 14px;
+}
+
+.sourceNotesCollapsed .inputPanel {
+  align-self: start;
+  padding: 10px;
+}
+
+.sourceNotesBar {
+  display: grid;
+  gap: 10px;
+}
+
+.sourceNotesBar strong {
+  color: #263442;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.sourceNotesActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sourceNotesActions button {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 86px;
 }
 
 .panelLabel {
@@ -268,8 +300,15 @@ button:disabled {
 .tableToolbar {
   align-items: center;
   display: flex;
-  justify-content: flex-end;
+  gap: 8px;
+  justify-content: space-between;
   margin: 0 0 8px;
+}
+
+.filterButton.active {
+  background: #eaf6ee;
+  border-color: #1d6f42;
+  color: #1d6f42;
 }
 
 .densityToggle {
@@ -308,7 +347,7 @@ button:disabled {
 }
 
 .reviewTable {
-  min-width: 1180px;
+  min-width: 1040px;
   table-layout: fixed;
 }
 
@@ -363,6 +402,58 @@ button:disabled {
 .reviewTable textarea:focus {
   border-color: #60758a;
   outline: none;
+}
+
+.flaggedRow td {
+  background: #fffdf2;
+}
+
+.urlCell {
+  display: grid;
+  gap: 6px;
+}
+
+.urlChip,
+.missingLinkChip {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 5px 8px;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.urlChip {
+  background: #eaf3ff;
+  border: 1px solid #b7cbe3;
+  color: #1155cc;
+}
+
+.urlChip:hover {
+  border-color: #1155cc;
+}
+
+.missingLinkChip {
+  background: #fff4d6;
+  border: 1px solid #d8a72d;
+  color: #72520f;
+}
+
+.urlEditDetails summary {
+  color: #4f6070;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.urlEditDetails textarea {
+  margin-top: 5px;
 }
 
 .kpiTable textarea {
@@ -453,6 +544,7 @@ button:disabled {
 
 @media (max-width: 980px) {
   .reviewLogGrid,
+  .reviewLogGrid.sourceNotesCollapsed,
   .kpiGrid {
     grid-template-columns: 1fr;
   }
