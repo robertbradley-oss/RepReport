@@ -265,6 +265,35 @@ button:disabled {
   line-height: 1.35;
 }
 
+.tableToolbar {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 8px;
+}
+
+.densityToggle {
+  background: #eef2f5;
+  border: 1px solid #cfd6dd;
+  border-radius: 6px;
+  display: inline-flex;
+  padding: 2px;
+}
+
+.densityToggle button {
+  border-color: transparent;
+  border-radius: 4px;
+  font-size: 12px;
+  min-height: 28px;
+  padding: 4px 8px;
+}
+
+.densityToggle button.active {
+  background: #ffffff;
+  border-color: #b8c2cc;
+  color: #1d6f42;
+}
+
 .tableWrap {
   border: 1px solid #cfd6dd;
   border-radius: 6px;
@@ -294,6 +323,12 @@ button:disabled {
   vertical-align: top;
 }
 
+.reviewTable.compactTable th,
+.reviewTable.compactTable td {
+  font-size: 12px;
+  padding: 4px 5px;
+}
+
 .reviewTable th,
 .flagsPanel th {
   background: #f7f8fa;
@@ -313,6 +348,16 @@ button:disabled {
   padding: 7px;
   resize: vertical;
   width: 100%;
+}
+
+.reviewTable.compactTable textarea {
+  line-height: 1.25;
+  padding: 4px;
+}
+
+.reviewTable.comfortableTable textarea {
+  line-height: 1.35;
+  padding: 7px;
 }
 
 .reviewTable textarea:focus {

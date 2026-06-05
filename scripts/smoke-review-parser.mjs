@@ -1,5 +1,5 @@
 import { formatFlagsForClipboard } from "../src/lib/flagClipboard.ts";
-import { REVIEW_TABLE_COLUMN_WIDTHS } from "../src/lib/reviewTableLayout.ts";
+import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_COLUMN_WIDTHS, REVIEW_TABLE_DENSITIES } from "../src/lib/reviewTableLayout.ts";
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { REVIEW_COLUMNS } from "../src/types.ts";
 import { readFileSync } from "node:fs";
@@ -55,6 +55,8 @@ assert(
   REVIEW_TABLE_COLUMN_WIDTHS.containsVideo <= 6.5 && REVIEW_TABLE_COLUMN_WIDTHS.containsPictures <= 6.5,
   "Review Log table should keep photo/video columns narrow.",
 );
+assertEqual(DEFAULT_REVIEW_TABLE_DENSITY, "compact", "Review Log table should default to compact density.");
+assertEqual(REVIEW_TABLE_DENSITIES.join("|"), "compact|comfortable", "Review Log table density options changed.");
 assertEqual(
   formatFlagsForClipboard([
     { rowNumber: 3, platform: "Trustpilot", message: "Model missing" },

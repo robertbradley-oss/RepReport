@@ -1,5 +1,11 @@
 import type { ReviewColumnKey } from "../types";
 
+export type ReviewTableDensity = "compact" | "comfortable";
+
+export const DEFAULT_REVIEW_TABLE_DENSITY: ReviewTableDensity = "compact";
+
+export const REVIEW_TABLE_DENSITIES: readonly ReviewTableDensity[] = ["compact", "comfortable"];
+
 export const REVIEW_TABLE_COLUMN_WIDTHS: Record<ReviewColumnKey, number> = {
   ticketLink: 11,
   reviewLink: 14,

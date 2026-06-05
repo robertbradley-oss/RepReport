@@ -1,12 +1,13 @@
 import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
-import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName } from "../lib/reviewTableLayout";
+import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName, type ReviewTableDensity } from "../lib/reviewTableLayout";
 
 type EditableReviewTableProps = {
+  density: ReviewTableDensity;
   rows: ReviewRow[];
   onRowsChange: (rows: ReviewRow[]) => void;
 };
 
-export function EditableReviewTable({ rows, onRowsChange }: EditableReviewTableProps) {
+export function EditableReviewTable({ density, rows, onRowsChange }: EditableReviewTableProps) {
   function updateCell(rowIndex: number, key: ReviewColumnKey, value: string) {
     onRowsChange(
       rows.map((row, index) =>
@@ -26,7 +27,7 @@ export function EditableReviewTable({ rows, onRowsChange }: EditableReviewTableP
 
   return (
     <div className="tableWrap">
-      <table className="reviewTable">
+      <table className={`reviewTable ${density}Table`}>
         <colgroup>
           {REVIEW_COLUMNS.map((column) => (
             <col

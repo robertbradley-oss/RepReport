@@ -8,6 +8,7 @@ import { downloadCsv, buildTsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
 import { copyText } from "../lib/clipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
+import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_DENSITIES, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import type { ReviewRow } from "../types";
 
 export function ReviewLogMode() {
@@ -18,6 +19,7 @@ export function ReviewLogMode() {
   const [parseStatus, setParseStatus] = useState("");
   const [templateStatus, setTemplateStatus] = useState("");
   const [isTemplateVisible, setIsTemplateVisible] = useState(false);
+  const [tableDensity, setTableDensity] = useState<ReviewTableDensity>(DEFAULT_REVIEW_TABLE_DENSITY);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -161,7 +163,22 @@ export function ReviewLogMode() {
           </div>
         </div>
 
-        <EditableReviewTable rows={rows} onRowsChange={handleRowsChange} />
+        <div className="tableToolbar" aria-label="Review table display options">
+          <div className="densityToggle" role="group" aria-label="Table density">
+            {REVIEW_TABLE_DENSITIES.map((density) => (
+              <button
+                key={density}
+                className={tableDensity === density ? "active" : ""}
+                type="button"
+                aria-pressed={tableDensity === density}
+                onClick={() => setTableDensity(density)}
+              >
+                {density === "compact" ? "Compact" : "Comfortable"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <EditableReviewTable density={tableDensity} rows={rows} onRowsChange={handleRowsChange} />
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
