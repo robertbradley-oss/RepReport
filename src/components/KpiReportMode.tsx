@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { ClipboardCopy, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, FileDown, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { sampleKpiNotes } from "../sampleData";
+import { downloadKpiCsv } from "../lib/exportCsv";
+import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
 
@@ -9,12 +11,14 @@ export function KpiReportMode() {
   const [row, setRow] = useState<KpiReportRow>(createBlankKpiRow());
   const [issues, setIssues] = useState<string[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
+  const [exportStatus, setExportStatus] = useState("");
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
     setRow(result.row);
     setIssues(result.issues);
     setCopyStatus("");
+    setExportStatus("");
   }
 
   function handleClear() {
@@ -22,11 +26,13 @@ export function KpiReportMode() {
     setRow(createBlankKpiRow());
     setIssues([]);
     setCopyStatus("");
+    setExportStatus("");
   }
 
   function handleLoadSample() {
     setNotes(sampleKpiNotes);
     setCopyStatus("");
+    setExportStatus("");
   }
 
   function updateCell(key: KpiColumnKey, value: string) {
@@ -36,6 +42,17 @@ export function KpiReportMode() {
   async function handleCopyRow() {
     const copied = await copyText(buildKpiTsv(row));
     setCopyStatus(copied ? "Copied 1 KPI row." : "Copy failed. Select the KPI row cells and copy manually.");
+  }
+
+  async function handleExportExcel() {
+    setExportStatus("Building KPI Excel file...");
+    await exportKpiExcel(row);
+    setExportStatus("KPI Excel export downloaded.");
+  }
+
+  function handleDownloadCsv() {
+    downloadKpiCsv(row);
+    setExportStatus("KPI CSV export downloaded.");
   }
 
   return (
@@ -81,6 +98,14 @@ export function KpiReportMode() {
               <ClipboardCopy size={16} aria-hidden="true" />
               Copy KPI Row
             </button>
+            <button type="button" onClick={handleDownloadCsv} disabled={isKpiRowEmpty(row)}>
+              <Download size={16} aria-hidden="true" />
+              Download KPI CSV
+            </button>
+            <button type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
+              <FileDown size={16} aria-hidden="true" />
+              Export KPI Excel
+            </button>
           </div>
         </div>
 
@@ -111,7 +136,7 @@ export function KpiReportMode() {
         </div>
 
         <div className="statusLine" aria-live="polite">
-          {copyStatus}
+          {[copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
 
         {issues.length > 0 && (

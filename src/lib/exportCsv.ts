@@ -1,4 +1,4 @@
-import { REVIEW_COLUMNS, type ReviewRow } from "../types";
+import { KPI_COLUMNS, REVIEW_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
 
 export function buildTsv(rows: ReviewRow[], includeHeader = false): string {
   const lines = rows.map((row) => REVIEW_COLUMNS.map((column) => escapeTsv(row[column.key])).join("\t"));
@@ -17,6 +17,13 @@ export function downloadCsv(rows: ReviewRow[]): void {
     .join("\n");
 
   downloadTextFile([header, body].filter(Boolean).join("\n"), "repreport-review-rows.csv", "text/csv;charset=utf-8");
+}
+
+export function downloadKpiCsv(row: KpiReportRow): void {
+  const header = KPI_COLUMNS.map((column) => escapeCsv(column.label)).join(",");
+  const body = KPI_COLUMNS.map((column) => escapeCsv(row[column.key])).join(",");
+
+  downloadTextFile([header, body].join("\n"), "repreport-kpi-report.csv", "text/csv;charset=utf-8");
 }
 
 function sanitizeForTsv(value: string): string {

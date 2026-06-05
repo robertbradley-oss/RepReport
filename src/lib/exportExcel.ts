@@ -1,9 +1,10 @@
 import ExcelJS from "exceljs";
-import { REVIEW_COLUMNS, type ReviewRow } from "../types";
+import { KPI_COLUMNS, REVIEW_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
 
 const fontName = "Arial";
 const fontSize = 10;
 const whiteFill = "FFFFFFFF";
+const headerFill = "FFD9D9D9";
 const yellowFill = "FFFFFF00";
 const grayBorder = "FFD9D9D9";
 const linkBlue = "FF1155CC";
@@ -35,6 +36,22 @@ export async function exportExcel(rows: ReviewRow[]): Promise<void> {
   anchor.download = "repreport-review-log.xlsx";
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+export async function exportKpiExcel(row: KpiReportRow): Promise<void> {
+  const workbook = buildKpiWorkbook(row);
+  await downloadWorkbook(workbook, "repreport-kpi-report.xlsx");
+}
+
+export function buildKpiWorkbook(row: KpiReportRow): ExcelJS.Workbook {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "RepReport";
+  workbook.created = new Date();
+
+  addKpiReportSheet(workbook, row);
+  addKpiReadMeSheet(workbook);
+
+  return workbook;
 }
 
 function addPasteRowsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
@@ -84,6 +101,35 @@ function addPasteRowsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void 
       }
     });
   });
+}
+
+function addKpiReportSheet(workbook: ExcelJS.Workbook, row: KpiReportRow): void {
+  const sheet = workbook.addWorksheet("KPI Report");
+  const widths = [58, 18, 28, 28, 28];
+
+  sheet.columns = widths.map((width) => ({ width }));
+  sheet.addRow(KPI_COLUMNS.map((column) => column.label));
+  sheet.addRow(KPI_COLUMNS.map((column) => row[column.key]));
+  setColumnWidths(sheet, widths);
+  styleWorksheet(sheet);
+  styleHeaderRow(sheet.getRow(1), true);
+  sheet.getRow(1).height = 32;
+  sheet.getRow(2).height = 116;
+  sheet.views = [{ state: "frozen", ySplit: 1 }];
+}
+
+function addKpiReadMeSheet(workbook: ExcelJS.Workbook): void {
+  const sheet = workbook.addWorksheet("Read Me");
+  sheet.addRows([
+    ["RepReport KPI Export Notes"],
+    ["The KPI Report sheet contains one spreadsheet-ready row with five KPI columns."],
+    ["Top3Achievements, 3BestTickets, and each worst-ticket cell preserve line breaks where Excel supports wrapped text."],
+    ["Formatting is intentionally plain: Arial 10, black text, white rows, gray grid borders, and wrapped cells."],
+  ]);
+  sheet.columns = [{ width: 110 }];
+  setColumnWidths(sheet, [110]);
+  styleWorksheet(sheet);
+  sheet.getRow(1).font = boldFont();
 }
 
 function addSummarySheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
@@ -150,9 +196,15 @@ function setColumnWidths(sheet: ExcelJS.Worksheet, widths: number[]): void {
   });
 }
 
-function styleHeaderRow(row: ExcelJS.Row): void {
+function styleHeaderRow(row: ExcelJS.Row, useHeaderFill = false): void {
   row.font = boldFont();
   row.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+
+  if (useHeaderFill) {
+    row.eachCell((cell) => {
+      cell.fill = solidFill(headerFill);
+    });
+  }
 }
 
 function buildSummaryRows(rows: ReviewRow[]): Array<Array<string | number | null>> {
@@ -202,4 +254,17 @@ function linkFont(): Partial<ExcelJS.Font> {
 
 function solidFill(argb: string): ExcelJS.Fill {
   return { type: "pattern", pattern: "solid", fgColor: { argb } };
+}
+
+async function downloadWorkbook(workbook: ExcelJS.Workbook, fileName: string): Promise<void> {
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
