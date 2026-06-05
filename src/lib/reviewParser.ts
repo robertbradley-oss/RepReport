@@ -214,6 +214,15 @@ function parseCustomerModel(lines: string[]): { customerName: string; modelNumbe
         line,
       };
     }
+
+    const missingModelMatch = line.match(/^(.+?)\s+-\s*$/);
+    if (missingModelMatch) {
+      return {
+        customerName: missingModelMatch[1].trim(),
+        modelNumber: "",
+        line,
+      };
+    }
   }
 
   return undefined;
