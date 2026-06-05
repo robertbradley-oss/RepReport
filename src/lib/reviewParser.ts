@@ -25,6 +25,8 @@ const flagMessages = {
   googleRatingNeedsReview: "Google rating/status needs review",
   mentionUnclear: "Mention status unclear",
   bonusRuleUnclear: "Bonus rule unclear",
+  malformedUrl: "Malformed URL",
+  invalidTicketUrl: "Invalid ticket URL",
 };
 
 const defaultGoogleRating = "5 out of 5 stars";
@@ -160,9 +162,11 @@ function parseBlock(block: string): ReviewRow {
 
   const flags: string[] = [];
   const allUrls = [...block.matchAll(urlRegex)].map((match) => stripTrailingPunctuation(match[0]));
+  const hasMalformedUrl = lines.some(hasMalformedUrlText);
   const ticketNumber = parseTicketNumber(lines);
   const ticketLink = allUrls.find(isSupportTicketUrl) ?? "";
   const supportTicketId = ticketLink ? parseSupportTicketId(ticketLink) : undefined;
+  const hasInvalidTicketUrl = Boolean(ticketLink && isInvalidTicketUrl(ticketLink, supportTicketId));
   const reviewLink = allUrls.find((url) => !isSupportTicketUrl(url)) ?? "";
   const platform = reviewLink ? detectPlatform(reviewLink) : "Unknown";
   const customerModel = parseCustomerModel(lines);
@@ -175,16 +179,21 @@ function parseBlock(block: string): ReviewRow {
   const verifiedFiveStar = platform === "Amazon" ? (/\bverified(?:\s+purchase)?\b/i.test(block) ? "Y" : "N") : "Y";
   const mentionStatus = parseMentionStatus(reviewText);
 
-  if (platform === "Unknown") flags.push(flagMessages.platform);
-  if (platform !== "Unknown" && !bonusRulePlatforms.has(platform)) flags.push(flagMessages.bonusRuleUnclear);
-  if (!reviewLink) flags.push(flagMessages.reviewLinkMissing);
-  if (ticketNumber && supportTicketId && ticketNumber !== supportTicketId) flags.push(flagMessages.ticketMismatch);
-  if (!customerModel) flags.push(flagMessages.customerModel);
-  if (customerModel && !customerModel.modelNumber) flags.push(flagMessages.modelMissing);
-  if (parsedRating.needsReview) flags.push(flagMessages.googleRatingNeedsReview);
-  if (!ratingOrStatus) flags.push(flagMessages.ratingUnclear);
-  if (!mentionStatus) flags.push(flagMessages.mentionUnclear);
-  if (platform !== "Amazon" && platform !== "Unknown" && !reviewText) flags.push(flagMessages.nonAmazonTextMissing);
+  flags.push(
+    ...buildReviewFlags({
+      platform,
+      reviewLink,
+      ticketNumber,
+      supportTicketId,
+      customerModel,
+      parsedRating,
+      ratingOrStatus,
+      mentionStatus,
+      reviewText,
+      hasMalformedUrl,
+      hasInvalidTicketUrl,
+    }),
+  );
 
   const customerContactTicketLink = buildCustomerContactCell({
     ticketNumber,
@@ -214,6 +223,43 @@ function parseBlock(block: string): ReviewRow {
   };
 }
 
+function buildReviewFlags(parts: {
+  platform: string;
+  reviewLink: string;
+  ticketNumber?: string;
+  supportTicketId?: string;
+  customerModel: { customerName: string; modelNumber: string; line: string } | undefined;
+  parsedRating: { value: string; needsReview: boolean };
+  ratingOrStatus: string;
+  mentionStatus: string;
+  reviewText: string;
+  hasMalformedUrl: boolean;
+  hasInvalidTicketUrl: boolean;
+}): string[] {
+  const flags: string[] = [];
+
+  if (parts.hasMalformedUrl) flags.push(flagMessages.malformedUrl);
+  if (parts.hasInvalidTicketUrl) flags.push(flagMessages.invalidTicketUrl);
+  if (parts.platform === "Unknown") flags.push(flagMessages.platform);
+  if (parts.platform !== "Unknown" && !bonusRulePlatforms.has(parts.platform)) flags.push(flagMessages.bonusRuleUnclear);
+  if (!parts.reviewLink) flags.push(flagMessages.reviewLinkMissing);
+  if (parts.ticketNumber && parts.supportTicketId && parts.ticketNumber !== parts.supportTicketId) flags.push(flagMessages.ticketMismatch);
+  if (!parts.customerModel) flags.push(flagMessages.customerModel);
+  if (parts.customerModel && !parts.customerModel.modelNumber) flags.push(flagMessages.modelMissing);
+  if (parts.parsedRating.needsReview) flags.push(flagMessages.googleRatingNeedsReview);
+  if (shouldFlagRatingUnclear(parts.platform, parts.reviewLink, parts.ratingOrStatus)) flags.push(flagMessages.ratingUnclear);
+  if (!parts.mentionStatus) flags.push(flagMessages.mentionUnclear);
+  if (parts.platform !== "Amazon" && parts.platform !== "Unknown" && !parts.reviewText) flags.push(flagMessages.nonAmazonTextMissing);
+
+  return flags;
+}
+
+function shouldFlagRatingUnclear(platform: string, reviewLink: string, ratingOrStatus: string): boolean {
+  if (ratingOrStatus) return false;
+  if (!reviewLink || platform === "Unknown") return false;
+  return true;
+}
+
 function parseTicketNumber(lines: string[]): string | undefined {
   for (const line of lines) {
     const match = line.match(ticketLineRegex);
@@ -226,6 +272,15 @@ function parseTicketNumber(lines: string[]): string | undefined {
 function parseSupportTicketId(url: string): string | undefined {
   const match = url.match(supportTicketIdRegex);
   return match?.[1] ?? match?.[2] ?? match?.[3];
+}
+
+function hasMalformedUrlText(line: string): boolean {
+  return /^https?:\/(?!\/)/i.test(line) || /^www\.[^\s]+\.[^\s]+/i.test(line);
+}
+
+function isInvalidTicketUrl(url: string, supportTicketId: string | undefined): boolean {
+  if (supportTicketId) return false;
+  return /[?&]id=|tickets?\.php|\/tickets?(?:[/?#]|$)/i.test(url);
 }
 
 function isSupportTicketUrl(url: string): boolean {

@@ -159,6 +159,7 @@ assertEqual(googleRow.verifiedFiveStar, "Y", "Google row should export verified 
 assertEqual(googleRow.ratingOrStatus, "5 out of 5 stars", "Google row without rating should default to 5 out of 5 stars.");
 assertEqual(googleRow.containsPictures, "N", "Google row without ***PHOTO*** should not mark pictures.");
 assert(googleRow.replacementSent.includes("Great customer service"), "Google Replacement sent should contain the review text.");
+assertFlags(googleRow, [], "Clean Google row should not generate manual review flags.");
 assertEqual(
   formatCustomerContactSummary(googleRow),
   "Ticket #100004 - Dylan Google - Google - 6/1/26",
@@ -200,11 +201,13 @@ assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect 
 assertEqual(trustpilotRow.verifiedFiveStar, "Y", "Trustpilot row should export verified Y.");
 assertEqual(trustpilotRow.containsPictures, "N", "Trustpilot row without ***PHOTO*** should not mark pictures.");
 assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Replacement sent should contain the review text.");
+assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate manual review flags.");
 
 const costcoRow = rowByTicket("100007");
 assertEqual(costcoRow.platform, "Costco", "Costco row should detect Costco platform.");
 assertEqual(costcoRow.verifiedFiveStar, "Y", "Costco row should export verified Y.");
 assert(costcoRow.replacementSent.includes("Good product"), "Costco Replacement sent should contain the review text.");
+assertFlags(costcoRow, [], "Clean Costco row should not generate manual review flags.");
 
 const noTicketRow = rows.find((row) => row.customerName === "Henry Noticket");
 assert(noTicketRow, "No-ticket review should parse into a row.");
@@ -234,6 +237,10 @@ assertEqual(missingLinkRow.platform, "Unknown", "Missing review link row should 
 assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should export a blank review link.");
 assert(missingLinkRow.flags.includes("Platform unclear"), "Missing review link row should flag unclear platform.");
 assert(missingLinkRow.flags.includes("Review link missing"), "Missing review link row should flag missing review link.");
+assert(
+  !missingLinkRow.flags.includes("Rating unclear"),
+  "Missing review link row should not add cascading rating noise when the review link is already missing.",
+);
 
 const unknownPlatformRows = parseReviewNotes([
   "Ticket #100012",
@@ -273,6 +280,7 @@ assert(
   !homeDepotBonusRows[0].flags.includes("Bonus rule unclear"),
   "Home Depot reviews should not flag unclear bonus after the confirmed rule.",
 );
+assertFlags(homeDepotBonusRows[0], [], "Clean Home Depot row should not generate manual review flags.");
 
 const lowesBonusRows = parseReviewNotes([
   "Ticket #100013",
@@ -289,6 +297,54 @@ assertEqual(calculateBonus(lowesBonusRows[0]), 25, "Lowe's reviews should use th
 assert(
   !lowesBonusRows[0].flags.includes("Bonus rule unclear"),
   "Lowe's reviews should not flag unclear bonus after the confirmed rule.",
+);
+assertFlags(lowesBonusRows[0], [], "Clean Lowe's row should not generate manual review flags.");
+
+const ticketMismatchRows = parseReviewNotes([
+  "Ticket #238336",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238337",
+  "https://www.google.com/maps/reviews/google-mismatch",
+  "6/5/26",
+  "Support helped us finish setup quickly.",
+  "Connor Zitzmann - RCC7",
+].join("\n"));
+assertEqual(ticketMismatchRows.length, 1, "Ticket mismatch fixture should parse into one row.");
+assert(
+  ticketMismatchRows[0].flags.includes("Ticket number and support URL ID do not match"),
+  "Ticket number/support URL mismatch should still generate a manual review flag.",
+);
+
+const malformedUrlRows = parseReviewNotes([
+  "Ticket #238338",
+  "https:/support.ispringfilter.com/scp/tickets.php?id=238338",
+  "https://www.google.com/maps/reviews/google-malformed-ticket",
+  "6/5/26",
+  "Robert helped with the setup.",
+  "Maya Malformed - RCC7",
+].join("\n"));
+assertEqual(malformedUrlRows.length, 1, "Malformed URL fixture should parse into one row.");
+assert(malformedUrlRows[0].flags.includes("Malformed URL"), "Malformed URL should generate a manual review flag.");
+
+const actualIssueRows = [
+  googleRow,
+  trustpilotRow,
+  homeDepotBonusRows[0],
+  lowesBonusRows[0],
+  missingModelRow,
+  missingLinkRow,
+  unknownPlatformRows[0],
+  ticketMismatchRows[0],
+];
+const actualIssueVisibleRows = buildVisibleReviewRows(actualIssueRows, true);
+assertEqual(actualIssueVisibleRows.length, 4, "Flagged only should include only rows with actual manual-review issues.");
+assert(
+  actualIssueVisibleRows.every(({ row }) => row.flags.length > 0),
+  "Flagged only should not include clean Review Log rows.",
+);
+assertEqual(
+  actualIssueVisibleRows.map(({ row }) => row.customerName ?? row.ticketNumber ?? row.platform).join("|"),
+  "Ivy Missingmodel|Jared Missinglink|Uma Unknown|Connor Zitzmann",
+  "Flagged only should identify the expected issue rows.",
 );
 
 console.log("smoke:review passed");
@@ -313,4 +369,8 @@ function assertEqual(actual, expected, message) {
   if (actual !== expected) {
     throw new Error(`${message}\nExpected: ${String(expected)}\nActual: ${String(actual)}`);
   }
+}
+
+function assertFlags(row, expectedFlags, message) {
+  assertEqual(row.flags.join("|"), expectedFlags.join("|"), message);
 }
