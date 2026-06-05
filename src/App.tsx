@@ -1,7 +1,13 @@
 import { FileSpreadsheet, TableProperties } from "lucide-react";
+import { useState } from "react";
+import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
 
+type AppMode = "reviewLog" | "kpiReport";
+
 export default function App() {
+  const [activeMode, setActiveMode] = useState<AppMode>("reviewLog");
+
   return (
     <main className="appShell">
       <header className="appHeader">
@@ -15,17 +21,27 @@ export default function App() {
       </header>
 
       <nav className="modeTabs" aria-label="RepReport modes">
-        <button className="modeTab active" type="button">
+        <button
+          className={`modeTab ${activeMode === "reviewLog" ? "active" : ""}`}
+          type="button"
+          onClick={() => setActiveMode("reviewLog")}
+          aria-pressed={activeMode === "reviewLog"}
+        >
           <TableProperties size={16} aria-hidden="true" />
           Review Log
         </button>
-        <button className="modeTab" type="button" disabled>
+        <button
+          className={`modeTab ${activeMode === "kpiReport" ? "active" : ""}`}
+          type="button"
+          onClick={() => setActiveMode("kpiReport")}
+          aria-pressed={activeMode === "kpiReport"}
+        >
           <FileSpreadsheet size={16} aria-hidden="true" />
           KPI Report
         </button>
       </nav>
 
-      <ReviewLogMode />
+      {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode />}
     </main>
   );
 }

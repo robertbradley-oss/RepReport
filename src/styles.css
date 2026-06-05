@@ -135,7 +135,8 @@ button:disabled {
   color: #1d6f42;
 }
 
-.reviewLogGrid {
+.reviewLogGrid,
+.kpiGrid {
   display: grid;
   gap: 14px;
   grid-template-columns: minmax(320px, 0.8fr) minmax(560px, 1.4fr);
@@ -155,6 +156,19 @@ button:disabled {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 8px;
+}
+
+.helperText {
+  color: #5b6773;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.panelTitle {
+  font-size: 17px;
+  letter-spacing: 0;
+  margin: 0 0 4px;
 }
 
 .inputPanel textarea {
@@ -258,6 +272,10 @@ button:disabled {
   min-width: 240px;
 }
 
+.kpiTable textarea {
+  min-width: 230px;
+}
+
 .emptyState {
   align-items: center;
   border: 1px dashed #b8c2cc;
@@ -289,8 +307,15 @@ button:disabled {
   margin: 0;
 }
 
+.kpiIssues ul {
+  color: #5b6773;
+  margin: 0;
+  padding-left: 20px;
+}
+
 @media (max-width: 980px) {
-  .reviewLogGrid {
+  .reviewLogGrid,
+  .kpiGrid {
     grid-template-columns: 1fr;
   }
 

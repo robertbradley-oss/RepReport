@@ -36,3 +36,21 @@ export const REVIEW_COLUMNS = [
 ] as const;
 
 export type ReviewColumnKey = (typeof REVIEW_COLUMNS)[number]["key"];
+
+export type KpiReportRow = {
+  top3Achievements: string;
+  threeBestTickets: string;
+  worstTicket1: string;
+  worstTicket2: string;
+  worstTicket3: string;
+};
+
+export const KPI_COLUMNS = [
+  { key: "top3Achievements", label: "Top3Achievements" },
+  { key: "threeBestTickets", label: "3BestTickets" },
+  { key: "worstTicket1", label: "#1 of 3WorstTickets" },
+  { key: "worstTicket2", label: "#2 of 3WorstTickets" },
+  { key: "worstTicket3", label: "#3 of 3WorstTickets" },
+] as const;
+
+export type KpiColumnKey = (typeof KPI_COLUMNS)[number]["key"];
