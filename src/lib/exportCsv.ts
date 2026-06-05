@@ -11,19 +11,27 @@ export function buildTsv(rows: ReviewRow[], includeHeader = false): string {
 }
 
 export function downloadCsv(rows: ReviewRow[]): void {
+  downloadTextFile(buildCsv(rows), "repreport-review-rows.csv", "text/csv;charset=utf-8");
+}
+
+export function downloadKpiCsv(row: KpiReportRow): void {
+  downloadTextFile(buildKpiCsv(row), "repreport-kpi-report.csv", "text/csv;charset=utf-8");
+}
+
+export function buildCsv(rows: ReviewRow[]): string {
   const header = REVIEW_COLUMNS.map((column) => escapeCsv(column.label)).join(",");
   const body = rows
     .map((row) => REVIEW_COLUMNS.map((column) => escapeCsv(row[column.key])).join(","))
     .join("\n");
 
-  downloadTextFile([header, body].filter(Boolean).join("\n"), "repreport-review-rows.csv", "text/csv;charset=utf-8");
+  return [header, body].filter(Boolean).join("\n");
 }
 
-export function downloadKpiCsv(row: KpiReportRow): void {
+export function buildKpiCsv(row: KpiReportRow): string {
   const header = KPI_COLUMNS.map((column) => escapeCsv(column.label)).join(",");
   const body = KPI_COLUMNS.map((column) => escapeCsv(row[column.key])).join(",");
 
-  downloadTextFile([header, body].join("\n"), "repreport-kpi-report.csv", "text/csv;charset=utf-8");
+  return [header, body].join("\n");
 }
 
 function sanitizeForTsv(value: string): string {

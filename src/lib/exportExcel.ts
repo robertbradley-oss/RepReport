@@ -17,6 +17,11 @@ const border: Partial<ExcelJS.Borders> = {
 };
 
 export async function exportExcel(rows: ReviewRow[]): Promise<void> {
+  const workbook = buildReviewWorkbook(rows);
+  await downloadWorkbook(workbook, "repreport-review-log.xlsx");
+}
+
+export function buildReviewWorkbook(rows: ReviewRow[]): ExcelJS.Workbook {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "RepReport";
   workbook.created = new Date();
@@ -26,16 +31,7 @@ export async function exportExcel(rows: ReviewRow[]): Promise<void> {
   addFlagsSheet(workbook, rows);
   addReadMeSheet(workbook);
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "repreport-review-log.xlsx";
-  anchor.click();
-  URL.revokeObjectURL(url);
+  return workbook;
 }
 
 export async function exportKpiExcel(row: KpiReportRow): Promise<void> {
