@@ -1,5 +1,6 @@
 import { buildCsv, buildKpiCsv, buildTsv } from "../src/lib/exportCsv.ts";
 import { buildKpiWorkbook, buildReviewWorkbook } from "../src/lib/exportExcel.ts";
+import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
 import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { kpiNotesTemplate, reviewLogTemplate } from "../src/sampleData.ts";
@@ -9,16 +10,48 @@ import { readFileSync } from "node:fs";
 const reviewRows = parseReviewNotes(reviewLogTemplate);
 const batchReviewRows = parseReviewNotes(readFileSync(new URL("./fixtures/batch-review-notes.txt", import.meta.url), "utf8"));
 const { row: kpiRow } = parseKpiNotes(kpiNotesTemplate);
+const batchReviewPackage = buildReviewExportPackage(batchReviewRows);
 
 const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
-const batchReviewTsvHeader = buildTsv(batchReviewRows, true).split("\n")[0];
+const batchReviewTsvHeader = parseTsvRecords(buildTsv(batchReviewRows, true))[0].join("\t");
 const kpiHeader = buildKpiCsv(kpiRow).split("\n")[0];
 
 assertEqual(reviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Batch Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewTsvHeader, REVIEW_COLUMNS.map((column) => column.label).join("\t"), "Batch Review TSV header should match the 8 default columns.");
 assertEqual(kpiHeader, KPI_COLUMNS.map((column) => column.label).join(","), "KPI CSV header should match the 5 default columns.");
+
+assertEqual(Object.keys(batchReviewPackage).join("|"), "pasteRows|summary|flags", "Review export package should keep Paste Rows first.");
+assertEqual(batchReviewPackage.pasteRows.name, "Paste Rows", "Review export package primary section should be Paste Rows.");
+assertEqual(
+  batchReviewPackage.pasteRows.columns.join("|"),
+  REVIEW_COLUMNS.map((column) => column.label).join("|"),
+  "Review export package Paste Rows columns should match the 8 default columns.",
+);
+assertEqual(batchReviewPackage.pasteRows.rowCount, batchReviewRows.length, "Paste Rows package row count should match parsed reviews.");
+assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review TSV should come from the same export package dataset.");
+assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
+assert(!batchReviewPackage.pasteRows.tsv.startsWith("Ticket Link"), "Primary Paste Rows TSV should be body-only for review-log paste.");
+assert(batchReviewPackage.pasteRows.tsv.includes("\r\n"), "Paste Rows TSV should use CRLF row separators for spreadsheet clipboard paste.");
+
+const packageTsvRecords = parseTsvRecords(batchReviewPackage.pasteRows.tsv);
+const packageTsvRecordsWithHeader = parseTsvRecords(batchReviewPackage.pasteRows.tsvWithHeader);
+assertEqual(packageTsvRecords.length, batchReviewRows.length, "Paste Rows TSV row count should match parsed review count.");
+assertEqual(packageTsvRecordsWithHeader.length, batchReviewRows.length + 1, "Paste Rows TSV with header should add exactly one header row.");
+assertEqual(packageTsvRecords[0].length, 8, "Paste Rows TSV records should keep exactly 8 cells.");
+assertEqual(
+  packageTsvRecords[0][6],
+  batchReviewRows[0].customerContactTicketLink,
+  "Paste Rows TSV should preserve multiline customer contact cells.",
+);
+assert(packageTsvRecords[0][6].includes("\n"), "Parsed Paste Rows TSV should keep newline characters inside multiline cells.");
+
+const flaggedBonusEligibleRow = batchReviewRows.find((row) => row.platform === "Trustpilot" && row.flags.includes("Model missing"));
+assert(flaggedBonusEligibleRow, "Batch fixture should include a flagged Trustpilot row for summary coverage.");
+assertEqual(batchReviewPackage.summary.summary.totalReviews, batchReviewRows.length, "Flagged rows should stay in total review counts.");
+assertEqual(batchReviewPackage.summary.summary.estimatedBonusTotal, 145, "Flagged rows should only lose bonus value when existing bonus rules return 0.");
+assertEqual(packageSummaryValue("Unknown"), 1, "Unknown flagged rows should still be counted by platform.");
 
 for (const [index, row] of batchReviewRows.entries()) {
   assertEqual(REVIEW_COLUMNS.map((column) => row[column.key]).length, 8, `Batch export row ${index + 1} should map to 8 review columns.`);
@@ -36,10 +69,10 @@ const batchPasteRowsSheet = batchReviewWorkbook.getWorksheet("Paste Rows");
 assert(batchPasteRowsSheet, "Batch review workbook should include Paste Rows sheet.");
 assertEqual(
   batchPasteRowsSheet.getRow(1).values.slice(1).join("|"),
-  REVIEW_COLUMNS.map((column) => column.label).join("|"),
+  batchReviewPackage.pasteRows.columns.join("|"),
   "Batch review workbook Paste Rows header should match the 8 default columns.",
 );
-assertEqual(batchPasteRowsSheet.rowCount, batchReviewRows.length + 1, "Batch review workbook should include one row per sample review plus header.");
+assertEqual(batchPasteRowsSheet.rowCount, batchReviewPackage.pasteRows.rowCount + 1, "Batch review workbook should include one row per sample review plus header.");
 
 assertCellBaseStyle(batchPasteRowsSheet.getRow(1).getCell(1), "Paste Rows header A1");
 assertCellBaseStyle(batchPasteRowsSheet.getRow(2).getCell(3), "Paste Rows body C2");
@@ -117,6 +150,58 @@ function summaryValue(label) {
   }
 
   return undefined;
+}
+
+function packageSummaryValue(label) {
+  const row = batchReviewPackage.summary.rows.find((candidate) => candidate[0] === label);
+  return row?.[1];
+}
+
+function parseTsvRecords(text) {
+  const records = [];
+  let record = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (inQuotes) {
+      if (char === '"' && text[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+
+    if (char === '"' && cell === "") {
+      inQuotes = true;
+    } else if (char === "\t") {
+      record.push(cell);
+      cell = "";
+    } else if (char === "\r" || char === "\n") {
+      record.push(cell);
+      records.push(record);
+      record = [];
+      cell = "";
+      if (char === "\r" && text[index + 1] === "\n") {
+        index += 1;
+      }
+    } else {
+      cell += char;
+    }
+  }
+
+  if (text.length > 0 || cell || record.length > 0) {
+    record.push(cell);
+    records.push(record);
+  }
+
+  return records;
 }
 
 function assertCellBaseStyle(cell, label) {

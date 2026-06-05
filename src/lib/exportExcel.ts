@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
-import { KPI_COLUMNS, REVIEW_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
-import { calculateBonusSummary } from "./reviewParser";
+import { KPI_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
+import { buildReviewExportPackage, type ReviewExportPackage } from "./exportPackage";
 
 const fontName = "Arial";
 const fontSize = 10;
@@ -26,10 +26,11 @@ export function buildReviewWorkbook(rows: ReviewRow[]): ExcelJS.Workbook {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "RepReport";
   workbook.created = new Date();
+  const exportPackage = buildReviewExportPackage(rows);
 
-  addPasteRowsSheet(workbook, rows);
-  addSummarySheet(workbook, rows);
-  addFlagsSheet(workbook, rows);
+  addPasteRowsSheet(workbook, exportPackage.pasteRows);
+  addSummarySheet(workbook, exportPackage.summary);
+  addFlagsSheet(workbook, exportPackage.flags);
   addReadMeSheet(workbook);
 
   return workbook;
@@ -51,39 +52,28 @@ export function buildKpiWorkbook(row: KpiReportRow): ExcelJS.Workbook {
   return workbook;
 }
 
-function addPasteRowsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
+function addPasteRowsSheet(workbook: ExcelJS.Workbook, pasteRows: ReviewExportPackage["pasteRows"]): void {
   const sheet = workbook.addWorksheet("Paste Rows");
-  sheet.columns = [
-    { header: "Ticket Link", key: "ticketLink", width: 42 },
-    { header: "Link to review", key: "reviewLink", width: 48 },
-    { header: "Model Number", key: "modelNumber", width: 18 },
-    { header: "Verified 5 star?", key: "verifiedFiveStar", width: 14 },
-    { header: "Contains video?", key: "containsVideo", width: 14 },
-    { header: "Contains pictures?", key: "containsPictures", width: 14 },
-    { header: "Customer contact/Ticket link", key: "customerContactTicketLink", width: 36 },
-    { header: "Replacement sent", key: "replacementSent", width: 56 },
-  ];
+  sheet.columns = pasteRows.columns.map((header) => ({ header }));
   setColumnWidths(sheet, [42, 48, 18, 14, 14, 14, 36, 56]);
 
-  rows.forEach((row) => {
-    sheet.addRow(REVIEW_COLUMNS.map((column) => row[column.key]));
-  });
+  pasteRows.rows.forEach((row) => sheet.addRow(row));
 
   styleWorksheet(sheet);
   styleHeaderRow(sheet.getRow(1));
   sheet.getRow(1).height = 34;
 
-  rows.forEach((row, rowIndex) => {
+  pasteRows.rows.forEach((row, rowIndex) => {
     const excelRow = sheet.getRow(rowIndex + 2);
     excelRow.height = 78;
     const ticketCell = excelRow.getCell(1);
     const reviewCell = excelRow.getCell(2);
 
-    if (row.ticketLink) {
+    if (row[0]) {
       ticketCell.font = linkFont();
     }
 
-    if (row.reviewLink) {
+    if (row[1]) {
       reviewCell.font = linkFont();
     }
 
@@ -129,11 +119,10 @@ function addKpiReadMeSheet(workbook: ExcelJS.Workbook): void {
   sheet.getRow(1).font = boldFont();
 }
 
-function addSummarySheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
+function addSummarySheet(workbook: ExcelJS.Workbook, summary: ReviewExportPackage["summary"]): void {
   const sheet = workbook.addWorksheet("Summary");
-  const summaryRows = buildSummaryRows(rows);
 
-  sheet.addRows(summaryRows);
+  sheet.addRows(summary.rows);
 
   sheet.columns = [{ width: 34 }, { width: 14 }, { width: 14 }];
   setColumnWidths(sheet, [34, 14, 14]);
@@ -142,14 +131,10 @@ function addSummarySheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
   sheet.getRow(4).font = boldFont();
 }
 
-function addFlagsSheet(workbook: ExcelJS.Workbook, rows: ReviewRow[]): void {
+function addFlagsSheet(workbook: ExcelJS.Workbook, flags: ReviewExportPackage["flags"]): void {
   const sheet = workbook.addWorksheet("Flags");
-  sheet.addRow(["Source Row", "Customer", "Model", "Platform", "Flag"]);
-  rows.forEach((row, rowIndex) => {
-    row.flags.forEach((flag) => {
-      sheet.addRow([rowIndex + 1, row.customerName ?? "", row.modelNumber, row.platform, flag]);
-    });
-  });
+  sheet.addRow(flags.columns);
+  sheet.addRows(flags.rows);
   sheet.columns = [{ width: 12 }, { width: 24 }, { width: 18 }, { width: 14 }, { width: 55 }];
   setColumnWidths(sheet, [12, 24, 18, 14, 55]);
   styleWorksheet(sheet);
@@ -202,23 +187,6 @@ function styleHeaderRow(row: ExcelJS.Row, useHeaderFill = false): void {
       cell.fill = solidFill(headerFill);
     });
   }
-}
-
-function buildSummaryRows(rows: ReviewRow[]): Array<Array<string | number | null>> {
-  const summary = calculateBonusSummary(rows);
-
-  return [
-    ["RepReport Review Log Summary", null, null],
-    ["Total reviews", summary.totalReviews, null],
-    ["Estimated bonus total", summary.estimatedBonusTotal, null],
-    ["Platform counts", null, null],
-    ...summary.platformCounts.map(({ platform, count }) => [platform, count, null]),
-    [null, null, null],
-    ["Amazon/photo counts", null, null],
-    ["Verified Amazon count", summary.verifiedAmazonCount, null],
-    ["Unverified Amazon count", summary.unverifiedAmazonCount, null],
-    ["Photo review count", summary.photoReviewCount, null],
-  ];
 }
 
 function baseFont(): Partial<ExcelJS.Font> {

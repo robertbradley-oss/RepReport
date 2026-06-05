@@ -1,13 +1,9 @@
-import { KPI_COLUMNS, REVIEW_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
+import { KPI_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
+import { buildReviewExportPackage } from "./exportPackage";
 
 export function buildTsv(rows: ReviewRow[], includeHeader = false): string {
-  const lines = rows.map((row) => REVIEW_COLUMNS.map((column) => escapeTsv(row[column.key])).join("\t"));
-
-  if (includeHeader) {
-    lines.unshift(REVIEW_COLUMNS.map((column) => column.label).join("\t"));
-  }
-
-  return lines.join("\n");
+  const exportPackage = buildReviewExportPackage(rows);
+  return includeHeader ? exportPackage.pasteRows.tsvWithHeader : exportPackage.pasteRows.tsv;
 }
 
 export function downloadCsv(rows: ReviewRow[]): void {
@@ -19,12 +15,7 @@ export function downloadKpiCsv(row: KpiReportRow): void {
 }
 
 export function buildCsv(rows: ReviewRow[]): string {
-  const header = REVIEW_COLUMNS.map((column) => escapeCsv(column.label)).join(",");
-  const body = rows
-    .map((row) => REVIEW_COLUMNS.map((column) => escapeCsv(row[column.key])).join(","))
-    .join("\n");
-
-  return [header, body].filter(Boolean).join("\n");
+  return buildReviewExportPackage(rows).pasteRows.csv;
 }
 
 export function buildKpiCsv(row: KpiReportRow): string {
@@ -32,19 +23,6 @@ export function buildKpiCsv(row: KpiReportRow): string {
   const body = KPI_COLUMNS.map((column) => escapeCsv(row[column.key])).join(",");
 
   return [header, body].join("\n");
-}
-
-function sanitizeForTsv(value: string): string {
-  return String(value ?? "").replace(/\t/g, " ");
-}
-
-function escapeTsv(value: string): string {
-  const text = sanitizeForTsv(value);
-  if (/["\n\r]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`;
-  }
-
-  return text;
 }
 
 function escapeCsv(value: string): string {
