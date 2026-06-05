@@ -3,6 +3,7 @@ import { buildKpiWorkbook, buildReviewWorkbook } from "../src/lib/exportExcel.ts
 import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
 import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { buildReviewClipboardPayload } from "../src/lib/reviewClipboard.ts";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
 import { getReviewLinkChipLabel, getTicketLinkChipLabel } from "../src/lib/reviewUrlDisplay.ts";
 import { buildVisibleReviewRows } from "../src/lib/reviewWorkspace.ts";
@@ -15,6 +16,7 @@ const batchReviewRows = parseReviewNotes(readFileSync(new URL("./fixtures/batch-
 const { row: kpiRow } = parseKpiNotes(kpiNotesTemplate);
 const batchReviewPackage = buildReviewExportPackage(batchReviewRows);
 const flaggedDisplayRows = buildVisibleReviewRows(batchReviewRows, true);
+const batchReviewClipboardPayload = buildReviewClipboardPayload(batchReviewRows);
 
 const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
@@ -48,12 +50,17 @@ assert(
   "Review export package should not shrink to the missing-model display row count.",
 );
 assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review TSV should come from the same export package dataset.");
+assertEqual(batchReviewClipboardPayload.tsv, buildTsv(batchReviewRows), "Review clipboard plain TSV should remain unchanged.");
 assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
 assert(!batchReviewPackage.pasteRows.tsv.startsWith("Ticket Link"), "Primary Paste Rows TSV should be body-only for review-log paste.");
 assert(batchReviewPackage.pasteRows.tsv.includes("\r\n"), "Paste Rows TSV should use CRLF row separators for spreadsheet clipboard paste.");
 assert(
   !/[<>]/.test(batchReviewPackage.pasteRows.tsv),
   "Copy Rows TSV should stay text-only and should not include HTML formatting.",
+);
+assert(
+  batchReviewClipboardPayload.html.startsWith('<table style="border-collapse:collapse;">'),
+  "Review clipboard HTML should provide a table for formatted spreadsheet paste.",
 );
 
 const packageTsvRecords = parseTsvRecords(batchReviewPackage.pasteRows.tsv);
@@ -84,6 +91,16 @@ assert(packageTsvRecords[0][6].includes("\n"), "Parsed Paste Rows TSV should kee
 assert(
   flaggedDisplayRows.every(({ row }) => row.flags.join("|") === "Model missing"),
   "Missing-model filter should include only model reminder rows.",
+);
+assertEqual(countMatches(batchReviewClipboardPayload.html, /<th>/g), 8, "Review clipboard HTML should keep exactly 8 header columns.");
+assertEqual(countMatches(batchReviewClipboardPayload.html, /<tbody><tr>|<\/tr><tr>/g), batchReviewRows.length, "Review clipboard HTML should keep parsed row count.");
+assert(
+  batchReviewClipboardPayload.html.includes("Ticket #100001<br>Alice Verified<br>Amazon"),
+  "Review clipboard HTML should preserve multiline cells with line breaks.",
+);
+assert(
+  batchReviewClipboardPayload.html.includes(batchReviewRows[0].ticketLink) && batchReviewClipboardPayload.html.includes(batchReviewRows[0].reviewLink),
+  "Review clipboard HTML should preserve full URL values.",
 );
 
 const expandedEditedRows = [
@@ -161,6 +178,40 @@ const highlightWorkbook = buildReviewWorkbook([
     containsPictures: "Y",
   },
 ]);
+const highlightClipboardPayload = buildReviewClipboardPayload([
+  {
+    ...batchReviewRows[0],
+    containsVideo: "Y",
+    containsPictures: "Y",
+  },
+  {
+    ...batchReviewRows[1],
+    containsVideo: "N",
+    containsPictures: "N",
+  },
+]);
+assertEqual(highlightClipboardPayload.tsv, buildTsv([
+  {
+    ...batchReviewRows[0],
+    containsVideo: "Y",
+    containsPictures: "Y",
+  },
+  {
+    ...batchReviewRows[1],
+    containsVideo: "N",
+    containsPictures: "N",
+  },
+]), "Highlighted clipboard plain TSV should match the existing TSV builder.");
+assertEqual(
+  countMatches(highlightClipboardPayload.html, /<td style="background-color:#ffff00;">Y<\/td>/g),
+  2,
+  "Review clipboard HTML should highlight Y cells in video/photo columns.",
+);
+assertEqual(
+  countMatches(highlightClipboardPayload.html, /<td style="background-color:#ffff00;">N<\/td>/g),
+  0,
+  "Review clipboard HTML should not highlight N cells.",
+);
 const highlightPasteRowsSheet = highlightWorkbook.getWorksheet("Paste Rows");
 assert(highlightPasteRowsSheet, "Highlight workbook should include Paste Rows sheet.");
 assertYellowFill(highlightPasteRowsSheet.getRow(2).getCell(5), "Contains video Y cell E2");
@@ -210,6 +261,10 @@ function assertEqual(actual, expected, message) {
   if (actual !== expected) {
     throw new Error(`${message}\nExpected: ${String(expected)}\nActual: ${String(actual)}`);
   }
+}
+
+function countMatches(text, pattern) {
+  return text.match(pattern)?.length ?? 0;
 }
 
 function summaryValue(label) {

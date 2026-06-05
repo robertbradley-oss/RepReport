@@ -20,3 +20,21 @@ export async function copyText(text: string): Promise<boolean> {
     }
   }
 }
+
+export async function copyRichText(text: string, html: string): Promise<boolean> {
+  if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/plain": new Blob([text], { type: "text/plain" }),
+          "text/html": new Blob([html], { type: "text/html" }),
+        }),
+      ]);
+      return true;
+    } catch {
+      return copyText(text);
+    }
+  }
+
+  return copyText(text);
+}

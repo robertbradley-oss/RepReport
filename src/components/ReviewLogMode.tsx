@@ -4,9 +4,10 @@ import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
-import { downloadCsv, buildTsv } from "../lib/exportCsv";
+import { downloadCsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
 import { copyText } from "../lib/clipboard";
+import { copyReviewRows } from "../lib/reviewClipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
 import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_DENSITIES, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import {
@@ -95,7 +96,7 @@ export function ReviewLogMode() {
   }
 
   async function handleCopyRows() {
-    const copied = await copyText(buildTsv(rows));
+    const copied = await copyReviewRows(rows);
     setCopyStatus(copied ? `Copied ${rows.length} row${rows.length === 1 ? "" : "s"}.` : "Copy failed. Select the table cells and copy manually.");
   }
 
@@ -235,7 +236,7 @@ export function ReviewLogMode() {
           onRowsChange={handleVisibleRowsChange}
           emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
         />
-        <p className="pasteFormatNote">Copy Rows pastes text only. Yellow photo/video highlights are included in Excel export.</p>
+        <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
