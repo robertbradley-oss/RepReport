@@ -45,7 +45,7 @@ export function ReviewLogMode() {
     setTemplateStatus("");
     setParseStatus(
       parsedRows.length > 0
-        ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} flag${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
+        ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} model reminder${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
         : "No review rows found.",
     );
   }
@@ -213,7 +213,7 @@ export function ReviewLogMode() {
             onClick={() => setFlaggedOnly((enabled) => !enabled)}
           >
             <Filter size={16} aria-hidden="true" />
-            Flagged only ({flags.length})
+            Missing model only ({flags.length})
           </button>
           <div className="densityToggle" role="group" aria-label="Table density">
             {REVIEW_TABLE_DENSITIES.map((density) => (
@@ -233,7 +233,7 @@ export function ReviewLogMode() {
           density={tableDensity}
           rows={visibleRows}
           onRowsChange={handleVisibleRowsChange}
-          emptyMessage={flaggedOnly ? "No flagged rows." : undefined}
+          emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
         />
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}

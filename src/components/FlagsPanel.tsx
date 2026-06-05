@@ -13,33 +13,33 @@ export function FlagsPanel({ flags }: FlagsPanelProps) {
 
   async function handleCopyFlags() {
     const copied = await copyText(formatFlagsForClipboard(flags));
-    setCopyStatus(copied ? "Flags copied." : "Copy failed. Select the flags and copy manually.");
+    setCopyStatus(copied ? "Model reminders copied." : "Copy failed. Select the model reminders and copy manually.");
   }
 
   return (
-    <section className="flagsPanel" aria-label="Manual review flags">
+    <section className="flagsPanel" aria-label="Model reminders">
       <div className="flagsHeader">
         <div className="flagsTitle">
-          <h2>Flags</h2>
+          <h2>Model reminders</h2>
           <span>{flags.length}</span>
         </div>
         <button type="button" onClick={handleCopyFlags}>
           <ClipboardCopy size={16} aria-hidden="true" />
-          Copy Flags
+          Copy Model Reminders
         </button>
       </div>
       <div className="flagsStatus" aria-live="polite">
         {copyStatus}
       </div>
       {flags.length === 0 ? (
-        <p>No manual review flags.</p>
+        <p>No missing model reminders.</p>
       ) : (
         <table>
           <thead>
             <tr>
               <th>Row</th>
               <th>Platform</th>
-              <th>Flag</th>
+              <th>Reminder</th>
             </tr>
           </thead>
           <tbody>

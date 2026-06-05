@@ -70,12 +70,12 @@ assertEqual(allVisibleRows.length, rows.length, "Unfiltered Review Log display s
 assertEqual(
   flaggedVisibleRows.length,
   rows.filter((row) => row.flags.length > 0).length,
-  "Flagged-only display should include only rows with flags.",
+  "Missing-model display should include only rows with model reminders.",
 );
-assert(flaggedVisibleRows.every(({ row }) => row.flags.length > 0), "Flagged-only display should not include unflagged rows.");
+assert(flaggedVisibleRows.every(({ row }) => row.flags.length > 0), "Missing-model display should not include rows with models.");
 assert(
   flaggedVisibleRows.length > 0 && flaggedVisibleRows.length < rows.length,
-  "Batch fixture should cover both flagged and unflagged rows for filtering.",
+  "Batch fixture should cover both missing-model and model-present rows for filtering.",
 );
 assertEqual(shouldCollapseSourceNotesAfterParse(rows.length), true, "Source notes should collapse after a successful parse.");
 assertEqual(shouldCollapseSourceNotesAfterParse(0), false, "Source notes should stay expanded when no rows parse.");
@@ -90,29 +90,27 @@ const editedFlaggedRows = flaggedVisibleRows.map(({ row }, visibleIndex) =>
     : row,
 );
 const mergedFlaggedEdits = mergeVisibleReviewRowEdits(rows, flaggedVisibleRows, editedFlaggedRows);
-assertEqual(mergedFlaggedEdits.length, rows.length, "Editing a filtered flagged row should preserve the full parsed dataset.");
+assertEqual(mergedFlaggedEdits.length, rows.length, "Editing a filtered missing-model row should preserve the full parsed dataset.");
 assertEqual(
   mergedFlaggedEdits[flaggedVisibleRows[0].sourceIndex].modelNumber,
   "EDITED-MODEL",
-  "Editing a filtered flagged row should update the matching source row.",
+  "Editing a filtered missing-model row should update the matching source row.",
 );
 const firstUnflaggedIndex = rows.findIndex((row) => row.flags.length === 0);
 assert(firstUnflaggedIndex >= 0, "Batch fixture should include an unflagged row.");
 assertEqual(
   mergedFlaggedEdits[firstUnflaggedIndex],
   rows[firstUnflaggedIndex],
-  "Editing a filtered flagged row should not clear or replace unfiltered rows.",
+  "Editing a filtered missing-model row should not clear or replace unfiltered rows.",
 );
 assertEqual(
   formatFlagsForClipboard([
     { rowNumber: 3, platform: "Trustpilot", message: "Model missing" },
-    { rowNumber: 7, platform: "Unknown", message: "Platform unclear" },
-    { rowNumber: 9, platform: "Unknown", message: "Review link missing" },
   ]),
-  ["Row 3 - Model missing", "Row 7 - Platform unclear", "Row 9 - Review link missing"].join("\n"),
-  "Copy Flags clipboard format changed.",
+  "Row 3 - Model missing",
+  "Copy model reminders clipboard format changed.",
 );
-assertEqual(formatFlagsForClipboard([]), "No flags.", "Copy Flags empty-state text changed.");
+assertEqual(formatFlagsForClipboard([]), "No model reminders.", "Copy model reminders empty-state text changed.");
 
 for (const [index, row] of rows.entries()) {
   for (const column of REVIEW_COLUMNS) {
@@ -159,7 +157,7 @@ assertEqual(googleRow.verifiedFiveStar, "Y", "Google row should export verified 
 assertEqual(googleRow.ratingOrStatus, "5 out of 5 stars", "Google row without rating should default to 5 out of 5 stars.");
 assertEqual(googleRow.containsPictures, "N", "Google row without ***PHOTO*** should not mark pictures.");
 assert(googleRow.replacementSent.includes("Great customer service"), "Google Replacement sent should contain the review text.");
-assertFlags(googleRow, [], "Clean Google row should not generate manual review flags.");
+assertFlags(googleRow, [], "Clean Google row should not generate model reminders.");
 assertEqual(
   formatCustomerContactSummary(googleRow),
   "Ticket #100004 - Dylan Google - Google - 6/1/26",
@@ -201,13 +199,13 @@ assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect 
 assertEqual(trustpilotRow.verifiedFiveStar, "Y", "Trustpilot row should export verified Y.");
 assertEqual(trustpilotRow.containsPictures, "N", "Trustpilot row without ***PHOTO*** should not mark pictures.");
 assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Replacement sent should contain the review text.");
-assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate manual review flags.");
+assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate model reminders.");
 
 const costcoRow = rowByTicket("100007");
 assertEqual(costcoRow.platform, "Costco", "Costco row should detect Costco platform.");
 assertEqual(costcoRow.verifiedFiveStar, "Y", "Costco row should export verified Y.");
 assert(costcoRow.replacementSent.includes("Good product"), "Costco Replacement sent should contain the review text.");
-assertFlags(costcoRow, [], "Clean Costco row should not generate manual review flags.");
+assertFlags(costcoRow, [], "Clean Costco row should not generate model reminders.");
 
 const noTicketRow = rows.find((row) => row.customerName === "Henry Noticket");
 assert(noTicketRow, "No-ticket review should parse into a row.");
@@ -235,12 +233,7 @@ assert(missingModelRow.flags.includes("Model missing"), "Missing-model row shoul
 const missingLinkRow = rowByTicket("100010");
 assertEqual(missingLinkRow.platform, "Unknown", "Missing review link row should have Unknown platform.");
 assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should export a blank review link.");
-assert(missingLinkRow.flags.includes("Platform unclear"), "Missing review link row should flag unclear platform.");
-assert(missingLinkRow.flags.includes("Review link missing"), "Missing review link row should flag missing review link.");
-assert(
-  !missingLinkRow.flags.includes("Rating unclear"),
-  "Missing review link row should not add cascading rating noise when the review link is already missing.",
-);
+assertFlags(missingLinkRow, [], "Missing review link row should not generate model reminders when the model is present.");
 
 const unknownPlatformRows = parseReviewNotes([
   "Ticket #100012",
@@ -258,11 +251,7 @@ assertEqual(
   "https://reviews.example.com/post/unknown-platform",
   "Unknown platform review URL should stay in Link to review for manual fixing.",
 );
-assert(unknownPlatformRows[0].flags.includes("Platform unclear"), "Unknown platform review URL should still flag unclear platform.");
-assert(
-  !unknownPlatformRows[0].flags.includes("Review link missing"),
-  "Unknown platform review URL should not be flagged as a missing review link.",
-);
+assertFlags(unknownPlatformRows[0], [], "Unknown platform row should not generate model reminders when the model is present.");
 
 const homeDepotBonusRows = parseReviewNotes([
   "Ticket #100011",
@@ -280,7 +269,7 @@ assert(
   !homeDepotBonusRows[0].flags.includes("Bonus rule unclear"),
   "Home Depot reviews should not flag unclear bonus after the confirmed rule.",
 );
-assertFlags(homeDepotBonusRows[0], [], "Clean Home Depot row should not generate manual review flags.");
+assertFlags(homeDepotBonusRows[0], [], "Clean Home Depot row should not generate model reminders.");
 
 const lowesBonusRows = parseReviewNotes([
   "Ticket #100013",
@@ -298,7 +287,7 @@ assert(
   !lowesBonusRows[0].flags.includes("Bonus rule unclear"),
   "Lowe's reviews should not flag unclear bonus after the confirmed rule.",
 );
-assertFlags(lowesBonusRows[0], [], "Clean Lowe's row should not generate manual review flags.");
+assertFlags(lowesBonusRows[0], [], "Clean Lowe's row should not generate model reminders.");
 
 const ticketMismatchRows = parseReviewNotes([
   "Ticket #238336",
@@ -309,10 +298,7 @@ const ticketMismatchRows = parseReviewNotes([
   "Connor Zitzmann - RCC7",
 ].join("\n"));
 assertEqual(ticketMismatchRows.length, 1, "Ticket mismatch fixture should parse into one row.");
-assert(
-  ticketMismatchRows[0].flags.includes("Ticket number and support URL ID do not match"),
-  "Ticket number/support URL mismatch should still generate a manual review flag.",
-);
+assertFlags(ticketMismatchRows[0], [], "Ticket number/support URL mismatch should not generate model reminders when the model is present.");
 
 const malformedUrlRows = parseReviewNotes([
   "Ticket #238338",
@@ -323,7 +309,19 @@ const malformedUrlRows = parseReviewNotes([
   "Maya Malformed - RCC7",
 ].join("\n"));
 assertEqual(malformedUrlRows.length, 1, "Malformed URL fixture should parse into one row.");
-assert(malformedUrlRows[0].flags.includes("Malformed URL"), "Malformed URL should generate a manual review flag.");
+assertFlags(malformedUrlRows[0], [], "Malformed URL should not generate model reminders when the model is present.");
+
+const ratingUnclearRows = parseReviewNotes([
+  "Ticket #238339",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238339",
+  "https://www.trustpilot.com/reviews/trustpilot-no-rating",
+  "Jun 5, 2026",
+  "Helpful support and clear setup advice.",
+  "Riley Norating - PH100",
+].join("\n"));
+assertEqual(ratingUnclearRows.length, 1, "Rating-unclear fixture should parse into one row.");
+assertEqual(ratingUnclearRows[0].ratingOrStatus, "", "Rating-unclear fixture should keep a blank rating/status output.");
+assertFlags(ratingUnclearRows[0], [], "Rating unclear should not generate model reminders when the model is present.");
 
 const actualIssueRows = [
   googleRow,
@@ -334,17 +332,18 @@ const actualIssueRows = [
   missingLinkRow,
   unknownPlatformRows[0],
   ticketMismatchRows[0],
+  ratingUnclearRows[0],
 ];
 const actualIssueVisibleRows = buildVisibleReviewRows(actualIssueRows, true);
-assertEqual(actualIssueVisibleRows.length, 4, "Flagged only should include only rows with actual manual-review issues.");
+assertEqual(actualIssueVisibleRows.length, 1, "Missing model only should include only rows without model numbers.");
 assert(
   actualIssueVisibleRows.every(({ row }) => row.flags.length > 0),
-  "Flagged only should not include clean Review Log rows.",
+  "Missing model only should not include rows with model numbers.",
 );
 assertEqual(
   actualIssueVisibleRows.map(({ row }) => row.customerName ?? row.ticketNumber ?? row.platform).join("|"),
-  "Ivy Missingmodel|Jared Missinglink|Uma Unknown|Connor Zitzmann",
-  "Flagged only should identify the expected issue rows.",
+  "Ivy Missingmodel",
+  "Missing model only should identify the expected reminder rows.",
 );
 
 console.log("smoke:review passed");

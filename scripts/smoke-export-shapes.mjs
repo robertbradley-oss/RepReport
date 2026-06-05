@@ -36,16 +36,16 @@ assertEqual(
 assertEqual(batchReviewPackage.pasteRows.rowCount, batchReviewRows.length, "Paste Rows package row count should match parsed reviews.");
 assert(
   flaggedDisplayRows.length > 0 && flaggedDisplayRows.length < batchReviewRows.length,
-  "Batch fixture should include enough rows to prove flagged-only display is not the export source.",
+  "Batch fixture should include enough missing-model rows to prove filtered display is not the export source.",
 );
 assertEqual(
   batchReviewPackage.pasteRows.rowCount,
   batchReviewRows.length,
-  "Review export package should keep the full parsed dataset even when flagged-only display rows exist.",
+  "Review export package should keep the full parsed dataset even when missing-model display rows exist.",
 );
 assert(
   batchReviewPackage.pasteRows.rowCount !== flaggedDisplayRows.length,
-  "Review export package should not shrink to the flagged-only display row count.",
+  "Review export package should not shrink to the missing-model display row count.",
 );
 assertEqual(batchReviewPackage.pasteRows.tsv, buildTsv(batchReviewRows), "Review TSV should come from the same export package dataset.");
 assertEqual(batchReviewPackage.pasteRows.csv, buildCsv(batchReviewRows), "Review CSV should come from the same export package dataset.");
@@ -110,11 +110,11 @@ assertEqual(
 assert(expandedEditedPackage.pasteRows.rows[0][6].includes("\n"), "Edited customer contact export should keep multiline text.");
 assert(expandedEditedPackage.pasteRows.rows[0][7].includes("\n"), "Edited replacement export should keep multiline text.");
 
-const flaggedBonusEligibleRow = batchReviewRows.find((row) => row.platform === "Trustpilot" && row.flags.includes("Model missing"));
-assert(flaggedBonusEligibleRow, "Batch fixture should include a flagged Trustpilot row for summary coverage.");
-assertEqual(batchReviewPackage.summary.summary.totalReviews, batchReviewRows.length, "Flagged rows should stay in total review counts.");
-assertEqual(batchReviewPackage.summary.summary.estimatedBonusTotal, 145, "Flagged rows should only lose bonus value when existing bonus rules return 0.");
-assertEqual(packageSummaryValue("Unknown"), 1, "Unknown flagged rows should still be counted by platform.");
+const modelReminderBonusEligibleRow = batchReviewRows.find((row) => row.platform === "Trustpilot" && row.flags.includes("Model missing"));
+assert(modelReminderBonusEligibleRow, "Batch fixture should include a missing-model Trustpilot row for summary coverage.");
+assertEqual(batchReviewPackage.summary.summary.totalReviews, batchReviewRows.length, "Rows with model reminders should stay in total review counts.");
+assertEqual(batchReviewPackage.summary.summary.estimatedBonusTotal, 145, "Rows with model reminders should keep existing bonus behavior.");
+assertEqual(packageSummaryValue("Unknown"), 1, "Unknown platform rows should still be counted by platform.");
 
 for (const [index, row] of batchReviewRows.entries()) {
   assertEqual(REVIEW_COLUMNS.map((column) => row[column.key]).length, 8, `Batch export row ${index + 1} should map to 8 review columns.`);

@@ -31,7 +31,7 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
         <strong>{summary.photoReviewCount}</strong>
       </div>
       <div>
-        <span>Flags</span>
+        <span>Model reminders</span>
         <strong>{flagCount}</strong>
       </div>
       <div>
