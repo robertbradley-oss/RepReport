@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { ClipboardCopy, Download, FileDown, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { BookOpen, ClipboardCopy, Download, FileDown, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
-import { sampleReviewNotes } from "../sampleData";
+import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
 import { downloadCsv, buildTsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
 import { calculateBonus, collectFlags, parseReviewNotes } from "../lib/reviewParser";
@@ -15,6 +15,8 @@ export function ReviewLogMode() {
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
   const [parseStatus, setParseStatus] = useState("");
+  const [templateStatus, setTemplateStatus] = useState("");
+  const [isTemplateVisible, setIsTemplateVisible] = useState(false);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const estimatedBonus = useMemo(() => rows.reduce((sum, row) => sum + calculateBonus(row), 0), [rows]);
@@ -24,6 +26,7 @@ export function ReviewLogMode() {
     setRows(parsedRows);
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
     setParseStatus(
       parsedRows.length > 0
         ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} flag${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
@@ -37,12 +40,14 @@ export function ReviewLogMode() {
     setCopyStatus("");
     setExportStatus("");
     setParseStatus("");
+    setTemplateStatus("");
   }
 
   function handleLoadSample() {
     setNotes(sampleReviewNotes);
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
     setParseStatus("Sample review notes loaded.");
   }
 
@@ -50,6 +55,7 @@ export function ReviewLogMode() {
     setRows(nextRows);
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
     setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
   }
 
@@ -75,6 +81,11 @@ export function ReviewLogMode() {
     setExportStatus("Building Excel file...");
     await exportExcel(rows);
     setExportStatus("Excel export downloaded.");
+  }
+
+  async function handleCopyTemplate() {
+    const copied = await copyText(reviewLogTemplate);
+    setTemplateStatus(copied ? "Review Log template copied." : "Copy failed. Select the template text and copy manually.");
   }
 
   return (
@@ -103,6 +114,22 @@ export function ReviewLogMode() {
             <RotateCcw size={16} aria-hidden="true" />
             Load Sample
           </button>
+        </div>
+        <div className="templateHelper">
+          <div className="buttonRow templateActions">
+            <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
+              <BookOpen size={16} aria-hidden="true" />
+              {isTemplateVisible ? "Hide Template" : "Show Template"}
+            </button>
+            <button type="button" onClick={handleCopyTemplate}>
+              <ClipboardCopy size={16} aria-hidden="true" />
+              Copy Template
+            </button>
+          </div>
+          {isTemplateVisible && <pre className="templateBlock">{reviewLogTemplate}</pre>}
+          <div className="templateStatus" aria-live="polite">
+            {templateStatus}
+          </div>
         </div>
       </div>
 

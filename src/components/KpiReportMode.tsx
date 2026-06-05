@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ClipboardCopy, Download, FileDown, RotateCcw, Sparkles, Trash2 } from "lucide-react";
-import { sampleKpiNotes } from "../sampleData";
+import { BookOpen, ClipboardCopy, Download, FileDown, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { kpiNotesTemplate, sampleKpiNotes } from "../sampleData";
 import { downloadKpiCsv } from "../lib/exportCsv";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
@@ -13,6 +13,8 @@ export function KpiReportMode() {
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
   const [formatStatus, setFormatStatus] = useState("");
+  const [templateStatus, setTemplateStatus] = useState("");
+  const [isTemplateVisible, setIsTemplateVisible] = useState(false);
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
@@ -20,6 +22,7 @@ export function KpiReportMode() {
     setIssues(result.issues);
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
     setFormatStatus(result.issues.length > 0 ? `Formatted KPI row with ${result.issues.length} issue${result.issues.length === 1 ? "" : "s"}.` : "Formatted 1 KPI row.");
   }
 
@@ -30,12 +33,14 @@ export function KpiReportMode() {
     setCopyStatus("");
     setExportStatus("");
     setFormatStatus("");
+    setTemplateStatus("");
   }
 
   function handleLoadSample() {
     setNotes(sampleKpiNotes);
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
     setFormatStatus("Sample KPI notes loaded.");
   }
 
@@ -43,6 +48,7 @@ export function KpiReportMode() {
     setRow((currentRow) => ({ ...currentRow, [key]: value }));
     setCopyStatus("");
     setExportStatus("");
+    setTemplateStatus("");
   }
 
   async function handleCopyRow() {
@@ -59,6 +65,11 @@ export function KpiReportMode() {
   function handleDownloadCsv() {
     downloadKpiCsv(row);
     setExportStatus("KPI CSV export downloaded.");
+  }
+
+  async function handleCopyTemplate() {
+    const copied = await copyText(kpiNotesTemplate);
+    setTemplateStatus(copied ? "KPI template copied." : "Copy failed. Select the template text and copy manually.");
   }
 
   return (
@@ -90,6 +101,22 @@ export function KpiReportMode() {
             <RotateCcw size={16} aria-hidden="true" />
             Load Sample
           </button>
+        </div>
+        <div className="templateHelper">
+          <div className="buttonRow templateActions">
+            <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
+              <BookOpen size={16} aria-hidden="true" />
+              {isTemplateVisible ? "Hide Template" : "Show Template"}
+            </button>
+            <button type="button" onClick={handleCopyTemplate}>
+              <ClipboardCopy size={16} aria-hidden="true" />
+              Copy Template
+            </button>
+          </div>
+          {isTemplateVisible && <pre className="templateBlock">{kpiNotesTemplate}</pre>}
+          <div className="templateStatus" aria-live="polite">
+            {templateStatus}
+          </div>
         </div>
       </div>
 

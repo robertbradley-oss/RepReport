@@ -44,3 +44,43 @@ Replacement expectations were unclear. I documented the timeline and confirmed t
 
 Ticket #236412
 Customer was frustrated by delayed shipping. I coordinated the update and learned to set clearer ETA expectations.`;
+
+export const reviewLogTemplate = `Ticket #123456
+https://support.ispringfilter.com/scp/tickets.php?id=123456
+https://www.amazon.com/review/example
+Verified Purchase
+5 out of 5 stars
+Great system and Robert was very helpful.
+Customer Name - RCC7AK
+
+https://www.google.com/search/example-review-link
+6/5/26
+Great customer service from Robert and the system works well.
+Customer Name - WGB32B
+
+Ticket #234567
+https://support.ispringfilter.com/scp/tickets.php?id=234567
+https://www.trustpilot.com/reviews/example
+***PHOTO***
+Great support and easy installation.
+Customer Name - RO500AK`;
+
+export const kpiNotesTemplate = `Top 3 Achievements
+1. Cleared a high volume of review and warranty follow-ups.
+2. Saved technical tickets by troubleshooting before replacing parts.
+3. Protected the company by verifying details before sending replacements.
+
+3 Best Tickets
+Ticket #232595
+Ticket #228169
+Ticket #237085
+
+3 Worst Tickets
+Ticket #237111
+Customer was upset about high TDS, but the issue was narrowed down to meter mode and installation verification.
+
+Ticket #237222
+Replacement request needed extra verification because the receipt and issue details were incomplete.
+
+Ticket #237333
+Customer had repeated install confusion and needed a clearer step-by-step explanation.`;
