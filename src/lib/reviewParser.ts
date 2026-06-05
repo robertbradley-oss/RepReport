@@ -28,7 +28,7 @@ const flagMessages = {
 };
 
 const defaultGoogleRating = "5 out of 5 stars";
-const bonusRulePlatforms = new Set(["Amazon", "Costco", "Google", "Trustpilot"]);
+const bonusRulePlatforms = new Set(["Amazon", "Costco", "Google", "Home Depot", "Lowe's", "Trustpilot"]);
 
 export type BonusSummary = {
   totalReviews: number;
@@ -64,6 +64,10 @@ export function calculateBonus(row: ReviewRow): number {
 
   if (row.platform === "Costco") {
     return 15;
+  }
+
+  if (row.platform === "Home Depot" || row.platform === "Lowe's") {
+    return 25;
   }
 
   if (row.platform === "Amazon") {

@@ -150,7 +150,7 @@ assert(
   "Unknown platform review URL should not be flagged as a missing review link.",
 );
 
-const unclearBonusRows = parseReviewNotes([
+const homeDepotBonusRows = parseReviewNotes([
   "Ticket #100011",
   "https://support.ispringfilter.com/scp/tickets.php?id=100011",
   "https://www.homedepot.com/p/reviews/home-depot-basic",
@@ -159,10 +159,30 @@ const unclearBonusRows = parseReviewNotes([
   "Helpful support and clear setup advice.",
   "Hank Depot - HD123",
 ].join("\n"));
-assertEqual(unclearBonusRows.length, 1, "Known platform without a bonus rule should still parse.");
-assertEqual(unclearBonusRows[0].platform, "Home Depot", "Home Depot platform should be detected.");
-assertEqual(calculateBonus(unclearBonusRows[0]), 0, "Unclear bonus rule should not guess a dollar value.");
-assert(unclearBonusRows[0].flags.includes("Bonus rule unclear"), "Known platform without a bonus rule should be flagged.");
+assertEqual(homeDepotBonusRows.length, 1, "Home Depot review should still parse.");
+assertEqual(homeDepotBonusRows[0].platform, "Home Depot", "Home Depot platform should be detected.");
+assertEqual(calculateBonus(homeDepotBonusRows[0]), 25, "Home Depot reviews should use the confirmed $25 bonus.");
+assert(
+  !homeDepotBonusRows[0].flags.includes("Bonus rule unclear"),
+  "Home Depot reviews should not flag unclear bonus after the confirmed rule.",
+);
+
+const lowesBonusRows = parseReviewNotes([
+  "Ticket #100013",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100013",
+  "https://www.lowes.com/reviews/lowes-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support helped with setup and the replacement works.",
+  "Lena Lowes - LW123",
+].join("\n"));
+assertEqual(lowesBonusRows.length, 1, "Lowe's review should still parse.");
+assertEqual(lowesBonusRows[0].platform, "Lowe's", "Lowe's platform should be detected.");
+assertEqual(calculateBonus(lowesBonusRows[0]), 25, "Lowe's reviews should use the confirmed $25 bonus.");
+assert(
+  !lowesBonusRows[0].flags.includes("Bonus rule unclear"),
+  "Lowe's reviews should not flag unclear bonus after the confirmed rule.",
+);
 
 console.log("smoke:review passed");
 
