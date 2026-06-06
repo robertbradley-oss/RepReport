@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { BookOpen, ChevronDown, ClipboardCopy, Download, FileDown, Filter, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
+import { UiIcon } from "./UiIcon";
 import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
 import { downloadCsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
@@ -118,26 +118,31 @@ export function ReviewLogMode() {
 
   return (
     <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Review Log Mode">
-      <div className="inputPanel">
+      <div className="inputPanel reviewInputCard">
         {isSourceNotesCollapsed ? (
           <div className="sourceNotesBar">
             <strong>{sourceNotesSummary}</strong>
             <div className="sourceNotesActions">
               <button type="button" onClick={() => setIsSourceNotesCollapsed(false)}>
-                <ChevronDown size={16} aria-hidden="true" />
+                <UiIcon name="collapseInput" />
                 Expand
               </button>
-              <button type="button" onClick={handleClear}>
-                <Trash2 size={16} aria-hidden="true" />
+              <button className="dangerButton" type="button" onClick={handleClear}>
+                <UiIcon name="clear" />
                 Clear
               </button>
             </div>
           </div>
         ) : (
           <>
-            <label className="panelLabel" htmlFor="review-notes">
-              Paste Notepad Review Notes
-            </label>
+            <div className="panelHeader">
+              <div>
+                <span className="workflowStep">Paste notes</span>
+                <label className="panelLabel" htmlFor="review-notes">
+                  Notepad Review Notes
+                </label>
+              </div>
+            </div>
             <textarea
               id="review-notes"
               value={notes}
@@ -147,26 +152,26 @@ export function ReviewLogMode() {
             />
             <div className="buttonRow">
               <button className="primaryButton" type="button" onClick={handleParse}>
-                <Sparkles size={16} aria-hidden="true" />
+                <UiIcon name="parse" />
                 Parse Reviews
               </button>
-              <button type="button" onClick={handleClear}>
-                <Trash2 size={16} aria-hidden="true" />
+              <button className="dangerButton" type="button" onClick={handleClear}>
+                <UiIcon name="clear" />
                 Clear
               </button>
-              <button type="button" onClick={handleLoadSample}>
-                <RotateCcw size={16} aria-hidden="true" />
+              <button className="secondaryButton" type="button" onClick={handleLoadSample}>
+                <UiIcon name="loadSample" />
                 Load Sample
               </button>
             </div>
             <div className="templateHelper">
               <div className="buttonRow templateActions">
-                <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
-                  <BookOpen size={16} aria-hidden="true" />
+                <button className="secondaryButton" type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
+                  <UiIcon name="template" />
                   {isTemplateVisible ? "Hide Template" : "Show Template"}
                 </button>
-                <button type="button" onClick={handleCopyTemplate}>
-                  <ClipboardCopy size={16} aria-hidden="true" />
+                <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
+                  <UiIcon name="copy" />
                   Copy Template
                 </button>
               </div>
@@ -179,30 +184,41 @@ export function ReviewLogMode() {
         )}
       </div>
 
-      <div className="resultsPanel">
-        <div className="actionsBar">
+      <div className="resultsPanel reviewOutputCard">
+        <div className="panelHeader resultsHeader">
+          <div>
+            <span className="workflowStep">Review rows</span>
+            <h2 className="panelTitle">Review Log Rows</h2>
+          </div>
+        </div>
+
+        <div className="actionsBar reviewActionsBar">
           <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
-          <div className="buttonRow">
-            <button className="primaryButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
-              <ClipboardCopy size={16} aria-hidden="true" />
-              Copy Rows
-            </button>
-            <button type="button" onClick={handleDownloadCsv} disabled={rows.length === 0}>
-              <Download size={16} aria-hidden="true" />
-              Download CSV
-            </button>
-            <button type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
-              <FileDown size={16} aria-hidden="true" />
-              Export Excel
-            </button>
-            <button type="button" onClick={handleAddBlankRow}>
-              <Plus size={16} aria-hidden="true" />
-              Add Blank Row
-            </button>
-            <button type="button" onClick={handleDeleteLastRow} disabled={rows.length === 0}>
-              <Trash2 size={16} aria-hidden="true" />
-              Delete Last Row
-            </button>
+          <div className="actionStack" aria-label="Review output actions">
+            <div className="buttonRow primaryActions">
+              <button className="primaryButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
+                <UiIcon name="copy" />
+                Copy Rows
+              </button>
+              <button className="primaryButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
+                <UiIcon name="excel" />
+                Export Excel
+              </button>
+            </div>
+            <div className="buttonRow secondaryActions">
+              <button className="secondaryButton" type="button" onClick={handleDownloadCsv} disabled={rows.length === 0}>
+                <UiIcon name="download" />
+                Download CSV
+              </button>
+              <button className="secondaryButton" type="button" onClick={handleAddBlankRow}>
+                <UiIcon name="add" />
+                Add Blank Row
+              </button>
+              <button className="dangerButton" type="button" onClick={handleDeleteLastRow} disabled={rows.length === 0}>
+                <UiIcon name="clear" />
+                Delete Last Row
+              </button>
+            </div>
           </div>
         </div>
 
@@ -213,7 +229,7 @@ export function ReviewLogMode() {
             aria-pressed={flaggedOnly}
             onClick={() => setFlaggedOnly((enabled) => !enabled)}
           >
-            <Filter size={16} aria-hidden="true" />
+            <UiIcon name="filter" />
             Show missing models ({flags.length})
           </button>
           <div className="densityToggle" role="group" aria-label="Table density">

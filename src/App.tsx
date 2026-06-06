@@ -1,7 +1,7 @@
-import { FileSpreadsheet, TableProperties } from "lucide-react";
 import { useState } from "react";
 import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
+import { UiIcon } from "./components/UiIcon";
 
 type AppMode = "reviewLog" | "kpiReport";
 
@@ -28,7 +28,7 @@ export default function App() {
           onClick={() => setActiveMode("reviewLog")}
           aria-pressed={activeMode === "reviewLog"}
         >
-          <TableProperties size={16} aria-hidden="true" />
+          <UiIcon name="reviewLog" />
           Review Log
         </button>
         <button
@@ -37,7 +37,7 @@ export default function App() {
           onClick={() => setActiveMode("kpiReport")}
           aria-pressed={activeMode === "kpiReport"}
         >
-          <FileSpreadsheet size={16} aria-hidden="true" />
+          <UiIcon name="kpiReport" />
           KPI Report
         </button>
       </nav>

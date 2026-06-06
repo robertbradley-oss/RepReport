@@ -1,7 +1,8 @@
 :root {
   color: #1f2933;
-  background: #f4f5f7;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  font-size: 13px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -11,6 +12,7 @@
 }
 
 body {
+  background: #ffffff;
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -37,19 +39,19 @@ textarea {
 button {
   align-items: center;
   background: #ffffff;
-  border: 1px solid #c9d1d9;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   color: #1f2933;
   cursor: pointer;
   display: inline-flex;
-  font-weight: 700;
+  font-weight: 500;
   gap: 6px;
   min-height: 36px;
   padding: 7px 11px;
 }
 
 button:hover:not(:disabled) {
-  border-color: #60758a;
+  border-color: #6b7280;
 }
 
 button:disabled {
@@ -61,6 +63,22 @@ button:disabled {
   background: #1d6f42;
   border-color: #1d6f42;
   color: #ffffff;
+}
+
+.secondaryButton {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.dangerButton {
+  background: #fff7f7;
+  border-color: #f0b8b8;
+  color: #9f1c1c;
+}
+
+.dangerButton:hover:not(:disabled) {
+  border-color: #c24141;
 }
 
 .appShell {
@@ -104,7 +122,8 @@ button:disabled {
 
 .appHeader h1 {
   color: #ffffff;
-  font-size: 26px;
+  font-size: 24px;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1.1;
   margin: 0;
@@ -112,13 +131,13 @@ button:disabled {
 
 .appHeader p {
   color: #c8d4df;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
   margin: 0;
 }
 
 .modeTabs {
-  border-bottom: 1px solid #cfd6dd;
+  border-bottom: 1px solid #d1d5db;
   display: flex;
   gap: 4px;
   margin-bottom: 14px;
@@ -141,7 +160,7 @@ button:disabled {
 .kpiGrid {
   display: grid;
   gap: 14px;
-  grid-template-columns: minmax(320px, 0.8fr) minmax(560px, 1.4fr);
+  grid-template-columns: minmax(340px, 0.78fr) minmax(640px, 1.5fr);
 }
 
 .reviewLogGrid.sourceNotesCollapsed {
@@ -151,10 +170,17 @@ button:disabled {
 .inputPanel,
 .resultsPanel {
   background: #ffffff;
-  border: 1px solid #cfd6dd;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   min-width: 0;
-  padding: 14px;
+  padding: 16px;
+}
+
+.reviewInputCard,
+.reviewOutputCard {
+  display: grid;
+  gap: 12px;
 }
 
 .sourceNotesCollapsed .inputPanel {
@@ -170,6 +196,7 @@ button:disabled {
 .sourceNotesBar strong {
   color: #263442;
   font-size: 14px;
+  font-weight: 500;
   line-height: 1.3;
 }
 
@@ -187,9 +214,9 @@ button:disabled {
 
 .panelLabel {
   display: block;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 2px 0 8px;
 }
 
 .helperText {
@@ -200,16 +227,38 @@ button:disabled {
 }
 
 .panelTitle {
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 500;
   letter-spacing: 0;
-  margin: 0 0 4px;
+  margin: 2px 0 0;
+}
+
+.panelHeader {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workflowStep {
+  color: #6b7280;
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.resultsHeader {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 2px;
 }
 
 .inputPanel textarea {
-  border: 1px solid #c9d1d9;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   line-height: 1.35;
-  min-height: 570px;
+  min-height: 540px;
   padding: 10px;
   resize: vertical;
   width: 100%;
@@ -223,8 +272,8 @@ button:disabled {
 }
 
 .templateHelper {
-  border-top: 1px solid #e3e8ee;
-  margin-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2px;
   padding-top: 2px;
 }
 
@@ -233,11 +282,11 @@ button:disabled {
 }
 
 .templateBlock {
-  background: #f7f8fa;
-  border: 1px solid #cfd6dd;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   color: #263442;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit;
   font-size: 13px;
   line-height: 1.35;
   margin: 10px 0 0;
@@ -250,14 +299,9 @@ button:disabled {
 .templateStatus {
   color: #315b3c;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   min-height: 18px;
   padding-top: 6px;
-}
-
-.resultsPanel .buttonRow {
-  justify-content: flex-end;
-  margin-top: 0;
 }
 
 .actionsBar {
@@ -268,29 +312,63 @@ button:disabled {
   margin-bottom: 12px;
 }
 
+.reviewActionsBar {
+  border-bottom: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-bottom: 0;
+  padding-bottom: 12px;
+}
+
+.resultsPanel .buttonRow {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.reviewActionsBar .buttonRow {
+  justify-content: flex-start;
+}
+
+.actionStack {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  max-width: none;
+}
+
+.primaryActions .primaryButton {
+  min-width: 126px;
+  justify-content: center;
+}
+
 .summaryPanel {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(4, minmax(98px, 1fr));
-  max-width: 620px;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  max-width: none;
   width: 100%;
 }
 
 .summaryPanel div {
-  border: 1px solid #d7dde3;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  padding: 8px;
+  min-height: 64px;
+  padding: 9px 10px;
 }
 
 .summaryPanel span {
-  color: #5b6773;
+  color: #6b7280;
   display: block;
   font-size: 12px;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 }
 
 .summaryPanel strong {
+  color: #111827;
   font-size: 18px;
+  font-weight: 500;
+  line-height: 1.1;
 }
 
 .summaryPanel .platformCounts {
@@ -303,7 +381,7 @@ button:disabled {
   display: flex;
   gap: 8px;
   justify-content: space-between;
-  margin: 0 0 8px;
+  margin: 0 0 2px;
 }
 
 .filterButton.active {
@@ -313,8 +391,8 @@ button:disabled {
 }
 
 .densityToggle {
-  background: #eef2f5;
-  border: 1px solid #cfd6dd;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   display: inline-flex;
   padding: 2px;
@@ -330,12 +408,12 @@ button:disabled {
 
 .densityToggle button.active {
   background: #ffffff;
-  border-color: #b8c2cc;
+  border-color: #9ca3af;
   color: #1d6f42;
 }
 
 .tableWrap {
-  border: 1px solid #cfd6dd;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   max-height: 530px;
   overflow: auto;
@@ -356,7 +434,7 @@ button:disabled {
 .reviewTable td,
 .flagsPanel th,
 .flagsPanel td {
-  border: 1px solid #d7dde3;
+  border: 1px solid #e5e7eb;
   font-size: 13px;
   padding: 7px;
   text-align: left;
@@ -371,8 +449,8 @@ button:disabled {
 
 .reviewTable th,
 .flagsPanel th {
-  background: #f7f8fa;
-  font-weight: 700;
+  background: #f9fafb;
+  font-weight: 500;
   line-height: 1.25;
   position: sticky;
   white-space: normal;
@@ -418,12 +496,12 @@ button:disabled {
 
 .yesNoBadge {
   align-items: center;
-  background: #eef2f5;
-  border: 1px solid #cfd6dd;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   border-radius: 999px;
   display: inline-flex;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   justify-content: center;
   line-height: 1;
   min-height: 24px;
@@ -448,7 +526,7 @@ button:disabled {
 }
 
 .reviewTable textarea:focus {
-  border-color: #60758a;
+  border-color: #6b7280;
   outline: none;
 }
 
@@ -457,7 +535,7 @@ button:disabled {
 }
 
 .expandedReviewRow td {
-  background: #fbfcfd;
+  background: #f9fafb;
   padding: 12px;
 }
 
@@ -480,13 +558,13 @@ button:disabled {
 .expandedField span {
   color: #3e4c59;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .expandedField textarea,
 .expandedField select {
   background: #ffffff;
-  border: 1px solid #b8c2cc;
+  border: 1px solid #d1d5db;
   border-radius: 5px;
   color: #1f2933;
   line-height: 1.35;
@@ -501,7 +579,7 @@ button:disabled {
 
 .expandedField textarea:focus,
 .expandedField select:focus {
-  border-color: #60758a;
+  border-color: #6b7280;
   outline: none;
 }
 
@@ -533,7 +611,7 @@ button:disabled {
   border-radius: 999px;
   display: inline-flex;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.2;
   max-width: 100%;
   min-height: 26px;
@@ -562,7 +640,7 @@ button:disabled {
   color: #4f6070;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -576,12 +654,28 @@ button:disabled {
 
 .emptyState {
   align-items: center;
-  border: 1px dashed #b8c2cc;
+  background: #ffffff;
+  border: 1px dashed #9ca3af;
   border-radius: 6px;
-  color: #5b6773;
+  color: #6b7280;
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
   min-height: 220px;
   padding: 24px;
+  text-align: center;
+}
+
+.emptyState strong {
+  color: #263442;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.emptyState span {
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .pasteFormatNote {
@@ -594,7 +688,7 @@ button:disabled {
 .statusLine {
   color: #315b3c;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   min-height: 22px;
   padding-top: 8px;
 }
@@ -618,18 +712,19 @@ button:disabled {
 }
 
 .flagsHeader h2 {
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 500;
   letter-spacing: 0;
   margin: 0;
 }
 
 .flagsHeader span {
-  background: #eef2f5;
-  border: 1px solid #cfd6dd;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   border-radius: 999px;
   color: #3e4c59;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   min-width: 26px;
   padding: 2px 8px;
   text-align: center;
@@ -643,12 +738,12 @@ button:disabled {
 .flagsStatus {
   color: #315b3c;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   min-height: 18px;
 }
 
 .flagsPanel tbody tr:nth-child(even) {
-  background: #fbfcfd;
+  background: #f9fafb;
 }
 
 .kpiIssues ul {
@@ -658,7 +753,8 @@ button:disabled {
 }
 
 .kpiIssues h2 {
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 500;
   letter-spacing: 0;
   margin: 0 0 8px;
 }
@@ -676,6 +772,16 @@ button:disabled {
 
   .actionsBar {
     display: block;
+  }
+
+  .actionStack {
+    justify-items: start;
+    margin-top: 12px;
+    max-width: none;
+  }
+
+  .resultsPanel .buttonRow {
+    justify-content: flex-start;
   }
 
   .expandedField.reviewCol-ticketLink,

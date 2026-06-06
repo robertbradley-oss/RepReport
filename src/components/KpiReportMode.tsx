@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, ClipboardCopy, Download, FileDown, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { UiIcon } from "./UiIcon";
 import { kpiNotesTemplate, sampleKpiNotes } from "../sampleData";
 import { downloadKpiCsv } from "../lib/exportCsv";
 import { exportKpiExcel } from "../lib/exportExcel";
@@ -90,26 +90,26 @@ export function KpiReportMode() {
         />
         <div className="buttonRow">
           <button className="primaryButton" type="button" onClick={handleFormat}>
-            <Sparkles size={16} aria-hidden="true" />
+            <UiIcon name="parse" />
             Format KPI
           </button>
           <button type="button" onClick={handleClear}>
-            <Trash2 size={16} aria-hidden="true" />
+            <UiIcon name="clear" />
             Clear
           </button>
           <button type="button" onClick={handleLoadSample}>
-            <RotateCcw size={16} aria-hidden="true" />
+            <UiIcon name="loadSample" />
             Load Sample
           </button>
         </div>
         <div className="templateHelper">
           <div className="buttonRow templateActions">
             <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
-              <BookOpen size={16} aria-hidden="true" />
+              <UiIcon name="template" />
               {isTemplateVisible ? "Hide Template" : "Show Template"}
             </button>
             <button type="button" onClick={handleCopyTemplate}>
-              <ClipboardCopy size={16} aria-hidden="true" />
+              <UiIcon name="copy" />
               Copy Template
             </button>
           </div>
@@ -128,15 +128,15 @@ export function KpiReportMode() {
           </div>
           <div className="buttonRow">
             <button type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
-              <ClipboardCopy size={16} aria-hidden="true" />
+              <UiIcon name="copy" />
               Copy KPI Row
             </button>
             <button type="button" onClick={handleDownloadCsv} disabled={isKpiRowEmpty(row)}>
-              <Download size={16} aria-hidden="true" />
+              <UiIcon name="download" />
               Download KPI CSV
             </button>
             <button type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
-              <FileDown size={16} aria-hidden="true" />
+              <UiIcon name="excel" />
               Export KPI Excel
             </button>
           </div>

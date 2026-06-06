@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ClipboardCopy } from "lucide-react";
+import { UiIcon } from "./UiIcon";
 import { copyText } from "../lib/clipboard";
 import { formatFlagsForClipboard } from "../lib/flagClipboard";
 import type { FlagItem } from "../types";
@@ -23,8 +23,8 @@ export function FlagsPanel({ flags }: FlagsPanelProps) {
           <h2>Model reminders</h2>
           <span>{flags.length}</span>
         </div>
-        <button type="button" onClick={handleCopyFlags}>
-          <ClipboardCopy size={16} aria-hidden="true" />
+        <button className="secondaryButton" type="button" onClick={handleCopyFlags}>
+          <UiIcon name="copy" />
           Copy Model Reminders
         </button>
       </div>

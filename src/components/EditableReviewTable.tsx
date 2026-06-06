@@ -32,7 +32,16 @@ export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage 
   }
 
   if (rows.length === 0) {
-    return <div className="emptyState">{emptyMessage ?? "No rows yet. Paste notes and parse, or add a blank row."}</div>;
+    return emptyMessage ? (
+      <div className="emptyState">
+        <strong>{emptyMessage}</strong>
+      </div>
+    ) : (
+      <div className="emptyState">
+        <strong>No review rows yet</strong>
+        <span>Paste Notepad notes on the left, then click Parse Reviews.</span>
+      </div>
+    );
   }
 
   return (
