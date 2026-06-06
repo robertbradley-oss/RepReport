@@ -170,7 +170,7 @@ assert(expandedEditedPackage.pasteRows.rows[0][7].includes("\n"), "Edited replac
 const modelReminderBonusEligibleRow = batchReviewRows.find((row) => row.platform === "Trustpilot" && row.flags.includes("Model missing"));
 assert(modelReminderBonusEligibleRow, "Batch fixture should include a missing-model Trustpilot row for summary coverage.");
 assertEqual(batchReviewPackage.summary.summary.totalReviews, batchReviewRows.length, "Rows with model reminders should stay in total review counts.");
-assertEqual(batchReviewPackage.summary.summary.estimatedBonusTotal, 145, "Rows with model reminders should keep existing bonus behavior.");
+assertEqual(batchReviewPackage.summary.summary.estimatedBonusTotal, 165, "Rows with model reminders should keep updated bonus behavior.");
 assertEqual(packageSummaryValue("Unknown"), 1, "Unknown platform rows should still be counted by platform.");
 
 for (const [index, row] of batchReviewRows.entries()) {
@@ -263,7 +263,7 @@ assertCellBaseStyle(batchSummarySheet.getRow(1).getCell(1), "Summary title A1");
 assertEqual(batchSummarySheet.getRow(2).getCell(1).value, "Total reviews", "Summary sheet should include total reviews.");
 assertEqual(batchSummarySheet.getRow(2).getCell(2).value, 10, "Summary sheet should count all batch reviews.");
 assertEqual(batchSummarySheet.getRow(3).getCell(1).value, "Estimated bonus total", "Summary sheet should include estimated bonus total.");
-assertEqual(batchSummarySheet.getRow(3).getCell(2).value, 145, "Summary sheet should calculate the batch bonus total.");
+assertEqual(batchSummarySheet.getRow(3).getCell(2).value, 165, "Summary sheet should calculate the batch bonus total.");
 assertEqual(summaryValue("Amazon"), 3, "Summary sheet should include Amazon platform count.");
 assertEqual(summaryValue("Google"), 3, "Summary sheet should include Google platform count.");
 assertEqual(summaryValue("Trustpilot"), 2, "Summary sheet should include Trustpilot platform count.");

@@ -9,10 +9,14 @@ const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /amazon\.com/i],
   ["Google", /google\.com/i],
   ["Trustpilot", /trustpilot\.com/i],
-  ["Costco", /costco/i],
-  ["Home Depot", /homedepot\.com/i],
+  ["Costco", /costco\.(?:com|ca)/i],
+  ["Home Depot", /homedepot\.(?:com|ca)/i],
+  ["Zoro", /zoro\.com/i],
+  ["iSpring Website", /https?:\/\/(?:www\.)?ispringfilter\.com\b/i],
   ["Lowe's", /lowes\.com/i],
 ];
+
+const flatTwentyFiveDollarPlatforms = new Set(["Costco", "Home Depot", "iSpring Website", "Zoro"]);
 
 const flagMessages = {
   modelMissing: "Model missing",
@@ -49,23 +53,16 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   if (row.platform === "Trustpilot") {
-    return 10;
-  }
-
-  if (row.platform === "Costco") {
     return 15;
   }
 
-  if (row.platform === "Home Depot" || row.platform === "Lowe's") {
+  if (flatTwentyFiveDollarPlatforms.has(row.platform) || row.platform === "Lowe's") {
     return 25;
   }
 
   if (row.platform === "Amazon") {
-    if (row.verifiedFiveStar === "Y" && row.containsPictures === "Y") {
-      return 30;
-    }
-
-    return row.verifiedFiveStar === "Y" ? 25 : 15;
+    const baseBonus = row.verifiedFiveStar === "Y" ? 25 : 15;
+    return row.containsPictures === "Y" ? baseBonus + 5 : baseBonus;
   }
 
   return 0;
@@ -484,7 +481,7 @@ function comparePlatformCounts(
   left: { platform: string; count: number },
   right: { platform: string; count: number },
 ): number {
-  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Unknown"];
+  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Home Depot", "Zoro", "iSpring Website", "Lowe's", "Unknown"];
   const leftIndex = preferredOrder.indexOf(left.platform);
   const rightIndex = preferredOrder.indexOf(right.platform);
 

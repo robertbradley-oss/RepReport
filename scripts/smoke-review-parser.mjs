@@ -30,9 +30,9 @@ const flaggedVisibleRows = buildVisibleReviewRows(rows, true);
 const allVisibleRows = buildVisibleReviewRows(rows, false);
 
 assertEqual(rows.length, 10, "Review parser should return all 10 batch fixture rows.");
-assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 145, "Batch review fixture bonus total changed.");
+assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 165, "Batch review fixture bonus total changed.");
 assertEqual(bonusSummary.totalReviews, 10, "Batch bonus summary should include total review count.");
-assertEqual(bonusSummary.estimatedBonusTotal, 145, "Batch bonus summary should include estimated bonus total.");
+assertEqual(bonusSummary.estimatedBonusTotal, 165, "Batch bonus summary should include estimated bonus total.");
 assertEqual(platformCount("Amazon"), 3, "Batch bonus summary should count Amazon reviews.");
 assertEqual(platformCount("Google"), 3, "Batch bonus summary should count Google reviews.");
 assertEqual(platformCount("Trustpilot"), 2, "Batch bonus summary should count Trustpilot reviews.");
@@ -126,6 +126,7 @@ const verifiedAmazonRow = rowByTicket("100001");
 assertEqual(verifiedAmazonRow.platform, "Amazon", "Verified Amazon row should be Amazon.");
 assertEqual(verifiedAmazonRow.verifiedFiveStar, "Y", "Verified Amazon row should export Y.");
 assertEqual(verifiedAmazonRow.containsPictures, "N", "Amazon verified row without ***PHOTO*** should not mark pictures.");
+assertEqual(calculateBonus(verifiedAmazonRow), 25, "Verified Amazon without photo should be worth $25.");
 assertEqual(verifiedAmazonRow.replacementSent, "", "Amazon Replacement sent column should stay blank.");
 assertEqual(
   verifiedAmazonRow.customerContactTicketLink,
@@ -143,12 +144,14 @@ const unverifiedAmazonRow = rowByTicket("100002");
 assertEqual(unverifiedAmazonRow.platform, "Amazon", "Unverified Amazon row should be Amazon.");
 assertEqual(unverifiedAmazonRow.verifiedFiveStar, "N", "Amazon row without verified wording should export N.");
 assertEqual(unverifiedAmazonRow.containsPictures, "N", "Amazon unverified row without ***PHOTO*** should not mark pictures.");
+assertEqual(calculateBonus(unverifiedAmazonRow), 15, "Unverified Amazon without photo should be worth $15.");
 assertEqual(unverifiedAmazonRow.replacementSent, "", "Unverified Amazon Replacement sent column should stay blank.");
 
 const amazonPhotoRow = rowByTicket("100003");
 assertEqual(amazonPhotoRow.platform, "Amazon", "Amazon photo row should be Amazon.");
 assertEqual(amazonPhotoRow.verifiedFiveStar, "Y", "Amazon photo row with Verified Purchase should export Y.");
 assertEqual(amazonPhotoRow.containsPictures, "Y", "***PHOTO*** should set Contains pictures? to Y for Amazon.");
+assertEqual(calculateBonus(amazonPhotoRow), 30, "Verified Amazon with photo should be worth $30.");
 assertEqual(amazonPhotoRow.containsVideo, "N", "Contains video? should default to N.");
 
 const googleRow = rowByTicket("100004");
@@ -156,6 +159,7 @@ assertEqual(googleRow.platform, "Google", "Google row should detect Google platf
 assertEqual(googleRow.verifiedFiveStar, "Y", "Google row should export verified Y.");
 assertEqual(googleRow.ratingOrStatus, "5 out of 5 stars", "Google row without rating should default to 5 out of 5 stars.");
 assertEqual(googleRow.containsPictures, "N", "Google row without ***PHOTO*** should not mark pictures.");
+assertEqual(calculateBonus(googleRow), 10, "Google without photo should be worth $10.");
 assert(googleRow.replacementSent.includes("Great customer service"), "Google Replacement sent should contain the review text.");
 assertFlags(googleRow, [], "Clean Google row should not generate model reminders.");
 assertEqual(
@@ -192,6 +196,7 @@ const googlePhotoRow = rowByTicket("100005");
 assertEqual(googlePhotoRow.platform, "Google", "Google photo row should detect Google platform.");
 assertEqual(googlePhotoRow.containsPictures, "Y", "***PHOTO*** should set Contains pictures? to Y for Google.");
 assertEqual(googlePhotoRow.verifiedFiveStar, "Y", "Google photo row should export verified Y.");
+assertEqual(calculateBonus(googlePhotoRow), 20, "Google with photo should be worth $20.");
 assert(googlePhotoRow.replacementSent.includes("Robert walked me"), "Google photo Replacement sent should contain review text.");
 assert(!googlePhotoRow.replacementSent.includes("***PHOTO***"), "Google photo Replacement sent should not include the internal photo marker.");
 assert(!googlePhotoRow.customerContactTicketLink.includes("***PHOTO***"), "Google photo customer contact cell should not include the internal photo marker.");
@@ -243,12 +248,14 @@ const trustpilotRow = rowByTicket("100006");
 assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect Trustpilot platform.");
 assertEqual(trustpilotRow.verifiedFiveStar, "Y", "Trustpilot row should export verified Y.");
 assertEqual(trustpilotRow.containsPictures, "N", "Trustpilot row without ***PHOTO*** should not mark pictures.");
+assertEqual(calculateBonus(trustpilotRow), 15, "Trustpilot should be worth $15.");
 assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Replacement sent should contain the review text.");
 assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate model reminders.");
 
 const costcoRow = rowByTicket("100007");
 assertEqual(costcoRow.platform, "Costco", "Costco row should detect Costco platform.");
 assertEqual(costcoRow.verifiedFiveStar, "Y", "Costco row should export verified Y.");
+assertEqual(calculateBonus(costcoRow), 25, "Costco should be worth $25.");
 assert(costcoRow.replacementSent.includes("Good product"), "Costco Replacement sent should contain the review text.");
 assertFlags(costcoRow, [], "Clean Costco row should not generate model reminders.");
 
@@ -297,6 +304,61 @@ assertEqual(
   "Unknown platform review URL should stay in Link to review for manual fixing.",
 );
 assertFlags(unknownPlatformRows[0], [], "Unknown platform row should not generate model reminders when the model is present.");
+
+const bonusRuleRows = parseReviewNotes([
+  "Ticket #100014",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100014",
+  "https://www.amazon.com/review/amazon-unverified-photo",
+  "5 out of 5 stars",
+  "***PHOTO***",
+  "The system works well and support answered my question.",
+  "Una Amazonphoto - RCC7AK",
+  "",
+  "Ticket #100015",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100015",
+  "https://www.costco.ca/reviews/costco-ca-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support helped with setup.",
+  "Cal CostcoCa - RO500",
+  "",
+  "Ticket #100016",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100016",
+  "https://www.homedepot.ca/product/reviews/home-depot-ca-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "Clear setup help and good product.",
+  "Holly Depotca - HDCA123",
+  "",
+  "Ticket #100017",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100017",
+  "https://www.zoro.com/reviews/zoro-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "The replacement arrived and support followed up.",
+  "Zane Zoro - ZR123",
+  "",
+  "Ticket #100018",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100018",
+  "https://www.ispringfilter.com/pages/reviews",
+  "Jun 5, 2026",
+  "5 stars",
+  "Website review after support helped finish installation.",
+  "Wendy Website - RCC7",
+].join("\n"));
+assertEqual(bonusRuleRows.length, 5, "New bonus-rule platform fixture should parse every row.");
+assertEqual(bonusRuleRows[0].platform, "Amazon", "Amazon unverified photo fixture should detect Amazon.");
+assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fixture should stay unverified.");
+assertEqual(bonusRuleRows[0].containsPictures, "Y", "Amazon unverified photo fixture should use the internal photo marker.");
+assertEqual(calculateBonus(bonusRuleRows[0]), 20, "Unverified Amazon with photo should be worth $20.");
+assertEqual(bonusRuleRows[1].platform, "Costco", "Costco.ca should detect as Costco.");
+assertEqual(calculateBonus(bonusRuleRows[1]), 25, "Costco.ca should be worth $25.");
+assertEqual(bonusRuleRows[2].platform, "Home Depot", "Home Depot Canada should detect as Home Depot.");
+assertEqual(calculateBonus(bonusRuleRows[2]), 25, "Home Depot Canada should be worth $25.");
+assertEqual(bonusRuleRows[3].platform, "Zoro", "Zoro should be detected.");
+assertEqual(calculateBonus(bonusRuleRows[3]), 25, "Zoro should be worth $25.");
+assertEqual(bonusRuleRows[4].platform, "iSpring Website", "iSpring website reviews should be detected.");
+assertEqual(calculateBonus(bonusRuleRows[4]), 25, "iSpring website reviews should be worth $25.");
 
 const homeDepotBonusRows = parseReviewNotes([
   "Ticket #100011",
