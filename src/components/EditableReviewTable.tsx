@@ -9,24 +9,25 @@ import { UiIcon } from "./UiIcon";
 type EditableReviewTableProps = {
   density: ReviewTableDensity;
   rows: ReviewRow[];
+  rowNumbers?: number[];
   onRowsChange: (rows: ReviewRow[]) => void;
   emptyMessage?: string;
 };
 
-export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage }: EditableReviewTableProps) {
+export function EditableReviewTable({ density, rows, rowNumbers, onRowsChange, emptyMessage }: EditableReviewTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(() => new Set());
 
   function updateCell(rowIndex: number, key: ReviewColumnKey, value: string) {
     onRowsChange(rows.map((row, index) => (index === rowIndex ? updateReviewRowCell(row, key, value) : row)));
   }
 
-  function toggleRow(rowIndex: number) {
+  function toggleRow(rowNumber: number) {
     setExpandedRows((current) => {
       const next = new Set(current);
-      if (next.has(rowIndex)) {
-        next.delete(rowIndex);
+      if (next.has(rowNumber)) {
+        next.delete(rowNumber);
       } else {
-        next.add(rowIndex);
+        next.add(rowNumber);
       }
       return next;
     });
@@ -58,7 +59,7 @@ export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage 
   }
 
   return (
-    <div className="tableWrap">
+    <div className={`tableWrap ${density}TableWrap`}>
       <table className={`reviewTable ${density}Table`}>
         <colgroup>
           <col className="reviewCol-expand" />
@@ -73,30 +74,32 @@ export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage 
         <thead>
           <tr>
             <th className="reviewCol-expand" scope="col">
-              <span className="srOnly">Expand row</span>
+              #
             </th>
             {REVIEW_COLUMNS.map((column) => (
               <th key={column.key} className={getReviewTableColumnClassName(column.key)} scope="col">
-                {column.label}
+                {getBrowserReviewColumnLabel(column.key)}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => {
-            const isExpanded = expandedRows.has(rowIndex);
-            const rowKey = `${row.reviewLink || row.ticketLink}-${rowIndex}`;
+            const displayRowNumber = rowNumbers?.[rowIndex] ?? rowIndex + 1;
+            const isExpanded = expandedRows.has(displayRowNumber);
+            const rowKey = `${row.reviewLink || row.ticketLink || "review-row"}-${displayRowNumber}`;
 
             return (
               <Fragment key={rowKey}>
                 <tr key={rowKey} className={row.flags.length > 0 ? "flaggedRow" : ""}>
-                  <td className="reviewCol-expand">
+                  <td className="reviewCol-expand rowNumberCell">
+                    <span>{displayRowNumber}</span>
                     <button
                       type="button"
                       className="expandRowButton"
                       aria-expanded={isExpanded}
-                      aria-label={`${isExpanded ? "Collapse" : "Expand"} row ${rowIndex + 1}`}
-                      onClick={() => toggleRow(rowIndex)}
+                      aria-label={`${isExpanded ? "Collapse" : "Expand"} row ${displayRowNumber}`}
+                      onClick={() => toggleRow(displayRowNumber)}
                     >
                       {isExpanded ? "-" : "+"}
                     </button>
@@ -110,7 +113,7 @@ export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage 
                 {isExpanded ? (
                   <tr key={`${rowKey}-details`} className={row.flags.length > 0 ? "expandedReviewRow flaggedRow" : "expandedReviewRow"}>
                     <td colSpan={REVIEW_COLUMNS.length + 1}>
-                      <ExpandedRowEditor row={row} rowIndex={rowIndex} onChange={updateCell} />
+                      <ExpandedRowEditor row={row} rowNumber={displayRowNumber} rowIndex={rowIndex} onChange={updateCell} />
                     </td>
                   </tr>
                 ) : null}
@@ -169,10 +172,12 @@ function UrlDisplayCell({
 
 function ExpandedRowEditor({
   row,
+  rowNumber,
   rowIndex,
   onChange,
 }: {
   row: ReviewRow;
+  rowNumber: number;
   rowIndex: number;
   onChange: (rowIndex: number, key: ReviewColumnKey, value: string) => void;
 }) {
@@ -180,10 +185,10 @@ function ExpandedRowEditor({
     <div className="expandedReviewEditor">
       {REVIEW_COLUMNS.map((column) => (
         <label key={column.key} className={`expandedField ${getReviewTableColumnClassName(column.key)}`}>
-          <span>{column.label}</span>
+          <span>{getBrowserReviewColumnLabel(column.key)}</span>
           {column.key === "verifiedFiveStar" || column.key === "containsVideo" || column.key === "containsPictures" ? (
             <select
-              aria-label={`${column.label} row ${rowIndex + 1}`}
+              aria-label={`${column.label} row ${rowNumber}`}
               value={row[column.key]}
               onChange={(event) => onChange(rowIndex, column.key, event.target.value)}
             >
@@ -192,7 +197,7 @@ function ExpandedRowEditor({
             </select>
           ) : (
             <textarea
-              aria-label={`${column.label} row ${rowIndex + 1}`}
+              aria-label={`${column.label} row ${rowNumber}`}
               value={getEditableCellValue(row, column.key)}
               onChange={(event) => onChange(rowIndex, column.key, event.target.value)}
               rows={getExpandedTextareaRows(row, column.key)}
@@ -202,6 +207,38 @@ function ExpandedRowEditor({
       ))}
     </div>
   );
+}
+
+function getBrowserReviewColumnLabel(key: ReviewColumnKey): string {
+  if (key === "reviewLink") {
+    return "Review";
+  }
+
+  if (key === "modelNumber") {
+    return "Model";
+  }
+
+  if (key === "verifiedFiveStar") {
+    return "5 star";
+  }
+
+  if (key === "containsVideo") {
+    return "Video";
+  }
+
+  if (key === "containsPictures") {
+    return "Photo";
+  }
+
+  if (key === "customerContactTicketLink") {
+    return "Customer / Platform";
+  }
+
+  if (key === "replacementSent") {
+    return "Review Text";
+  }
+
+  return "Ticket";
 }
 
 function getEditableCellValue(row: ReviewRow, key: ReviewColumnKey): string {

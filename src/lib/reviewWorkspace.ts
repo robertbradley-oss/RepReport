@@ -13,10 +13,13 @@ export function formatSourceNotesSummary(parsedRowCount: number): string {
   return `Source notes - ${parsedRowCount} parsed`;
 }
 
-export function buildVisibleReviewRows(rows: ReviewRow[], flaggedOnly: boolean): VisibleReviewRow[] {
+export function buildVisibleReviewRows(rows: ReviewRow[], flaggedOnly: boolean, searchQuery = ""): VisibleReviewRow[] {
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
   return rows
     .map((row, sourceIndex) => ({ row, sourceIndex }))
-    .filter(({ row }) => !flaggedOnly || row.flags.length > 0);
+    .filter(({ row }) => !flaggedOnly || row.flags.length > 0)
+    .filter(({ row }) => normalizedSearchQuery.length === 0 || matchesReviewRowSearch(row, normalizedSearchQuery));
 }
 
 export function mergeVisibleReviewRowEdits(
@@ -34,4 +37,16 @@ export function mergeVisibleReviewRowEdits(
   });
 
   return allRows.map((row, sourceIndex) => editsBySourceIndex.get(sourceIndex) ?? row);
+}
+
+function matchesReviewRowSearch(row: ReviewRow, normalizedSearchQuery: string): boolean {
+  return [
+    row.ticketLink,
+    row.ticketNumber,
+    row.reviewLink,
+    row.modelNumber,
+    row.customerContactTicketLink,
+    row.platform,
+    row.replacementSent,
+  ].some((value) => value?.toLowerCase().includes(normalizedSearchQuery));
 }

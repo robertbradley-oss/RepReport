@@ -8,6 +8,7 @@ import {
   Filter,
   Plus,
   RotateCcw,
+  Search,
   Sparkles,
   TableProperties,
   Trash2,
@@ -26,6 +27,7 @@ const icons = {
   loadSample: RotateCcw,
   parse: Sparkles,
   reviewLog: TableProperties,
+  search: Search,
   template: BookOpen,
 } satisfies Record<string, LucideIcon>;
 
