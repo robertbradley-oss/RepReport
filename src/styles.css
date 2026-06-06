@@ -206,6 +206,11 @@ button:disabled {
   transition: grid-template-columns 220ms ease;
 }
 
+/* KPI panels size to their content instead of stretching to equal height */
+.kpiGrid {
+  align-items: start;
+}
+
 .reviewLogGrid.sourceNotesCollapsed {
   grid-template-columns: minmax(210px, 0.28fr) minmax(720px, 1.72fr);
 }
@@ -905,8 +910,24 @@ button:disabled {
   margin-top: 5px;
 }
 
+/* KPI notes textarea: practical height, scroll long input instead of a giant card */
+.inputPanel #kpi-notes {
+  max-height: 46vh;
+  min-height: 300px;
+  overflow: auto;
+}
+
+/* KPI preview has 5 columns, not 8 — fit the panel rather than inheriting the
+   wide Review Log min-width and forcing a horizontal scrollbar */
+.kpiTable {
+  min-width: 0;
+}
+
 .kpiTable textarea {
-  min-width: 230px;
+  field-sizing: content;
+  max-height: 240px;
+  min-height: 84px;
+  min-width: 0;
 }
 
 .emptyState {
