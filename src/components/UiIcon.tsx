@@ -2,7 +2,6 @@ import {
   BookOpen,
   ChevronDown,
   Download,
-  Filter,
   Plus,
   RotateCcw,
   Search,
@@ -77,16 +76,35 @@ function ExcelIcon({ size = 24 }: LucideProps): ReactElement {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
+      strokeLinecap="square"
+      strokeMiterlimit={10}
       strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
     >
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <path d="M10 3v18" />
-      <path d="M5.8 9.5l3.4 5M9.2 9.5l-3.4 5" strokeWidth={2.6} />
-      <path d="M12.5 9h5M12.5 12.5h5M12.5 16h5" />
+      <path d="m3,16v3c0,1.105.895,2,2,2h14c1.105,0,2-.895,2-2v-3" />
+      <polyline points="12 15 12 3 12 4" />
+      <polyline points="17 8 12 3 7 8" />
+    </svg>
+  );
+}
+
+function FilterIcon({ size = 24 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="square"
+      strokeMiterlimit={10}
+      strokeWidth={2}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <polygon points="3 3 21 3 21 5 14 13 14 20 10 22 10 13 3 5 3 3" />
     </svg>
   );
 }
@@ -119,7 +137,7 @@ const icons = {
   copy: CopyIcon,
   download: Download,
   excel: ExcelIcon,
-  filter: Filter,
+  filter: FilterIcon,
   kpiReport: KpiReportIcon,
   loadSample: RotateCcw,
   parse: ParseIcon,
