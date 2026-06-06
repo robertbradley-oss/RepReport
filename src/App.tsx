@@ -13,12 +13,13 @@ export default function App() {
     <main className="appShell">
       <header className="appHeader">
         <div className="brandBlock">
-          <img className="brandLogo" src="/assets/repreport-logo.png" alt="RepReport" />
-          <div className="brandText">
-            <h1 className="srOnly">RepReport</h1>
-            <p>{activeModeLabel}</p>
-          </div>
+          <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={36} height={36} />
+          <h1 className="brandWordmark">
+            <span className="brandRep">Rep</span>
+            <span className="brandReport">Report</span>
+          </h1>
         </div>
+        <p className="appModeLabel">{activeModeLabel}</p>
       </header>
 
       <nav className="modeTabs" aria-label="RepReport modes">
