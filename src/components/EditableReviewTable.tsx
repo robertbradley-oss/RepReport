@@ -62,7 +62,7 @@ export function EditableReviewTable({ density, rows, rowNumbers, onRowsChange, e
     <div className={`tableWrap ${density}TableWrap`}>
       <table className={`reviewTable ${density}Table`}>
         <colgroup>
-          <col className="reviewCol-expand" />
+          <col className="reviewCol-rowNumber" />
           {REVIEW_COLUMNS.map((column) => (
             <col
               key={column.key}
@@ -73,7 +73,7 @@ export function EditableReviewTable({ density, rows, rowNumbers, onRowsChange, e
         </colgroup>
         <thead>
           <tr>
-            <th className="reviewCol-expand" scope="col">
+            <th className="reviewCol-rowNumber" scope="col">
               #
             </th>
             {REVIEW_COLUMNS.map((column) => (
@@ -92,16 +92,15 @@ export function EditableReviewTable({ density, rows, rowNumbers, onRowsChange, e
             return (
               <Fragment key={rowKey}>
                 <tr key={rowKey} className={row.flags.length > 0 ? "flaggedRow" : ""}>
-                  <td className="reviewCol-expand rowNumberCell">
-                    <span>{displayRowNumber}</span>
+                  <td className="reviewCol-rowNumber rowNumberCell">
                     <button
                       type="button"
-                      className="expandRowButton"
+                      className="rowNumberButton"
                       aria-expanded={isExpanded}
-                      aria-label={`${isExpanded ? "Collapse" : "Expand"} row ${displayRowNumber}`}
+                      aria-label={`${isExpanded ? "Collapse editor for" : "Edit"} row ${displayRowNumber}`}
                       onClick={() => toggleRow(displayRowNumber)}
                     >
-                      {isExpanded ? "-" : "+"}
+                      {displayRowNumber}
                     </button>
                   </td>
                   {REVIEW_COLUMNS.map((column) => (

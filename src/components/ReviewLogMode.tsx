@@ -26,7 +26,6 @@ export function ReviewLogMode() {
   const [exportStatus, setExportStatus] = useState("");
   const [parseStatus, setParseStatus] = useState("");
   const [templateStatus, setTemplateStatus] = useState("");
-  const [isTemplateVisible, setIsTemplateVisible] = useState(false);
   const [tableDensity, setTableDensity] = useState<ReviewTableDensity>(DEFAULT_REVIEW_TABLE_DENSITY);
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
@@ -191,22 +190,22 @@ export function ReviewLogMode() {
                 Clear
               </button>
             </div>
-            <div className="templateHelper">
+            <details className="templateHelper">
+              <summary>
+                <UiIcon name="template" />
+                Template tools
+              </summary>
               <div className="buttonRow templateActions">
-                <button className="secondaryButton" type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
-                  <UiIcon name="template" />
-                  {isTemplateVisible ? "Hide Template" : "Show Template"}
-                </button>
                 <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
                   <UiIcon name="copy" />
                   Copy Template
                 </button>
               </div>
-              {isTemplateVisible && <pre className="templateBlock">{reviewLogTemplate}</pre>}
+              <pre className="templateBlock">{reviewLogTemplate}</pre>
               <div className="templateStatus" aria-live="polite">
                 {templateStatus}
               </div>
-            </div>
+            </details>
           </>
         )}
       </div>
