@@ -4,7 +4,6 @@ import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { UiIcon } from "./UiIcon";
 import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
-import { downloadCsv } from "../lib/exportCsv";
 import { exportExcel } from "../lib/exportExcel";
 import { formatFlagsForClipboard } from "../lib/flagClipboard";
 import { copyText } from "../lib/clipboard";
@@ -29,12 +28,11 @@ export function ReviewLogMode() {
   const [tableDensity, setTableDensity] = useState<ReviewTableDensity>(DEFAULT_REVIEW_TABLE_DENSITY);
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
-  const [rowSearch, setRowSearch] = useState("");
   const [flagCopyStatus, setFlagCopyStatus] = useState("");
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
-  const visibleReviewRows = useMemo(() => buildVisibleReviewRows(rows, flaggedOnly, rowSearch), [rows, flaggedOnly, rowSearch]);
+  const visibleReviewRows = useMemo(() => buildVisibleReviewRows(rows, flaggedOnly), [rows, flaggedOnly]);
   const visibleRows = useMemo(() => visibleReviewRows.map(({ row }) => row), [visibleReviewRows]);
   const visibleRowNumbers = useMemo(() => visibleReviewRows.map(({ sourceIndex }) => sourceIndex + 1), [visibleReviewRows]);
   const sourceNotesSummary = formatSourceNotesSummary(rows.length);
@@ -50,7 +48,6 @@ export function ReviewLogMode() {
     setRows(parsedRows);
     setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));
     setFlaggedOnly(false);
-    setRowSearch("");
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
@@ -72,7 +69,6 @@ export function ReviewLogMode() {
     setFlagCopyStatus("");
     setIsSourceNotesCollapsed(false);
     setFlaggedOnly(false);
-    setRowSearch("");
   }
 
   function handleLoadSample() {
@@ -84,14 +80,12 @@ export function ReviewLogMode() {
     setParseStatus("Sample review notes loaded.");
     setIsSourceNotesCollapsed(false);
     setFlaggedOnly(false);
-    setRowSearch("");
   }
 
   function handleRowsChange(nextRows: ReviewRow[]) {
     setRows(nextRows);
     if (nextRows.length === 0) {
       setFlaggedOnly(false);
-      setRowSearch("");
     }
     setCopyStatus("");
     setExportStatus("");
@@ -104,22 +98,9 @@ export function ReviewLogMode() {
     handleRowsChange(visibleReviewRows.length === rows.length ? nextVisibleRows : mergeVisibleReviewRowEdits(rows, visibleReviewRows, nextVisibleRows));
   }
 
-  function handleAddBlankRow() {
-    handleRowsChange([...rows, createBlankReviewRow()]);
-  }
-
-  function handleDeleteLastRow() {
-    handleRowsChange(rows.slice(0, -1));
-  }
-
   async function handleCopyRows() {
     const copied = await copyReviewRows(rows);
     setCopyStatus(copied ? `Copied ${rows.length} row${rows.length === 1 ? "" : "s"}.` : "Copy failed. Select the table cells and copy manually.");
-  }
-
-  function handleDownloadCsv() {
-    downloadCsv(rows);
-    setExportStatus("Review CSV downloaded.");
   }
 
   async function handleExportExcel() {
@@ -234,70 +215,45 @@ export function ReviewLogMode() {
                 Export Excel
               </button>
             </div>
-            <div className="buttonRow secondaryActions">
-              <button className="secondaryButton" type="button" onClick={handleDownloadCsv} disabled={rows.length === 0}>
-                <UiIcon name="download" />
-                Download CSV
-              </button>
-              <button className="secondaryButton" type="button" onClick={handleAddBlankRow}>
-                <UiIcon name="add" />
-                Add Blank Row
-              </button>
-              <button
-                className={flaggedOnly ? "filterButton active" : "filterButton"}
-                type="button"
-                aria-pressed={flaggedOnly}
-                onClick={() => setFlaggedOnly((enabled) => !enabled)}
-              >
-                <UiIcon name="filter" />
-                Show Missing Models ({flags.length})
-              </button>
-              <button className="secondaryButton" type="button" onClick={handleCopyModelReminders}>
-                <UiIcon name="copy" />
-                Copy Model Reminders
-              </button>
-            </div>
-            <div className="buttonRow destructiveActions">
-              <button className="dangerButton" type="button" onClick={handleDeleteLastRow} disabled={rows.length === 0}>
-                <UiIcon name="clear" />
-                Delete Last Row
-              </button>
+            <div className="reviewControlsRow">
+              <div className="buttonRow secondaryActions">
+                <button
+                  className={flaggedOnly ? "filterButton active" : "filterButton"}
+                  type="button"
+                  aria-pressed={flaggedOnly}
+                  onClick={() => setFlaggedOnly((enabled) => !enabled)}
+                >
+                  <UiIcon name="filter" />
+                  Show Missing Models ({flags.length})
+                </button>
+                <button className="secondaryButton" type="button" onClick={handleCopyModelReminders}>
+                  <UiIcon name="copy" />
+                  Copy Model Reminders
+                </button>
+              </div>
+              <div className="densityToggle" role="group" aria-label="Table density">
+                {REVIEW_TABLE_DENSITIES.map((density) => (
+                  <button
+                    key={density}
+                    className={tableDensity === density ? "active" : ""}
+                    type="button"
+                    aria-pressed={tableDensity === density}
+                    onClick={() => setTableDensity(density)}
+                  >
+                    {density === "compact" ? "Compact" : "Comfortable"}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="tableToolbar" aria-label="Review table display options">
-          <label className="rowSearchField" htmlFor="review-row-search">
-            <UiIcon name="search" />
-            <span className="srOnly">Filter visible rows</span>
-            <input
-              id="review-row-search"
-              value={rowSearch}
-              onChange={(event) => setRowSearch(event.target.value)}
-              placeholder="Filter rows..."
-              disabled={rows.length === 0}
-            />
-          </label>
-          <div className="densityToggle" role="group" aria-label="Table density">
-            {REVIEW_TABLE_DENSITIES.map((density) => (
-              <button
-                key={density}
-                className={tableDensity === density ? "active" : ""}
-                type="button"
-                aria-pressed={tableDensity === density}
-                onClick={() => setTableDensity(density)}
-              >
-                {density === "compact" ? "Compact" : "Comfortable"}
-              </button>
-            ))}
-          </div>
-        </div>
         <EditableReviewTable
           density={tableDensity}
           rows={visibleRows}
           rowNumbers={visibleRowNumbers}
           onRowsChange={handleVisibleRowsChange}
-          emptyMessage={rowSearch.trim() ? "No rows match the current filter." : flaggedOnly ? "No rows missing models." : undefined}
+          emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
         />
         <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
         <div className="statusLine" aria-live="polite">
@@ -307,19 +263,4 @@ export function ReviewLogMode() {
       </div>
     </section>
   );
-}
-
-function createBlankReviewRow(): ReviewRow {
-  return {
-    ticketLink: "",
-    reviewLink: "",
-    modelNumber: "",
-    verifiedFiveStar: "N",
-    containsVideo: "N",
-    containsPictures: "N",
-    customerContactTicketLink: "",
-    replacementSent: "",
-    platform: "",
-    flags: [],
-  };
 }
