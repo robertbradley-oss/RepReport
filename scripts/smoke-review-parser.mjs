@@ -282,6 +282,17 @@ assertEqual(missingModelRow.customerName, "Ivy Missingmodel", "Missing-model row
 assertEqual(missingModelRow.modelNumber, "", "Missing-model row should export a blank model.");
 assert(missingModelRow.flags.includes("Model missing"), "Missing-model row should generate Model missing flag.");
 
+// Inline model editing: while typing (value-only update, no flag recompute) the
+// row must keep its Model missing flag so it stays visible under the filter; only
+// the committed edit (updateReviewRowCell) clears the flag and drops it.
+const modelTypingRow = { ...missingModelRow, modelNumber: "R" };
+assert(modelTypingRow.flags.includes("Model missing"), "Typing a model should not clear the flag before commit.");
+assertEqual(buildVisibleReviewRows([modelTypingRow], true).length, 1, "Missing-model row should stay visible while the model is being typed.");
+const modelCommittedRow = updateReviewRowCell(missingModelRow, "modelNumber", "RCC7AK");
+assertEqual(modelCommittedRow.modelNumber, "RCC7AK", "Committed model edit should store the full model value.");
+assert(!modelCommittedRow.flags.includes("Model missing"), "Committing a model should clear the Model missing flag.");
+assertEqual(buildVisibleReviewRows([modelCommittedRow], true).length, 0, "Committed model row should leave the missing-model filter.");
+
 const missingLinkRow = rowByTicket("100010");
 assertEqual(missingLinkRow.platform, "Unknown", "Missing review link row should have Unknown platform.");
 assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should export a blank review link.");

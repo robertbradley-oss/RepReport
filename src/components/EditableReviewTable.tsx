@@ -21,6 +21,19 @@ function EditableReviewTableImpl({ density, rows, rowNumbers, onRowsChange, empt
     onRowsChange(rows.map((row, index) => (index === rowIndex ? updateReviewRowCell(row, key, value) : row)));
   }
 
+  // Inline model editing: update the value on each keystroke but DON'T recompute
+  // the "Model missing" flag yet, so a missing-model row keeps its flag (and stays
+  // visible under the Show Missing Models filter) while Robert finishes typing.
+  function updateModelValue(rowIndex: number, value: string) {
+    onRowsChange(rows.map((row, index) => (index === rowIndex ? { ...row, modelNumber: value } : row)));
+  }
+
+  // Commit on blur/Enter: recompute flags from the now-complete model value, which
+  // updates the reminder count and lets the filter drop the corrected row.
+  function commitModel(rowIndex: number) {
+    onRowsChange(rows.map((row, index) => (index === rowIndex ? updateReviewRowCell(row, "modelNumber", row.modelNumber) : row)));
+  }
+
   function toggleRow(rowNumber: number) {
     setExpandedRows((current) => {
       const next = new Set(current);
@@ -113,7 +126,8 @@ function EditableReviewTableImpl({ density, rows, rowNumbers, onRowsChange, empt
                           placeholder="Add model"
                           aria-label={`Model number row ${displayRowNumber}`}
                           spellCheck={false}
-                          onChange={(event) => updateCell(rowIndex, "modelNumber", event.target.value)}
+                          onChange={(event) => updateModelValue(rowIndex, event.target.value)}
+                          onBlur={() => commitModel(rowIndex)}
                           onKeyDown={(event) => {
                             if (event.key === "Enter") {
                               event.currentTarget.blur();
