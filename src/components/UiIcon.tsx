@@ -171,8 +171,25 @@ function TrashIcon({ size = 24 }: LucideProps): ReactElement {
   );
 }
 
+function CheckIcon({ size = 24 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <polygon points="7.959 20.513 1.592 12.872 3.128 11.592 8.041 17.487 20.947 3.587 22.413 4.948 7.959 20.513" />
+    </svg>
+  );
+}
+
 const icons = {
   add: Plus,
+  check: CheckIcon,
   clear: TrashIcon,
   collapseInput: ChevronDown,
   copy: CopyIcon,
@@ -200,4 +217,16 @@ export function UiIcon({ name, size = 16 }: UiIconProps) {
   const Icon = icons[name];
 
   return <Icon size={size} strokeWidth={1} aria-hidden="true" focusable="false" />;
+}
+
+// Copy button icon that swaps to a checkmark on a successful copy. The swap is
+// scoped to the icon only (two stacked glyphs crossfading); reduced-motion users
+// get an instant swap via the global guard.
+export function CopyResultIcon({ copied, size = 16 }: { copied: boolean; size?: number }) {
+  return (
+    <span className={`copyIconSwap${copied ? " is-success" : ""}`} aria-hidden="true">
+      <CopyIcon size={size} />
+      <CheckIcon size={size} />
+    </span>
+  );
 }

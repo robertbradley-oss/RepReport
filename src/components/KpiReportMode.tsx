@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { UiIcon } from "./UiIcon";
+import { useRef, useState } from "react";
+import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
@@ -11,6 +11,8 @@ export function KpiReportMode() {
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
   const [formatStatus, setFormatStatus] = useState("");
+  const [copySuccess, setCopySuccess] = useState(false);
+  const copySuccessTimer = useRef<number | undefined>(undefined);
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
@@ -39,6 +41,11 @@ export function KpiReportMode() {
   async function handleCopyRow() {
     const copied = await copyText(buildKpiTsv(row));
     setCopyStatus(copied ? "Copied 1 KPI row." : "Copy failed. Select the KPI row cells and copy manually.");
+    if (copied) {
+      setCopySuccess(true);
+      window.clearTimeout(copySuccessTimer.current);
+      copySuccessTimer.current = window.setTimeout(() => setCopySuccess(false), 1100);
+    }
   }
 
   async function handleExportExcel() {
@@ -82,7 +89,7 @@ export function KpiReportMode() {
           </div>
           <div className="buttonRow">
             <button type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
-              <UiIcon name="copy" />
+              <CopyResultIcon copied={copySuccess} />
               Copy KPI Row
             </button>
             <button type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>

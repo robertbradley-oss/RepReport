@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
-import { UiIcon } from "./UiIcon";
+import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { reviewLogTemplate } from "../sampleData";
 import { exportExcel } from "../lib/exportExcel";
 import { copyText } from "../lib/clipboard";
@@ -26,6 +26,8 @@ export function ReviewLogMode() {
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const copySuccessTimer = useRef<number | undefined>(undefined);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -89,6 +91,11 @@ export function ReviewLogMode() {
   async function handleCopyRows() {
     const copied = await copyReviewRows(rows);
     setCopyStatus(copied ? `Copied ${rows.length} row${rows.length === 1 ? "" : "s"}.` : "Copy failed. Select the table cells and copy manually.");
+    if (copied) {
+      setCopySuccess(true);
+      window.clearTimeout(copySuccessTimer.current);
+      copySuccessTimer.current = window.setTimeout(() => setCopySuccess(false), 1100);
+    }
   }
 
   async function handleExportExcel() {
@@ -196,7 +203,7 @@ export function ReviewLogMode() {
           <div className="actionStack" aria-label="Review output actions">
             <div className="buttonRow primaryActions">
               <button className="primaryButton copyPrimaryButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
-                <UiIcon name="copy" />
+                <CopyResultIcon copied={copySuccess} />
                 Copy Rows
               </button>
               <button className="primaryButton excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
