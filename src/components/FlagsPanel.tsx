@@ -16,24 +16,26 @@ export function FlagsPanel({ flags }: FlagsPanelProps) {
       {flags.length === 0 ? (
         <p>No missing model reminders.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Row</th>
-              <th>Platform</th>
-              <th>Reminder</th>
-            </tr>
-          </thead>
-          <tbody>
-            {flags.map((flag, index) => (
-              <tr key={`${flag.rowNumber}-${flag.message}-${index}`}>
-                <td>{flag.rowNumber}</td>
-                <td>{flag.platform}</td>
-                <td>{flag.message}</td>
+        <div className="flagsTableScroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Platform</th>
+                <th>Reminder</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {flags.map((flag, index) => (
+                <tr key={`${flag.rowNumber}-${flag.message}-${index}`}>
+                  <td>{flag.rowNumber}</td>
+                  <td>{flag.platform}</td>
+                  <td>{flag.message}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

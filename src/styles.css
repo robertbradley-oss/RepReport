@@ -276,6 +276,13 @@ button:disabled {
   grid-template-columns: minmax(210px, 0.28fr) minmax(720px, 1.72fr);
 }
 
+.reviewLeftColumn {
+  align-self: start;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1019,6 +1026,20 @@ button:disabled {
 
 .flagsPanel {
   margin-top: 12px;
+}
+
+.reviewLeftColumn .flagsPanel {
+  background: #ffffff;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  margin-top: 0;
+  padding: 16px;
+}
+
+.flagsTableScroll {
+  max-height: 320px;
+  overflow: auto;
 }
 
 .flagsHeader {

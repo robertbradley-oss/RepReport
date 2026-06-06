@@ -98,7 +98,8 @@ export function ReviewLogMode() {
 
   return (
     <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Review Log Mode">
-      <div className="inputPanel reviewInputCard">
+      <div className="reviewLeftColumn">
+        <div className="inputPanel reviewInputCard">
         {isSourceNotesCollapsed ? (
           <div className="sourceNotesBar">
             <strong>{sourceNotesSummary}</strong>
@@ -162,6 +163,8 @@ export function ReviewLogMode() {
             </details>
           </>
         )}
+        </div>
+        {flags.length > 0 && <FlagsPanel flags={flags} />}
       </div>
 
       <div className="resultsPanel reviewOutputCard">
@@ -208,7 +211,6 @@ export function ReviewLogMode() {
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
-        <FlagsPanel flags={flags} />
       </div>
     </section>
   );
