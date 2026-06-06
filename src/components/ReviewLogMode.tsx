@@ -137,7 +137,7 @@ export function ReviewLogMode() {
           <>
             <div className="panelHeader">
               <div>
-                <span className="workflowStep">Paste notes</span>
+                <span className="workflowStep">Step 1 · Paste Notes</span>
                 <label className="panelLabel" htmlFor="review-notes">
                   Notepad Review Notes
                 </label>
@@ -150,18 +150,18 @@ export function ReviewLogMode() {
               placeholder="Paste ticket and review notes here..."
               spellCheck={false}
             />
-            <div className="buttonRow">
+            <div className="buttonRow parseActions">
               <button className="primaryButton" type="button" onClick={handleParse}>
                 <UiIcon name="parse" />
                 Parse Reviews
               </button>
-              <button className="dangerButton" type="button" onClick={handleClear}>
-                <UiIcon name="clear" />
-                Clear
-              </button>
               <button className="secondaryButton" type="button" onClick={handleLoadSample}>
                 <UiIcon name="loadSample" />
                 Load Sample
+              </button>
+              <button className="dangerButton" type="button" onClick={handleClear}>
+                <UiIcon name="clear" />
+                Clear
               </button>
             </div>
             <div className="templateHelper">
@@ -187,7 +187,7 @@ export function ReviewLogMode() {
       <div className="resultsPanel reviewOutputCard">
         <div className="panelHeader resultsHeader">
           <div>
-            <span className="workflowStep">Review rows</span>
+            <span className="workflowStep">Step 2 · Review Rows</span>
             <h2 className="panelTitle">Review Log Rows</h2>
           </div>
         </div>

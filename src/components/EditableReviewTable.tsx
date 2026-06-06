@@ -4,6 +4,7 @@ import { stripInternalNoteMarkers } from "../lib/internalNoteMarkers";
 import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../lib/reviewRowDisplay";
 import { getReviewLinkChipLabel, getTicketLinkChipLabel, isHttpUrl } from "../lib/reviewUrlDisplay";
+import { UiIcon } from "./UiIcon";
 
 type EditableReviewTableProps = {
   density: ReviewTableDensity;
@@ -38,8 +39,20 @@ export function EditableReviewTable({ density, rows, onRowsChange, emptyMessage 
       </div>
     ) : (
       <div className="emptyState">
+        <span className="emptyStateIcon">
+          <UiIcon name="reviewLog" size={24} />
+        </span>
         <strong>No review rows yet</strong>
-        <span>Paste Notepad notes on the left, then click Parse Reviews.</span>
+        <span>Paste your Notepad notes on the left, then click Parse Reviews to turn them into spreadsheet-ready rows.</span>
+        <div className="workflowChips" aria-label="Review Log workflow">
+          <span className="workflowChip">Paste notes</span>
+          <span className="workflowDivider">&gt;</span>
+          <span className="workflowChip">Parse</span>
+          <span className="workflowDivider">&gt;</span>
+          <span className="workflowChip">Review rows</span>
+          <span className="workflowDivider">&gt;</span>
+          <span className="workflowChip">Copy / Export</span>
+        </div>
       </div>
     );
   }
