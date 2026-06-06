@@ -29,7 +29,9 @@ export type BonusSummary = {
   platformCounts: Array<{ platform: string; count: number }>;
   verifiedAmazonCount: number;
   unverifiedAmazonCount: number;
+  amazonCount: number;
   photoReviewCount: number;
+  needsAttentionCount: number;
   estimatedBonusTotal: number;
 };
 
@@ -81,7 +83,9 @@ export function calculateBonusSummary(rows: ReviewRow[]): BonusSummary {
     platformCounts: Array.from(platformCounts, ([platform, count]) => ({ platform, count })).sort(comparePlatformCounts),
     verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y").length,
     unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length,
+    amazonCount: rows.filter((row) => row.platform === "Amazon").length,
     photoReviewCount: rows.filter((row) => row.containsPictures === "Y").length,
+    needsAttentionCount: rows.filter((row) => row.reviewLink.trim() === "" || row.platform === "Unknown").length,
     estimatedBonusTotal: rows.reduce((sum, row) => sum + calculateBonus(row), 0),
   };
 }

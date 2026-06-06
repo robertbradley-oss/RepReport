@@ -749,6 +749,13 @@ button:disabled {
   line-height: 1.35;
 }
 
+.summaryPanel .summarySub {
+  color: #6b7785;
+  display: inline;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .bonusCard {
   background: #eaf6ee;
   border-color: #9fceb0;
@@ -756,6 +763,15 @@ button:disabled {
 
 .bonusCard strong {
   color: #0f7a3a;
+}
+
+.attentionCard {
+  background: #fff8ec;
+  border-color: #e8cd93;
+}
+
+.attentionCard strong {
+  color: #9a6a12;
 }
 
 .filterButton.active {
@@ -1635,6 +1651,19 @@ button:disabled {
 
 [data-theme="dark"] .bonusCard strong {
   color: var(--d-green-text);
+}
+
+[data-theme="dark"] .attentionCard {
+  background: #2c2510;
+  border-color: #6b5a24;
+}
+
+[data-theme="dark"] .attentionCard strong {
+  color: #e3b257;
+}
+
+[data-theme="dark"] .summaryPanel .summarySub {
+  color: var(--d-muted);
 }
 
 [data-theme="dark"] .urlChip {

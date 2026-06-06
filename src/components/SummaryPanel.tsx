@@ -20,19 +20,25 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
       </div>
       <div className="summaryCard">
         <span>Verified Amazon</span>
-        <strong>{summary.verifiedAmazonCount}</strong>
+        <strong>
+          {summary.verifiedAmazonCount}
+          <span className="summarySub"> / {summary.amazonCount}</span>
+        </strong>
       </div>
       <div className="summaryCard">
-        <span>Unverified Amazon</span>
-        <strong>{summary.unverifiedAmazonCount}</strong>
+        <span>Photos</span>
+        <strong>
+          {summary.photoReviewCount}
+          <span className="summarySub"> / {summary.totalReviews}</span>
+        </strong>
       </div>
-      <div className="summaryCard">
-        <span>Photo reviews</span>
-        <strong>{summary.photoReviewCount}</strong>
-      </div>
-      <div className="summaryCard">
+      <div className={`summaryCard${flagCount > 0 ? " attentionCard" : ""}`}>
         <span>Model reminders</span>
         <strong>{flagCount}</strong>
+      </div>
+      <div className={`summaryCard${summary.needsAttentionCount > 0 ? " attentionCard" : ""}`}>
+        <span>Needs attention</span>
+        <strong>{summary.needsAttentionCount}</strong>
       </div>
       <div className="summaryCard bonusCard">
         <span>Estimated bonus</span>
