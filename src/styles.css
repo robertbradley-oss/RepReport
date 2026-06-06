@@ -1223,16 +1223,16 @@ button:disabled {
    Polished navy/charcoal palette with the green brand accent preserved.
    =========================================================================== */
 [data-theme="dark"] {
-  --d-bg: #0f1824;
-  --d-surface: #1a2533;
-  --d-surface-2: #212e3f;
-  --d-surface-3: #1f2b3a;
-  --d-hover: #26344a;
-  --d-border: #2c3a4d;
-  --d-border-strong: #3a4a60;
-  --d-text: #e6edf5;
-  --d-muted: #9fb0c2;
-  --d-soft: #b7c3d1;
+  --d-bg: #0f141a;
+  --d-surface: #181f27;
+  --d-surface-2: #20272f;
+  --d-surface-3: #1c232b;
+  --d-hover: #262e37;
+  --d-border: #2a3038;
+  --d-border-strong: #353c45;
+  --d-text: #e7eaee;
+  --d-muted: #98a1ab;
+  --d-soft: #b6bdc5;
   --d-green: #1f7d4a;
   --d-green-strong: #2a945a;
   --d-green-text: #4fbb81;
@@ -1303,13 +1303,13 @@ button:disabled {
 }
 
 [data-theme="dark"] button:hover:not(:disabled) {
-  border-color: #4a5d76;
+  border-color: #4a525c;
 }
 
 [data-theme="dark"] button:disabled {
-  background: #18212d;
-  border-color: #2a3645;
-  color: #5d6b7a;
+  background: #161b21;
+  border-color: #2a3038;
+  color: #66707a;
 }
 
 [data-theme="dark"] .secondaryButton {
@@ -1344,14 +1344,14 @@ button:disabled {
 }
 
 [data-theme="dark"] .copyPrimaryButton {
-  background: #243246;
-  border-color: #38485e;
+  background: #262d36;
+  border-color: #3a424d;
   color: #ffffff;
 }
 
 [data-theme="dark"] .copyPrimaryButton:hover:not(:disabled) {
-  background: #2c3c52;
-  border-color: #45576f;
+  background: #2f3741;
+  border-color: #46505b;
 }
 
 [data-theme="dark"] .filterButton.active {
@@ -1386,17 +1386,17 @@ button:disabled {
 
 /* Theme toggle */
 [data-theme="dark"] .themeToggle {
-  background: #2a3a4f;
-  border-color: #3a4a60;
+  background: #262d36;
+  border-color: #353c45;
 }
 
 [data-theme="dark"] .themeToggle:hover:not(:disabled) {
-  border-color: #4a5d76;
+  border-color: #4a525c;
 }
 
 [data-theme="dark"] .themeToggleKnob {
-  background: #0f1824;
-  color: #cdd9e6;
+  background: #0f141a;
+  color: #d2d7dd;
   transform: translateX(24px);
 }
 
@@ -1405,7 +1405,7 @@ button:disabled {
 [data-theme="dark"] .inputPanel textarea,
 [data-theme="dark"] .expandedField textarea,
 [data-theme="dark"] .expandedField select {
-  background: #131d2a;
+  background: #12171d;
   border-color: var(--d-border-strong);
   color: var(--d-text);
 }
@@ -1416,14 +1416,14 @@ button:disabled {
 }
 
 [data-theme="dark"] textarea::placeholder {
-  color: #6b7a8b;
+  color: #6a727c;
 }
 
 [data-theme="dark"] .reviewTable textarea:focus,
 [data-theme="dark"] .expandedField textarea:focus,
 [data-theme="dark"] .expandedField select:focus,
 [data-theme="dark"] .inputPanel textarea:focus {
-  border-color: #5a7088;
+  border-color: #5a626c;
 }
 
 /* Badges / chips / misc surfaces */
@@ -1461,13 +1461,13 @@ button:disabled {
 }
 
 [data-theme="dark"] .urlChip {
-  background: #16263a;
-  border-color: #2f4a6b;
-  color: #7db4f0;
+  background: #1a2129;
+  border-color: #33414f;
+  color: #74b0ec;
 }
 
 [data-theme="dark"] .urlChip:hover {
-  border-color: #4f7bb0;
+  border-color: #45576a;
 }
 
 [data-theme="dark"] .missingLinkChip {
@@ -1482,13 +1482,13 @@ button:disabled {
 
 [data-theme="dark"] .rowNumberButton:hover,
 [data-theme="dark"] .rowNumberButton[aria-expanded="true"] {
-  background: #16263a;
-  border-color: #2f4a6b;
-  color: #7db4f0;
+  background: #1a2129;
+  border-color: #33414f;
+  color: #74b0ec;
 }
 
 [data-theme="dark"] .templateBlock {
-  background: #131d2a;
+  background: #12171d;
   border-color: var(--d-border-strong);
   color: var(--d-soft);
 }
@@ -1538,7 +1538,7 @@ button:disabled {
 
 /* Empty state */
 [data-theme="dark"] .emptyState {
-  background: #16202d;
+  background: #161c22;
   border-color: var(--d-border-strong);
   color: var(--d-muted);
 }
