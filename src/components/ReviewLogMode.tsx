@@ -25,6 +25,7 @@ export function ReviewLogMode() {
   const [templateStatus, setTemplateStatus] = useState("");
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -150,22 +151,32 @@ export function ReviewLogMode() {
                 Clear
               </button>
             </div>
-            <details className="templateHelper">
-              <summary>
+            <div className="templateHelper">
+              <button
+                type="button"
+                className="templateSummary"
+                aria-expanded={isTemplateOpen}
+                aria-controls="review-template-drawer"
+                onClick={() => setIsTemplateOpen((open) => !open)}
+              >
                 <UiIcon name="template" />
                 Template tools
-              </summary>
-              <div className="buttonRow templateActions">
-                <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
-                  <UiIcon name="copy" />
-                  Copy Template
-                </button>
+              </button>
+              <div className={`templateDrawer${isTemplateOpen ? " open" : ""}`} id="review-template-drawer">
+                <div className="templateDrawerInner">
+                  <div className="buttonRow templateActions">
+                    <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
+                      <UiIcon name="copy" />
+                      Copy Template
+                    </button>
+                  </div>
+                  <pre className="templateBlock">{reviewLogTemplate}</pre>
+                  <div className="templateStatus" aria-live="polite">
+                    {templateStatus}
+                  </div>
+                </div>
               </div>
-              <pre className="templateBlock">{reviewLogTemplate}</pre>
-              <div className="templateStatus" aria-live="polite">
-                {templateStatus}
-              </div>
-            </details>
+            </div>
           </>
         )}
         </div>
