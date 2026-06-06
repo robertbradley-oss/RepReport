@@ -67,6 +67,7 @@ function findCustomerLine(lines: string[], ticket: string): string | undefined {
     (line) =>
       line !== ticket &&
       !knownPlatforms.includes(line) &&
+      !isPlatformLine(line) &&
       !/^Review (mentions|does not mention) name$/i.test(line) &&
       !/^\d+(?:\.\d+)?\s*(?:out of\s*)?\d*\s*stars?$/i.test(line) &&
       !isDateOrStatusLine(line),
@@ -74,7 +75,11 @@ function findCustomerLine(lines: string[], ticket: string): string | undefined {
 }
 
 function findKnownPlatform(lines: string[]): string | undefined {
-  return lines.find((line) => knownPlatforms.includes(line) && line !== "Unknown");
+  return lines.find((line) => isPlatformLine(line) && line !== "Unknown");
+}
+
+function isPlatformLine(line: string): boolean {
+  return knownPlatforms.includes(line) || /^Amazon @ /.test(line);
 }
 
 function findDateOrStatusLine(lines: string[]): string | undefined {
@@ -84,7 +89,7 @@ function findDateOrStatusLine(lines: string[]): string | undefined {
 function isDateOrStatusLine(line: string): boolean {
   return (
     /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(line) ||
-    /^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+\d{1,2},?\s+\d{2,4}$/i.test(line) ||
+    /^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{2,4}$/i.test(line) ||
     /pending|posted|updated|reviewed/i.test(line)
   );
 }

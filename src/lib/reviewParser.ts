@@ -171,11 +171,14 @@ function parseBlock(block: string): ReviewRow {
     }),
   );
 
+  const amazonMarketplace = normalizeAmazonMarketplace(platform, reviewDateOrStatus);
+  const displayDateOrStatus = amazonMarketplace.dateOrStatus;
+
   const customerContactTicketLink = buildCustomerContactCell({
     ticketNumber,
     customerName: customerModel?.customerName,
-    platform,
-    reviewDateOrStatus,
+    platform: amazonMarketplace.platformDisplay,
+    reviewDateOrStatus: displayDateOrStatus,
     ratingOrStatus,
     mentionStatus,
   });
@@ -192,7 +195,7 @@ function parseBlock(block: string): ReviewRow {
     platform,
     ticketNumber,
     customerName: customerModel?.customerName,
-    reviewDateOrStatus,
+    reviewDateOrStatus: displayDateOrStatus,
     ratingOrStatus,
     reviewText,
     flags,
@@ -434,6 +437,23 @@ function parseMentionStatus(reviewText: string): string {
   }
 
   return "Review does not mention name";
+}
+
+// Shorten Amazon's US marketplace status (e.g. "Reviewed in the United States
+// on November 5, 2024") to a compact "Amazon @ US" platform label, keeping any
+// review date. Only United States variants are shortened; other platforms and
+// countries are left untouched. row.platform stays "Amazon" for bonus/verified
+// logic — only the displayed contact-cell text changes.
+function normalizeAmazonMarketplace(platform: string, dateOrStatus: string): { platformDisplay: string; dateOrStatus: string } {
+  if (platform !== "Amazon" || !/\breviewed\s+in\s+the\s+(?:united\s+states|u\.?\s*s\.?(?:\s*a\.?)?)\b/i.test(dateOrStatus)) {
+    return { platformDisplay: platform, dateOrStatus };
+  }
+
+  const reviewDate = dateOrStatus.match(
+    /\bon\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/i,
+  );
+
+  return { platformDisplay: "Amazon @ US", dateOrStatus: reviewDate ? reviewDate[1] : "" };
 }
 
 function buildCustomerContactCell(parts: {

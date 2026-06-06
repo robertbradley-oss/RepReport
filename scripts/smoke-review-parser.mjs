@@ -360,6 +360,51 @@ assertEqual(calculateBonus(bonusRuleRows[3]), 25, "Zoro should be worth $25.");
 assertEqual(bonusRuleRows[4].platform, "iSpring Website", "iSpring website reviews should be detected.");
 assertEqual(calculateBonus(bonusRuleRows[4]), 25, "iSpring website reviews should be worth $25.");
 
+const amazonMarketplaceRows = parseReviewNotes([
+  "Ticket #237789",
+  "https://support.ispringfilter.com/scp/tickets.php?id=237789",
+  "https://www.amazon.com/review/amazon-us-marketplace",
+  "Verified Purchase",
+  "5 out of 5 stars",
+  "Reviewed in the United States on November 5, 2024",
+  "Robert was very helpful and the filter works great.",
+  "Ronak Shah - RCC7AK",
+].join("\n"));
+assertEqual(amazonMarketplaceRows.length, 1, "Amazon US marketplace fixture should parse into one row.");
+const amazonUsRow = amazonMarketplaceRows[0];
+assertEqual(amazonUsRow.platform, "Amazon", "Amazon US row should keep Amazon platform for logic.");
+assertEqual(amazonUsRow.verifiedFiveStar, "Y", "Amazon US verified purchase should still export Y.");
+assertEqual(calculateBonus(amazonUsRow), 25, "Verified Amazon (no photo) should still be worth $25.");
+assert(
+  amazonUsRow.customerContactTicketLink.includes("Amazon @ US"),
+  "Amazon US marketplace text should shorten to 'Amazon @ US' in the contact cell.",
+);
+assert(
+  !amazonUsRow.customerContactTicketLink.includes("Reviewed in the United States"),
+  "Long Amazon marketplace phrase should not remain in the contact cell.",
+);
+assert(!amazonUsRow.reviewText.includes("Reviewed in the United States"), "Marketplace phrase should not leak into review text.");
+assertEqual(
+  formatCustomerContactSummary(amazonUsRow),
+  "Ticket #237789 - Ronak Shah - Amazon @ US - November 5, 2024",
+  "Collapsed contact summary should show the shortened Amazon @ US marketplace text.",
+);
+
+const amazonNonUsRow = parseReviewNotes([
+  "Ticket #237790",
+  "https://support.ispringfilter.com/scp/tickets.php?id=237790",
+  "https://www.amazon.com/review/amazon-uk-marketplace",
+  "Verified Purchase",
+  "5 out of 5 stars",
+  "Reviewed in the United Kingdom on November 6, 2024",
+  "Great product.",
+  "Olivia Brown - RO500",
+].join("\n"))[0];
+assert(
+  !amazonNonUsRow.customerContactTicketLink.includes("Amazon @ US"),
+  "Non-US Amazon marketplace reviews should not be relabeled as Amazon @ US.",
+);
+
 const homeDepotBonusRows = parseReviewNotes([
   "Ticket #100011",
   "https://support.ispringfilter.com/scp/tickets.php?id=100011",
