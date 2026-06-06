@@ -901,8 +901,40 @@ button:disabled {
 }
 
 .reviewCol-modelNumber .cellSummary {
-  font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+  font-family: inherit;
   font-size: 12px;
+}
+
+/* Inline-editable model cell: app font, compact, spreadsheet-like. */
+.modelInput {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  min-width: 0;
+  padding: 4px 6px;
+  text-align: center;
+  width: 100%;
+}
+
+.modelInput:hover {
+  border-color: #d1d5db;
+}
+
+.modelInput:focus {
+  background: #ffffff;
+  border-color: #6b7280;
+  outline: none;
+}
+
+.modelInput::placeholder {
+  color: #9aa3ad;
+}
+
+.reviewTable.compactTable .modelInput {
+  padding: 3px 5px;
 }
 
 .yesNoBadge {
@@ -1541,6 +1573,23 @@ button:disabled {
 [data-theme="dark"] .reviewTable textarea {
   background: transparent;
   color: var(--d-text);
+}
+
+[data-theme="dark"] .modelInput {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .modelInput:hover {
+  border-color: var(--d-border-strong);
+}
+
+[data-theme="dark"] .modelInput:focus {
+  background: #12171d;
+  border-color: #5a626c;
+}
+
+[data-theme="dark"] .modelInput::placeholder {
+  color: #6a727c;
 }
 
 [data-theme="dark"] textarea::placeholder {

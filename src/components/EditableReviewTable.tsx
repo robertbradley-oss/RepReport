@@ -105,7 +105,24 @@ function EditableReviewTableImpl({ density, rows, rowNumbers, onRowsChange, empt
                   </td>
                   {REVIEW_COLUMNS.map((column) => (
                     <td key={column.key} className={getReviewTableColumnClassName(column.key)}>
-                      <CollapsedCell row={row} columnKey={column.key} />
+                      {column.key === "modelNumber" ? (
+                        <input
+                          className="modelInput"
+                          type="text"
+                          value={row.modelNumber}
+                          placeholder="Add model"
+                          aria-label={`Model number row ${displayRowNumber}`}
+                          spellCheck={false}
+                          onChange={(event) => updateCell(rowIndex, "modelNumber", event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.currentTarget.blur();
+                            }
+                          }}
+                        />
+                      ) : (
+                        <CollapsedCell row={row} columnKey={column.key} />
+                      )}
                     </td>
                   ))}
                 </tr>

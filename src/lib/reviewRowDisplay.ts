@@ -1,15 +1,27 @@
 import type { ReviewColumnKey, ReviewRow, YesNo } from "../types";
 import { stripInternalNoteMarkers } from "./internalNoteMarkers";
+import { flagMessages } from "./reviewParser";
 
 const knownPlatforms = ["Amazon", "Google", "Trustpilot", "Costco", "Home Depot", "Lowe's", "Unknown"];
 
 export function updateReviewRowCell(row: ReviewRow, key: ReviewColumnKey, value: string): ReviewRow {
   const nextValue = key === "customerContactTicketLink" || key === "replacementSent" ? stripInternalNoteMarkers(value) : value;
 
-  return {
+  const nextRow: ReviewRow = {
     ...row,
     [key]: key === "verifiedFiveStar" || key === "containsVideo" || key === "containsPictures" ? normalizeYesNo(nextValue) : nextValue,
   };
+
+  // Keep the "Model missing" reminder in sync when the model is edited inline,
+  // so reminders/flags/summary counts update immediately. Only this flag is
+  // touched; any other flags on the row are preserved.
+  if (key === "modelNumber") {
+    const hasModel = nextValue.trim().length > 0;
+    const withoutModelFlag = row.flags.filter((flag) => flag !== flagMessages.modelMissing);
+    nextRow.flags = hasModel ? withoutModelFlag : [...withoutModelFlag, flagMessages.modelMissing];
+  }
+
+  return nextRow;
 }
 
 export function formatCustomerContactSummary(row: ReviewRow): string {

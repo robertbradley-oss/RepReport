@@ -18,7 +18,7 @@ const platformMatchers: Array<[string, RegExp]> = [
 
 const flatTwentyFiveDollarPlatforms = new Set(["Costco", "Home Depot", "iSpring Website", "Zoro"]);
 
-const flagMessages = {
+export const flagMessages = {
   modelMissing: "Model missing",
 };
 
