@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, memo, useState } from "react";
 import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
 import { stripInternalNoteMarkers } from "../lib/internalNoteMarkers";
 import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName, type ReviewTableDensity } from "../lib/reviewTableLayout";
@@ -14,7 +14,7 @@ type EditableReviewTableProps = {
   emptyMessage?: string;
 };
 
-export function EditableReviewTable({ density, rows, rowNumbers, onRowsChange, emptyMessage }: EditableReviewTableProps) {
+function EditableReviewTableImpl({ density, rows, rowNumbers, onRowsChange, emptyMessage }: EditableReviewTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(() => new Set());
 
   function updateCell(rowIndex: number, key: ReviewColumnKey, value: string) {
@@ -251,3 +251,7 @@ function getExpandedTextareaRows(row: ReviewRow, key: ReviewColumnKey): number {
 
   return key === "ticketLink" || key === "reviewLink" ? 2 : 1;
 }
+
+// Memoized so theme toggles (which re-render the parent) don't re-render the
+// whole table. Re-renders normally when row data/props actually change.
+export const EditableReviewTable = memo(EditableReviewTableImpl);

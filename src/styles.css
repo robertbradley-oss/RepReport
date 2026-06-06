@@ -353,15 +353,33 @@ button:disabled {
   }
 }
 
-/* Smooth, app-wide color fade while switching themes. The .theme-animating
-   class is added to <html> only for the duration of a theme toggle, so it
-   never slows normal interactions. The toggle thumb, its icons, and the tab
-   indicator keep their own motion. Disabled under reduced-motion. */
+/* Smooth color fade while switching themes. The .theme-animating class is
+   added to <html> only for the duration of a theme toggle. The transition is
+   scoped to lightweight chrome (page, header, cards, tabs, buttons, summary)
+   on purpose: the Review Log table (rows/cells/textareas/chips) is excluded so
+   a large populated table changes theme instantly instead of repainting every
+   cell for 320ms, which previously caused lag. Disabled under reduced-motion. */
 @media (prefers-reduced-motion: no-preference) {
-  .theme-animating,
-  .theme-animating *:not(.themeToggleKnob):not(.themeToggleIcon):not(.modeTabIndicator) {
+  .theme-animating body,
+  .theme-animating .appHeader,
+  .theme-animating .appModeLabel,
+  .theme-animating .brandRep,
+  .theme-animating .brandReport,
+  .theme-animating .modeTabs,
+  .theme-animating .modeTab,
+  .theme-animating .inputPanel,
+  .theme-animating .resultsPanel,
+  .theme-animating .reviewLeftColumn .flagsPanel,
+  .theme-animating .panelLabel,
+  .theme-animating .panelTitle,
+  .theme-animating .summaryCard,
+  .theme-animating .summaryCard span,
+  .theme-animating .summaryCard strong,
+  .theme-animating .emptyState,
+  .theme-animating .rowCountBadge,
+  .theme-animating button:not(.rowNumberButton) {
     transition: background-color 320ms ease, border-color 320ms ease, color 320ms ease,
-      fill 320ms ease, box-shadow 320ms ease !important;
+      box-shadow 320ms ease !important;
   }
 }
 

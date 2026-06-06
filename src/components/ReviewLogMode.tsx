@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
@@ -65,7 +65,7 @@ export function ReviewLogMode() {
     setFlaggedOnly(false);
   }
 
-  function handleRowsChange(nextRows: ReviewRow[]) {
+  const handleRowsChange = useCallback((nextRows: ReviewRow[]) => {
     setRows(nextRows);
     if (nextRows.length === 0) {
       setFlaggedOnly(false);
@@ -74,11 +74,16 @@ export function ReviewLogMode() {
     setExportStatus("");
     setTemplateStatus("");
     setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
-  }
+  }, []);
 
-  function handleVisibleRowsChange(nextVisibleRows: ReviewRow[]) {
-    handleRowsChange(visibleReviewRows.length === rows.length ? nextVisibleRows : mergeVisibleReviewRowEdits(rows, visibleReviewRows, nextVisibleRows));
-  }
+  const handleVisibleRowsChange = useCallback(
+    (nextVisibleRows: ReviewRow[]) => {
+      handleRowsChange(
+        visibleReviewRows.length === rows.length ? nextVisibleRows : mergeVisibleReviewRowEdits(rows, visibleReviewRows, nextVisibleRows),
+      );
+    },
+    [handleRowsChange, rows, visibleReviewRows],
+  );
 
   async function handleCopyRows() {
     const copied = await copyReviewRows(rows);
