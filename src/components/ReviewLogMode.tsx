@@ -144,7 +144,7 @@ export function ReviewLogMode() {
             <div className="buttonRow parseActions">
               <button className="primaryButton" type="button" onClick={handleParse}>
                 <UiIcon name="parse" />
-                Parse Reviews
+                Generate Reviews
               </button>
               <button className="dangerButton" type="button" onClick={handleClear}>
                 <UiIcon name="clear" />

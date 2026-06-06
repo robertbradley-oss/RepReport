@@ -44,7 +44,7 @@ function EditableReviewTableImpl({ density, rows, rowNumbers, onRowsChange, empt
           <UiIcon name="reviewLog" size={24} />
         </span>
         <strong>No review rows yet</strong>
-        <span>Paste your Notepad notes on the left, then click Parse Reviews to turn them into spreadsheet-ready rows.</span>
+        <span>Paste your review notes and turn them into spreadsheet-ready rows.</span>
         <div className="workflowChips" aria-label="Review Log workflow">
           <span className="workflowChip">Paste notes</span>
           <span className="workflowDivider">&gt;</span>

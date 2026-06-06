@@ -57,7 +57,7 @@ export function KpiReportMode() {
           id="kpi-notes"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
-          placeholder="Paste weekly or pay-period KPI summary here..."
+          placeholder="Paste weekly KPI summary here..."
           spellCheck={false}
           data-gramm="false"
           data-gramm_editor="false"
@@ -68,7 +68,7 @@ export function KpiReportMode() {
             <UiIcon name="parse" />
             Format KPI
           </button>
-          <button type="button" onClick={handleClear}>
+          <button className="dangerButton" type="button" onClick={handleClear}>
             <UiIcon name="clear" />
             Clear
           </button>
