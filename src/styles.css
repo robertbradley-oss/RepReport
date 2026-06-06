@@ -551,9 +551,10 @@ button:disabled {
 .inputPanel textarea {
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  /* Custom pointer over the notes box (black fill + thin white outline so it
-     stays visible on both light and dark backgrounds). Falls back to auto. */
-  cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='22'%20height='22'%20viewBox='0%200%2018%2018'%3E%3Cpath%20d='M15.154,6.253L3.731,2.079h0c-.477-.175-.994-.058-1.353,.3-.357,.358-.473,.876-.298,1.352L6.254,15.154c.188,.517,.66,.846,1.208,.846,.009,0,.019,0,.027,0,.559-.011,1.03-.362,1.2-.895l1.556-4.86,4.859-1.555c.532-.17,.884-.642,.896-1.201,.011-.559-.321-1.044-.846-1.236Z'%20fill='%23000000'%20stroke='%23ffffff'%20stroke-width='0.6'/%3E%3C/svg%3E") 3 3, auto;
+  /* Generic black text I-beam (thin white outline keeps it visible in dark mode)
+     so an inverted/white OS pointer can't make it go white over the paste box.
+     Falls back to the native text cursor. */
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='24'%3E%3Cpath%20d='M4%203h4M4%2021h4M6%203v18'%20stroke='%23ffffff'%20stroke-width='3'%20fill='none'/%3E%3Cpath%20d='M4%203h4M4%2021h4M6%203v18'%20stroke='%23000000'%20stroke-width='1.4'%20fill='none'/%3E%3C/svg%3E") 6 12, text;
   line-height: 1.35;
   min-height: 540px;
   padding: 10px;
