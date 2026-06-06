@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
 import { UiIcon } from "./components/UiIcon";
@@ -24,6 +24,7 @@ export default function App() {
   const [activeMode, setActiveMode] = useState<AppMode>("reviewLog");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const themeAnimTimer = useRef<number | undefined>(undefined);
   const activeModeLabel = activeMode === "reviewLog" ? "Review Log Mode" : "KPI Report Mode";
   const isDark = theme === "dark";
 
@@ -35,6 +36,19 @@ export default function App() {
       // ignore persistence failures (e.g. private mode)
     }
   }, [theme]);
+
+  function toggleTheme() {
+    // Briefly enable cross-app color transitions so the theme change fades
+    // smoothly instead of snapping. Removed shortly after so it never slows
+    // normal interactions.
+    const root = document.documentElement;
+    root.classList.add("theme-animating");
+    window.clearTimeout(themeAnimTimer.current);
+    themeAnimTimer.current = window.setTimeout(() => {
+      root.classList.remove("theme-animating");
+    }, 480);
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
+  }
 
   function selectMode(mode: AppMode) {
     if (mode === activeMode) {
@@ -60,10 +74,15 @@ export default function App() {
             aria-checked={isDark}
             aria-label="Toggle dark mode"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            onClick={() => setTheme(isDark ? "light" : "dark")}
+            onClick={toggleTheme}
           >
             <span className="themeToggleKnob">
-              <UiIcon name={isDark ? "moon" : "sun"} size={14} />
+              <span className="themeToggleIcon themeToggleIcon--sun">
+                <UiIcon name="sun" size={13} />
+              </span>
+              <span className="themeToggleIcon themeToggleIcon--moon">
+                <UiIcon name="moon" size={13} />
+              </span>
             </span>
           </button>
         </div>
