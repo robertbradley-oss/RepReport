@@ -83,9 +83,10 @@ function ExcelIcon({ size = 24 }: LucideProps): ReactElement {
       aria-hidden="true"
       focusable="false"
     >
-      <rect x="4" y="3" width="16" height="18" rx="2.5" />
-      <path d="M7 10l4 4M11 10l-4 4" />
-      <path d="M13 10.5h4M13 13.5h4" />
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M10 3v18" />
+      <path d="M5.8 9.5l3.4 5M9.2 9.5l-3.4 5" strokeWidth={2.6} />
+      <path d="M12.5 9h5M12.5 12.5h5M12.5 16h5" />
     </svg>
   );
 }
