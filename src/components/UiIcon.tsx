@@ -1,9 +1,7 @@
 import {
   BookOpen,
   ChevronDown,
-  ClipboardCopy,
   Download,
-  FileDown,
   Filter,
   Plus,
   RotateCcw,
@@ -70,13 +68,56 @@ function ParseIcon({ size = 24 }: LucideProps): ReactElement {
   );
 }
 
+function ExcelIcon({ size = 24 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="4" y="3" width="16" height="18" rx="2.5" />
+      <path d="M7 10l4 4M11 10l-4 4" />
+      <path d="M13 10.5h4M13 13.5h4" />
+    </svg>
+  );
+}
+
+function CopyIcon({ size = 20 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="m13,7h2c1.105,0,2,.895,2,2v6c0,1.105-.895,2-2,2h-6c-1.105,0-2-.895-2-2v-2" />
+      <rect x="3" y="3" width="10" height="10" rx="2" ry="2" />
+    </svg>
+  );
+}
+
 const icons = {
   add: Plus,
   clear: Trash2,
   collapseInput: ChevronDown,
-  copy: ClipboardCopy,
+  copy: CopyIcon,
   download: Download,
-  excel: FileDown,
+  excel: ExcelIcon,
   filter: Filter,
   kpiReport: KpiReportIcon,
   loadSample: RotateCcw,

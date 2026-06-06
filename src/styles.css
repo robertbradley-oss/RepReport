@@ -518,14 +518,6 @@ button:disabled {
   border-color: #1d6f42;
 }
 
-.excelButtonIcon {
-  display: block;
-  flex: 0 0 auto;
-  height: 18px;
-  object-fit: contain;
-  width: 18px;
-}
-
 .summaryPanel {
   display: grid;
   gap: 10px;

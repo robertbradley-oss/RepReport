@@ -181,7 +181,7 @@ export function ReviewLogMode() {
                 Copy Rows
               </button>
               <button className="primaryButton excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
-                <img className="excelButtonIcon" src="/assets/icons8-excel-50.png" alt="" aria-hidden="true" />
+                <UiIcon name="excel" size={18} />
                 Export Excel
               </button>
               <button
