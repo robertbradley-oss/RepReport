@@ -124,7 +124,8 @@ for (const [index, row] of rows.entries()) {
 
 const verifiedAmazonRow = rowByTicket("100001");
 assertEqual(verifiedAmazonRow.platform, "Amazon", "Verified Amazon row should be Amazon.");
-assertEqual(verifiedAmazonRow.verifiedFiveStar, "Y", "Verified Amazon row should export Y.");
+assertEqual(verifiedAmazonRow.verifiedFiveStar, "Y", "Verified Amazon row should export Y for 5 star.");
+assertEqual(verifiedAmazonRow.amazonVerifiedPurchase, true, "Amazon row with Verified wording should be a verified purchase.");
 assertEqual(verifiedAmazonRow.containsPictures, "N", "Amazon verified row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(verifiedAmazonRow), 25, "Verified Amazon without photo should be worth $25.");
 assertEqual(verifiedAmazonRow.replacementSent, "", "Amazon Replacement sent column should stay blank.");
@@ -142,7 +143,8 @@ assertEqual(
 
 const unverifiedAmazonRow = rowByTicket("100002");
 assertEqual(unverifiedAmazonRow.platform, "Amazon", "Unverified Amazon row should be Amazon.");
-assertEqual(unverifiedAmazonRow.verifiedFiveStar, "N", "Amazon row without verified wording should export N.");
+assertEqual(unverifiedAmazonRow.verifiedFiveStar, "Y", "Every parsed review defaults to 5 star Y, even unverified Amazon.");
+assertEqual(unverifiedAmazonRow.amazonVerifiedPurchase, false, "Amazon row without Verified wording should remain an unverified purchase.");
 assertEqual(unverifiedAmazonRow.containsPictures, "N", "Amazon unverified row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(unverifiedAmazonRow), 15, "Unverified Amazon without photo should be worth $15.");
 assertEqual(unverifiedAmazonRow.replacementSent, "", "Unverified Amazon Replacement sent column should stay blank.");
@@ -359,7 +361,8 @@ const bonusRuleRows = parseReviewNotes([
 ].join("\n"));
 assertEqual(bonusRuleRows.length, 5, "New bonus-rule platform fixture should parse every row.");
 assertEqual(bonusRuleRows[0].platform, "Amazon", "Amazon unverified photo fixture should detect Amazon.");
-assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fixture should stay unverified.");
+assertEqual(bonusRuleRows[0].verifiedFiveStar, "Y", "Amazon unverified photo fixture should still export 5 star Y.");
+assertEqual(bonusRuleRows[0].amazonVerifiedPurchase, false, "Amazon unverified photo fixture should stay an unverified purchase.");
 assertEqual(bonusRuleRows[0].containsPictures, "Y", "Amazon unverified photo fixture should use the internal photo marker.");
 assertEqual(calculateBonus(bonusRuleRows[0]), 20, "Unverified Amazon with photo should be worth $20.");
 assertEqual(bonusRuleRows[1].platform, "Costco", "Costco.ca should detect as Costco.");
@@ -484,7 +487,33 @@ const ratingUnclearRows = parseReviewNotes([
 ].join("\n"));
 assertEqual(ratingUnclearRows.length, 1, "Rating-unclear fixture should parse into one row.");
 assertEqual(ratingUnclearRows[0].ratingOrStatus, "", "Rating-unclear fixture should keep a blank rating/status output.");
+assertEqual(ratingUnclearRows[0].verifiedFiveStar, "Y", "A missing/unclear rating should still default to 5 star Y.");
 assertFlags(ratingUnclearRows[0], [], "Rating unclear should not generate model reminders when the model is present.");
+
+// Every parsed review defaults to 5-star Y regardless of how the rating text is
+// formatted (missing entirely, or glued to the review on an Amazon row).
+const noRatingTextRow = parseReviewNotes([
+  "Ticket #100020",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100020",
+  "https://www.google.com/maps/reviews/google-no-rating-text",
+  "Jun 5, 2026",
+  "Support sorted out my install quickly.",
+  "Nina Norating - RCC7AK",
+].join("\n"))[0];
+assertEqual(noRatingTextRow.verifiedFiveStar, "Y", "Google row with no rating text should default to 5 star Y.");
+assertFlags(noRatingTextRow, [], "Missing rating text should not flag a row.");
+
+const gluedAmazonRatingRow = parseReviewNotes([
+  "Ticket #100021",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100021",
+  "https://www.amazon.com/review/amazon-glued-rating",
+  "5 out of 5 starsGreat product and fast help.",
+  "Gary Glued - WGB32B",
+].join("\n"))[0];
+assertEqual(gluedAmazonRatingRow.platform, "Amazon", "Glued-rating fixture should still detect Amazon.");
+assertEqual(gluedAmazonRatingRow.verifiedFiveStar, "Y", "Glued Amazon rating text should still default to 5 star Y.");
+assertEqual(gluedAmazonRatingRow.amazonVerifiedPurchase, false, "Amazon row without Verified wording stays unverified purchase.");
+assertEqual(calculateBonus(gluedAmazonRatingRow), 15, "Unverified Amazon (no photo) should still be worth $15.");
 
 const actualIssueRows = [
   googleRow,

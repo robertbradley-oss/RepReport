@@ -63,7 +63,7 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   if (row.platform === "Amazon") {
-    const baseBonus = row.verifiedFiveStar === "Y" ? 25 : 15;
+    const baseBonus = row.amazonVerifiedPurchase ? 25 : 15;
     return row.containsPictures === "Y" ? baseBonus + 5 : baseBonus;
   }
 
@@ -81,8 +81,8 @@ export function calculateBonusSummary(rows: ReviewRow[]): BonusSummary {
   return {
     totalReviews: rows.length,
     platformCounts: Array.from(platformCounts, ([platform, count]) => ({ platform, count })).sort(comparePlatformCounts),
-    verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y").length,
-    unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length,
+    verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.amazonVerifiedPurchase).length,
+    unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && !row.amazonVerifiedPurchase).length,
     amazonCount: rows.filter((row) => row.platform === "Amazon").length,
     photoReviewCount: rows.filter((row) => row.containsPictures === "Y").length,
     needsAttentionCount: rows.filter((row) => row.reviewLink.trim() === "" || row.platform === "Unknown").length,
@@ -162,7 +162,11 @@ function parseBlock(block: string): ReviewRow {
   const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus));
   const containsPictures = containsInternalPhotoMarker(block) ? "Y" : "N";
   const containsVideo = "N";
-  const verifiedFiveStar = platform === "Amazon" ? (/\bverified(?:\s+purchase)?\b/i.test(block) ? "Y" : "N") : "Y";
+  // Every review pasted into RepReport is a 5-star review by workflow, so the
+  // "Verified 5 star?" column is always Y. Amazon verified-purchase status is
+  // tracked separately (for bonus only) and detected from the notes.
+  const verifiedFiveStar = "Y";
+  const amazonVerifiedPurchase = platform === "Amazon" && /\bverified(?:\s+purchase)?\b/i.test(block);
   const mentionStatus = parseMentionStatus(reviewText);
 
   flags.push(
@@ -193,6 +197,7 @@ function parseBlock(block: string): ReviewRow {
     customerContactTicketLink,
     replacementSent: platform === "Amazon" ? "" : reviewText,
     platform,
+    amazonVerifiedPurchase,
     ticketNumber,
     customerName: customerModel?.customerName,
     reviewDateOrStatus: displayDateOrStatus,
