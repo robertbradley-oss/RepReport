@@ -168,6 +168,46 @@ button:disabled {
   white-space: nowrap;
 }
 
+.themeToggle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 28px;
+  min-height: 0;
+  margin-left: 8px;
+  padding: 0;
+  border: 1px solid #cfd6df;
+  border-radius: 999px;
+  background: #e2e8f0;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.themeToggle:hover:not(:disabled) {
+  border-color: #aab4c0;
+  box-shadow: none;
+  transform: none;
+}
+
+.themeToggle:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.themeToggleKnob {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  color: #c08321;
+  display: inline-flex;
+  height: 22px;
+  justify-content: center;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms ease, color 200ms ease;
+  width: 22px;
+}
+
 .modeTabs {
   position: relative;
   display: inline-grid;
@@ -1176,4 +1216,341 @@ button:disabled {
   .parseActions .dangerButton {
     margin-left: 0;
   }
+}
+
+/* ===========================================================================
+   Dark theme — layered as overrides so light mode stays untouched.
+   Polished navy/charcoal palette with the green brand accent preserved.
+   =========================================================================== */
+[data-theme="dark"] {
+  --d-bg: #0f1824;
+  --d-surface: #1a2533;
+  --d-surface-2: #212e3f;
+  --d-surface-3: #1f2b3a;
+  --d-hover: #26344a;
+  --d-border: #2c3a4d;
+  --d-border-strong: #3a4a60;
+  --d-text: #e6edf5;
+  --d-muted: #9fb0c2;
+  --d-soft: #b7c3d1;
+  --d-green: #1f7d4a;
+  --d-green-strong: #2a945a;
+  --d-green-text: #4fbb81;
+  color: var(--d-text);
+}
+
+[data-theme="dark"] body {
+  background: var(--d-bg);
+}
+
+/* Surfaces / cards */
+[data-theme="dark"] .appHeader,
+[data-theme="dark"] .inputPanel,
+[data-theme="dark"] .resultsPanel,
+[data-theme="dark"] .reviewLeftColumn .flagsPanel,
+[data-theme="dark"] .summaryCard {
+  background: var(--d-surface);
+  border-color: var(--d-border);
+}
+
+[data-theme="dark"] .appHeader {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .inputPanel,
+[data-theme="dark"] .resultsPanel,
+[data-theme="dark"] .reviewLeftColumn .flagsPanel {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Text */
+[data-theme="dark"] .brandRep {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .brandReport {
+  color: var(--d-green-text);
+}
+
+[data-theme="dark"] .panelLabel,
+[data-theme="dark"] .panelTitle,
+[data-theme="dark"] .summaryPanel strong,
+[data-theme="dark"] .emptyState strong,
+[data-theme="dark"] .flagsHeader h2,
+[data-theme="dark"] .kpiIssues h2,
+[data-theme="dark"] .sourceNotesBar strong {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .appModeLabel,
+[data-theme="dark"] .helperText,
+[data-theme="dark"] .workflowStep,
+[data-theme="dark"] .pasteFormatNote,
+[data-theme="dark"] .sourceNotesMeta,
+[data-theme="dark"] .summaryPanel span,
+[data-theme="dark"] .kpiIssues ul,
+[data-theme="dark"] .mutedSummary,
+[data-theme="dark"] .emptyState span,
+[data-theme="dark"] .flagsPanel p {
+  color: var(--d-muted);
+}
+
+/* Buttons (generic) */
+[data-theme="dark"] button {
+  background: var(--d-surface-2);
+  border-color: var(--d-border-strong);
+  color: var(--d-text);
+}
+
+[data-theme="dark"] button:hover:not(:disabled) {
+  border-color: #4a5d76;
+}
+
+[data-theme="dark"] button:disabled {
+  background: #18212d;
+  border-color: #2a3645;
+  color: #5d6b7a;
+}
+
+[data-theme="dark"] .secondaryButton {
+  background: var(--d-surface-2);
+  border-color: var(--d-border-strong);
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .dangerButton {
+  background: #2a1719;
+  border-color: #5e2b30;
+  color: #f0a6a6;
+}
+
+[data-theme="dark"] .dangerButton:hover:not(:disabled) {
+  border-color: #8a4147;
+}
+
+/* Accent buttons — keep brand green / dark copy; placed after generic
+   button rules so source order wins the equal-specificity tie. */
+[data-theme="dark"] .primaryButton,
+[data-theme="dark"] .excelPrimaryButton {
+  background: var(--d-green);
+  border-color: var(--d-green);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .primaryButton:hover:not(:disabled),
+[data-theme="dark"] .excelPrimaryButton:hover:not(:disabled) {
+  background: var(--d-green-strong);
+  border-color: var(--d-green-strong);
+}
+
+[data-theme="dark"] .copyPrimaryButton {
+  background: #243246;
+  border-color: #38485e;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .copyPrimaryButton:hover:not(:disabled) {
+  background: #2c3c52;
+  border-color: #45576f;
+}
+
+[data-theme="dark"] .filterButton.active {
+  background: #163024;
+  border-color: var(--d-green-strong);
+  color: var(--d-green-text);
+}
+
+/* Tabs */
+[data-theme="dark"] .modeTabs {
+  background: var(--d-surface-2);
+  border-color: var(--d-border);
+}
+
+[data-theme="dark"] .modeTabIndicator {
+  background: var(--d-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] .modeTab {
+  color: var(--d-muted);
+}
+
+[data-theme="dark"] .modeTab:hover:not(:disabled) {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .modeTab.active,
+[data-theme="dark"] .modeTab.active:hover:not(:disabled) {
+  color: var(--d-green-text);
+}
+
+/* Theme toggle */
+[data-theme="dark"] .themeToggle {
+  background: #2a3a4f;
+  border-color: #3a4a60;
+}
+
+[data-theme="dark"] .themeToggle:hover:not(:disabled) {
+  border-color: #4a5d76;
+}
+
+[data-theme="dark"] .themeToggleKnob {
+  background: #0f1824;
+  color: #cdd9e6;
+  transform: translateX(24px);
+}
+
+/* Inputs */
+[data-theme="dark"] textarea,
+[data-theme="dark"] .inputPanel textarea,
+[data-theme="dark"] .expandedField textarea,
+[data-theme="dark"] .expandedField select {
+  background: #131d2a;
+  border-color: var(--d-border-strong);
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .reviewTable textarea {
+  background: transparent;
+  color: var(--d-text);
+}
+
+[data-theme="dark"] textarea::placeholder {
+  color: #6b7a8b;
+}
+
+[data-theme="dark"] .reviewTable textarea:focus,
+[data-theme="dark"] .expandedField textarea:focus,
+[data-theme="dark"] .expandedField select:focus,
+[data-theme="dark"] .inputPanel textarea:focus {
+  border-color: #5a7088;
+}
+
+/* Badges / chips / misc surfaces */
+[data-theme="dark"] .rowCountBadge,
+[data-theme="dark"] .flagsHeader span,
+[data-theme="dark"] .yesNoBadge {
+  background: var(--d-surface-2);
+  border-color: var(--d-border-strong);
+  color: var(--d-soft);
+}
+
+[data-theme="dark"] .workflowChip {
+  background: var(--d-surface-2);
+  border-color: var(--d-border);
+  color: var(--d-soft);
+}
+
+[data-theme="dark"] .workflowDivider {
+  color: #5d6b7a;
+}
+
+[data-theme="dark"] .yesNoBadge.yes {
+  background: #3a3413;
+  border-color: #6b5e20;
+  color: #f0d97a;
+}
+
+[data-theme="dark"] .bonusCard {
+  background: #14301f;
+  border-color: #2f6b46;
+}
+
+[data-theme="dark"] .bonusCard strong {
+  color: var(--d-green-text);
+}
+
+[data-theme="dark"] .urlChip {
+  background: #16263a;
+  border-color: #2f4a6b;
+  color: #7db4f0;
+}
+
+[data-theme="dark"] .urlChip:hover {
+  border-color: #4f7bb0;
+}
+
+[data-theme="dark"] .missingLinkChip {
+  background: #36300f;
+  border-color: #6b5520;
+  color: #e0bb5a;
+}
+
+[data-theme="dark"] .rowNumberButton {
+  color: var(--d-muted);
+}
+
+[data-theme="dark"] .rowNumberButton:hover,
+[data-theme="dark"] .rowNumberButton[aria-expanded="true"] {
+  background: #16263a;
+  border-color: #2f4a6b;
+  color: #7db4f0;
+}
+
+[data-theme="dark"] .templateBlock {
+  background: #131d2a;
+  border-color: var(--d-border-strong);
+  color: var(--d-soft);
+}
+
+/* Tables */
+[data-theme="dark"] .tableWrap {
+  border-color: var(--d-border-strong);
+}
+
+[data-theme="dark"] .reviewTable th,
+[data-theme="dark"] .flagsPanel th {
+  background: var(--d-surface-2);
+  color: var(--d-soft);
+}
+
+[data-theme="dark"] .reviewTable th,
+[data-theme="dark"] .reviewTable td,
+[data-theme="dark"] .flagsPanel th,
+[data-theme="dark"] .flagsPanel td {
+  border-color: var(--d-border);
+}
+
+[data-theme="dark"] .reviewTable tbody tr:nth-child(even):not(.expandedReviewRow) td {
+  background: var(--d-surface-3);
+}
+
+[data-theme="dark"] .reviewTable tbody tr:hover:not(.expandedReviewRow) td {
+  background: var(--d-hover);
+}
+
+[data-theme="dark"] .flagsPanel tbody tr:nth-child(even) {
+  background: var(--d-surface-3);
+}
+
+[data-theme="dark"] .flaggedRow td,
+[data-theme="dark"] .expandedReviewRow.flaggedRow td {
+  background: #2c2a14;
+}
+
+[data-theme="dark"] .expandedReviewRow td {
+  background: var(--d-surface-2);
+}
+
+[data-theme="dark"] .expandedField span {
+  color: var(--d-soft);
+}
+
+/* Empty state */
+[data-theme="dark"] .emptyState {
+  background: #16202d;
+  border-color: var(--d-border-strong);
+  color: var(--d-muted);
+}
+
+[data-theme="dark"] .emptyStateIcon {
+  background: #163024;
+  color: var(--d-green-text);
+}
+
+/* Status text (green) */
+[data-theme="dark"] .statusLine,
+[data-theme="dark"] .templateStatus,
+[data-theme="dark"] .flagsStatus {
+  color: var(--d-green-text);
 }

@@ -1,16 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
 import { UiIcon } from "./components/UiIcon";
 
 type AppMode = "reviewLog" | "kpiReport";
+type Theme = "light" | "dark";
 
 const TAB_ORDER: AppMode[] = ["reviewLog", "kpiReport"];
+const THEME_STORAGE_KEY = "repreport-theme";
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+  try {
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
 
 export default function App() {
   const [activeMode, setActiveMode] = useState<AppMode>("reviewLog");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const activeModeLabel = activeMode === "reviewLog" ? "Review Log Mode" : "KPI Report Mode";
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      // ignore persistence failures (e.g. private mode)
+    }
+  }, [theme]);
 
   function selectMode(mode: AppMode) {
     if (mode === activeMode) {
@@ -29,6 +53,19 @@ export default function App() {
             <span className="brandRep">Rep</span>
             <span className="brandReport">Report</span>
           </h1>
+          <button
+            type="button"
+            className="themeToggle"
+            role="switch"
+            aria-checked={isDark}
+            aria-label="Toggle dark mode"
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+          >
+            <span className="themeToggleKnob">
+              <UiIcon name={isDark ? "moon" : "sun"} size={14} />
+            </span>
+          </button>
         </div>
         <p className="appModeLabel">{activeModeLabel}</p>
       </header>

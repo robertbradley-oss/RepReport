@@ -2,9 +2,11 @@ import {
   BookOpen,
   ChevronDown,
   Download,
+  Moon,
   Plus,
   RotateCcw,
   Search,
+  Sun,
   Trash2,
   type LucideProps,
 } from "lucide-react";
@@ -140,9 +142,11 @@ const icons = {
   filter: FilterIcon,
   kpiReport: KpiReportIcon,
   loadSample: RotateCcw,
+  moon: Moon,
   parse: ParseIcon,
   reviewLog: ReviewLogIcon,
   search: Search,
+  sun: Sun,
   template: BookOpen,
 } satisfies Record<string, IconComponent>;
 
