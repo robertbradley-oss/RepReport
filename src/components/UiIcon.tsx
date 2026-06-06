@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   ChevronDown,
   Download,
   Moon,
@@ -132,6 +131,26 @@ function CopyIcon({ size = 20 }: LucideProps): ReactElement {
   );
 }
 
+function TemplateIcon({ size = 24 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeMiterlimit={10}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <line x1="12" y1="6" x2="12" y2="21" />
+      <path strokeLinecap="square" d="m17.5,3c-3,0-5.5,1.3-5.5,3,0-1.7-2.5-3-5.5-3S1,4.3,1,6v15c0-1.7,2.5-3,5.5-3s5.5,1.3,5.5,3c0-1.7,2.5-3,5.5-3s5.5,1.3,5.5,3V6c0-1.7-2.5-3-5.5-3Z" />
+    </svg>
+  );
+}
+
 const icons = {
   add: Plus,
   clear: Trash2,
@@ -147,7 +166,7 @@ const icons = {
   reviewLog: ReviewLogIcon,
   search: Search,
   sun: Sun,
-  template: BookOpen,
+  template: TemplateIcon,
 } satisfies Record<string, IconComponent>;
 
 export type UiIconName = keyof typeof icons;
