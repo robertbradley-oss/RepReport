@@ -5,9 +5,20 @@ import { UiIcon } from "./components/UiIcon";
 
 type AppMode = "reviewLog" | "kpiReport";
 
+const TAB_ORDER: AppMode[] = ["reviewLog", "kpiReport"];
+
 export default function App() {
   const [activeMode, setActiveMode] = useState<AppMode>("reviewLog");
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const activeModeLabel = activeMode === "reviewLog" ? "Review Log Mode" : "KPI Report Mode";
+
+  function selectMode(mode: AppMode) {
+    if (mode === activeMode) {
+      return;
+    }
+    setDirection(TAB_ORDER.indexOf(mode) > TAB_ORDER.indexOf(activeMode) ? "forward" : "back");
+    setActiveMode(mode);
+  }
 
   return (
     <main className="appShell">
@@ -22,11 +33,12 @@ export default function App() {
         <p className="appModeLabel">{activeModeLabel}</p>
       </header>
 
-      <nav className="modeTabs" aria-label="RepReport modes">
+      <nav className="modeTabs" data-active={activeMode} aria-label="RepReport modes">
+        <span className="modeTabIndicator" aria-hidden="true" />
         <button
           className={`modeTab ${activeMode === "reviewLog" ? "active" : ""}`}
           type="button"
-          onClick={() => setActiveMode("reviewLog")}
+          onClick={() => selectMode("reviewLog")}
           aria-pressed={activeMode === "reviewLog"}
         >
           <UiIcon name="reviewLog" />
@@ -35,7 +47,7 @@ export default function App() {
         <button
           className={`modeTab ${activeMode === "kpiReport" ? "active" : ""}`}
           type="button"
-          onClick={() => setActiveMode("kpiReport")}
+          onClick={() => selectMode("kpiReport")}
           aria-pressed={activeMode === "kpiReport"}
         >
           <UiIcon name="kpiReport" />
@@ -43,7 +55,9 @@ export default function App() {
         </button>
       </nav>
 
-      {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode />}
+      <div className={`modeContent ${direction === "forward" ? "slideForward" : "slideBack"}`} key={activeMode}>
+        {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode />}
+      </div>
     </main>
   );
 }

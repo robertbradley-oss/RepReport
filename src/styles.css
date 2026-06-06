@@ -112,6 +112,7 @@ button:disabled {
 .appShell {
   margin: 0 auto;
   max-width: 1600px;
+  overflow-x: clip;
   padding: 18px;
 }
 
@@ -168,33 +169,94 @@ button:disabled {
 }
 
 .modeTabs {
-  border-bottom: 1px solid #d1d5db;
-  display: flex;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(132px, 1fr));
   gap: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding: 4px;
+  background: #eaeef4;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+}
+
+.modeTabIndicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1), 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.modeTabs[data-active="kpiReport"] .modeTabIndicator {
+  transform: translateX(calc(100% + 4px));
 }
 
 .modeTab {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-bottom: -1px;
-  transition: color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  position: relative;
+  z-index: 1;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  color: #5b6773;
+  font-weight: 500;
+  transition: color 160ms ease;
 }
 
 .modeTab:hover:not(:disabled) {
   box-shadow: none;
+  color: #1f2933;
   transform: none;
 }
 
-.modeTab.active {
-  background: #ffffff;
-  border-bottom-color: #ffffff;
-  color: #1d6f42;
-  box-shadow: inset 0 3px 0 #1d6f42;
+.modeTab:active:not(:disabled) {
+  box-shadow: none;
 }
 
+.modeTab.active,
 .modeTab.active:hover:not(:disabled) {
-  box-shadow: inset 0 3px 0 #1d6f42;
+  color: #1d6f42;
+}
+
+.modeContent.slideForward {
+  animation: rrSlideForward 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.modeContent.slideBack {
+  animation: rrSlideBack 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes rrSlideForward {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rrSlideBack {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .reviewLogGrid,
@@ -202,7 +264,6 @@ button:disabled {
   display: grid;
   gap: 20px;
   grid-template-columns: minmax(340px, 0.78fr) minmax(640px, 1.5fr);
-  animation: rrFadeIn 180ms ease both;
   transition: grid-template-columns 220ms ease;
 }
 
@@ -213,18 +274,6 @@ button:disabled {
 
 .reviewLogGrid.sourceNotesCollapsed {
   grid-template-columns: minmax(210px, 0.28fr) minmax(720px, 1.72fr);
-}
-
-@keyframes rrFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
