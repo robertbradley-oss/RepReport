@@ -118,14 +118,14 @@ export function ReviewLogMode() {
           <>
             <div className="panelHeader">
               <label className="panelLabel" htmlFor="review-notes">
-                Notepad Review Notes
+                Review Notes
               </label>
             </div>
             <textarea
               id="review-notes"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Paste ticket and review notes here..."
+              placeholder="Paste review notes here..."
               spellCheck={false}
               data-gramm="false"
               data-gramm_editor="false"
