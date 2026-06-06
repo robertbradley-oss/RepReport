@@ -884,6 +884,7 @@ button:disabled {
   max-height: 240px;
   min-height: 84px;
   min-width: 0;
+  resize: none;
 }
 
 .emptyState {

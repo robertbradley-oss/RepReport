@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { UiIcon } from "./UiIcon";
-import { kpiNotesTemplate, sampleKpiNotes } from "../sampleData";
 import { downloadKpiCsv } from "../lib/exportCsv";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
@@ -13,8 +12,6 @@ export function KpiReportMode() {
   const [copyStatus, setCopyStatus] = useState("");
   const [exportStatus, setExportStatus] = useState("");
   const [formatStatus, setFormatStatus] = useState("");
-  const [templateStatus, setTemplateStatus] = useState("");
-  const [isTemplateVisible, setIsTemplateVisible] = useState(false);
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
@@ -22,7 +19,6 @@ export function KpiReportMode() {
     setIssues(result.issues);
     setCopyStatus("");
     setExportStatus("");
-    setTemplateStatus("");
     setFormatStatus(result.issues.length > 0 ? `Formatted KPI row with ${result.issues.length} issue${result.issues.length === 1 ? "" : "s"}.` : "Formatted 1 KPI row.");
   }
 
@@ -33,22 +29,12 @@ export function KpiReportMode() {
     setCopyStatus("");
     setExportStatus("");
     setFormatStatus("");
-    setTemplateStatus("");
-  }
-
-  function handleLoadSample() {
-    setNotes(sampleKpiNotes);
-    setCopyStatus("");
-    setExportStatus("");
-    setTemplateStatus("");
-    setFormatStatus("Sample KPI notes loaded.");
   }
 
   function updateCell(key: KpiColumnKey, value: string) {
     setRow((currentRow) => ({ ...currentRow, [key]: value }));
     setCopyStatus("");
     setExportStatus("");
-    setTemplateStatus("");
   }
 
   async function handleCopyRow() {
@@ -67,20 +53,12 @@ export function KpiReportMode() {
     setExportStatus("KPI CSV export downloaded.");
   }
 
-  async function handleCopyTemplate() {
-    const copied = await copyText(kpiNotesTemplate);
-    setTemplateStatus(copied ? "KPI template copied." : "Copy failed. Select the template text and copy manually.");
-  }
-
   return (
     <section className="kpiGrid" aria-label="KPI Report Mode">
       <div className="inputPanel">
         <label className="panelLabel" htmlFor="kpi-notes">
           Paste KPI Notes
         </label>
-        <p className="helperText">
-          Expected headings: Top 3 Achievements, 3 Best Tickets, and 3 Worst Tickets. Worst tickets work best as Ticket # plus a short summary.
-        </p>
         <textarea
           id="kpi-notes"
           value={notes}
@@ -100,26 +78,6 @@ export function KpiReportMode() {
             <UiIcon name="clear" />
             Clear
           </button>
-          <button type="button" onClick={handleLoadSample}>
-            <UiIcon name="loadSample" />
-            Load Sample
-          </button>
-        </div>
-        <div className="templateHelper">
-          <div className="buttonRow templateActions">
-            <button type="button" onClick={() => setIsTemplateVisible((visible) => !visible)}>
-              <UiIcon name="template" />
-              {isTemplateVisible ? "Hide Template" : "Show Template"}
-            </button>
-            <button type="button" onClick={handleCopyTemplate}>
-              <UiIcon name="copy" />
-              Copy Template
-            </button>
-          </div>
-          {isTemplateVisible && <pre className="templateBlock">{kpiNotesTemplate}</pre>}
-          <div className="templateStatus" aria-live="polite">
-            {templateStatus}
-          </div>
         </div>
       </div>
 
