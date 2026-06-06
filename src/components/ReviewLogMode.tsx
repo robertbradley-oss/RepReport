@@ -3,13 +3,11 @@ import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { UiIcon } from "./UiIcon";
-import { reviewLogTemplate, sampleReviewNotes } from "../sampleData";
+import { reviewLogTemplate } from "../sampleData";
 import { exportExcel } from "../lib/exportExcel";
-import { formatFlagsForClipboard } from "../lib/flagClipboard";
 import { copyText } from "../lib/clipboard";
 import { copyReviewRows } from "../lib/reviewClipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
-import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_DENSITIES, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import {
   buildVisibleReviewRows,
   formatSourceNotesSummary,
@@ -25,10 +23,8 @@ export function ReviewLogMode() {
   const [exportStatus, setExportStatus] = useState("");
   const [parseStatus, setParseStatus] = useState("");
   const [templateStatus, setTemplateStatus] = useState("");
-  const [tableDensity, setTableDensity] = useState<ReviewTableDensity>(DEFAULT_REVIEW_TABLE_DENSITY);
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
-  const [flagCopyStatus, setFlagCopyStatus] = useState("");
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -51,7 +47,6 @@ export function ReviewLogMode() {
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
-    setFlagCopyStatus("");
     setParseStatus(
       parsedRows.length > 0
         ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} model reminder${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
@@ -66,18 +61,6 @@ export function ReviewLogMode() {
     setExportStatus("");
     setParseStatus("");
     setTemplateStatus("");
-    setFlagCopyStatus("");
-    setIsSourceNotesCollapsed(false);
-    setFlaggedOnly(false);
-  }
-
-  function handleLoadSample() {
-    setNotes(sampleReviewNotes);
-    setCopyStatus("");
-    setExportStatus("");
-    setTemplateStatus("");
-    setFlagCopyStatus("");
-    setParseStatus("Sample review notes loaded.");
     setIsSourceNotesCollapsed(false);
     setFlaggedOnly(false);
   }
@@ -90,7 +73,6 @@ export function ReviewLogMode() {
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
-    setFlagCopyStatus("");
     setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
   }
 
@@ -114,11 +96,6 @@ export function ReviewLogMode() {
     setTemplateStatus(copied ? "Review Log template copied." : "Copy failed. Select the template text and copy manually.");
   }
 
-  async function handleCopyModelReminders() {
-    const copied = await copyText(formatFlagsForClipboard(flags));
-    setFlagCopyStatus(copied ? "Model reminders copied." : "Copy failed. Select the model reminders and copy manually.");
-  }
-
   return (
     <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Review Log Mode">
       <div className="inputPanel reviewInputCard">
@@ -139,12 +116,9 @@ export function ReviewLogMode() {
         ) : (
           <>
             <div className="panelHeader">
-              <div>
-                <span className="workflowStep">Step 1 · Paste Notes</span>
-                <label className="panelLabel" htmlFor="review-notes">
-                  Notepad Review Notes
-                </label>
-              </div>
+              <label className="panelLabel" htmlFor="review-notes">
+                Notepad Review Notes
+              </label>
             </div>
             <textarea
               id="review-notes"
@@ -152,6 +126,9 @@ export function ReviewLogMode() {
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Paste ticket and review notes here..."
               spellCheck={false}
+              data-gramm="false"
+              data-gramm_editor="false"
+              data-enable-grammarly="false"
             />
             <div className="sourceNotesMeta" aria-live="polite">
               <span>{notesCharacterCount === 0 ? "Empty" : `${notesCharacterCount.toLocaleString()} chars`}</span>
@@ -161,10 +138,6 @@ export function ReviewLogMode() {
               <button className="primaryButton" type="button" onClick={handleParse}>
                 <UiIcon name="parse" />
                 Parse Reviews
-              </button>
-              <button className="secondaryButton" type="button" onClick={handleLoadSample}>
-                <UiIcon name="loadSample" />
-                Load Sample
               </button>
               <button className="dangerButton" type="button" onClick={handleClear}>
                 <UiIcon name="clear" />
@@ -193,10 +166,7 @@ export function ReviewLogMode() {
 
       <div className="resultsPanel reviewOutputCard">
         <div className="panelHeader resultsHeader">
-          <div>
-            <span className="workflowStep">Step 2 · Review Rows</span>
-            <h2 className="panelTitle">Review Log Rows</h2>
-          </div>
+          <h2 className="panelTitle">Review Log Rows</h2>
           <span className="rowCountBadge" aria-live="polite">
             {visibleRowsLabel}
           </span>
@@ -214,42 +184,21 @@ export function ReviewLogMode() {
                 <img className="excelButtonIcon" src="/assets/icons8-excel-50.png" alt="" aria-hidden="true" />
                 Export Excel
               </button>
-            </div>
-            <div className="reviewControlsRow">
-              <div className="buttonRow secondaryActions">
-                <button
-                  className={flaggedOnly ? "filterButton active" : "filterButton"}
-                  type="button"
-                  aria-pressed={flaggedOnly}
-                  onClick={() => setFlaggedOnly((enabled) => !enabled)}
-                >
-                  <UiIcon name="filter" />
-                  Show Missing Models ({flags.length})
-                </button>
-                <button className="secondaryButton" type="button" onClick={handleCopyModelReminders}>
-                  <UiIcon name="copy" />
-                  Copy Model Reminders
-                </button>
-              </div>
-              <div className="densityToggle" role="group" aria-label="Table density">
-                {REVIEW_TABLE_DENSITIES.map((density) => (
-                  <button
-                    key={density}
-                    className={tableDensity === density ? "active" : ""}
-                    type="button"
-                    aria-pressed={tableDensity === density}
-                    onClick={() => setTableDensity(density)}
-                  >
-                    {density === "compact" ? "Compact" : "Comfortable"}
-                  </button>
-                ))}
-              </div>
+              <button
+                className={flaggedOnly ? "filterButton active" : "filterButton"}
+                type="button"
+                aria-pressed={flaggedOnly}
+                onClick={() => setFlaggedOnly((enabled) => !enabled)}
+              >
+                <UiIcon name="filter" />
+                Show Missing Models ({flags.length})
+              </button>
             </div>
           </div>
         </div>
 
         <EditableReviewTable
-          density={tableDensity}
+          density="compact"
           rows={visibleRows}
           rowNumbers={visibleRowNumbers}
           onRowsChange={handleVisibleRowsChange}
@@ -257,7 +206,7 @@ export function ReviewLogMode() {
         />
         <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
         <div className="statusLine" aria-live="polite">
-          {[parseStatus, copyStatus, exportStatus, flagCopyStatus].filter(Boolean).join(" ")}
+          {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
         <FlagsPanel flags={flags} />
       </div>

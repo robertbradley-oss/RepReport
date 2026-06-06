@@ -87,6 +87,9 @@ export function KpiReportMode() {
           onChange={(event) => setNotes(event.target.value)}
           placeholder="Paste weekly or pay-period KPI summary here..."
           spellCheck={false}
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
         />
         <div className="buttonRow">
           <button className="primaryButton" type="button" onClick={handleFormat}>

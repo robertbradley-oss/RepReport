@@ -526,19 +526,6 @@ button:disabled {
   width: 18px;
 }
 
-.secondaryActions {
-  align-items: center;
-}
-
-.reviewControlsRow {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  justify-content: space-between;
-  width: 100%;
-}
-
 .summaryPanel {
   display: grid;
   gap: 10px;
@@ -592,32 +579,9 @@ button:disabled {
   color: #1d6f42;
 }
 
-.densityToggle {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  display: inline-flex;
-  padding: 2px;
-}
-
-.densityToggle button {
-  border-color: transparent;
-  border-radius: 4px;
-  font-size: 12px;
-  min-height: 28px;
-  padding: 4px 8px;
-}
-
-.densityToggle button:hover:not(:disabled),
 .rowNumberButton:hover {
   box-shadow: none;
   transform: none;
-}
-
-.densityToggle button.active {
-  background: #ffffff;
-  border-color: #9ca3af;
-  color: #1d6f42;
 }
 
 .tableWrap {
