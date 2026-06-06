@@ -1006,12 +1006,22 @@ button:disabled {
   min-width: 0;
 }
 
+/* Top-align KPI preview cells so short columns don't float in the middle of
+   the shared row height, and trim the cell padding for a compact look. */
+.kpiTable td {
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
 .kpiTable textarea {
   field-sizing: content;
-  max-height: 240px;
-  min-height: 84px;
+  line-height: 1.4;
+  max-height: 320px;
+  min-height: 38px;
   min-width: 0;
+  padding: 6px 7px;
   resize: none;
+  vertical-align: top;
 }
 
 .emptyState {

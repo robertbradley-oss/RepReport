@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { UiIcon } from "./UiIcon";
-import { downloadKpiCsv } from "../lib/exportCsv";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
@@ -48,11 +47,6 @@ export function KpiReportMode() {
     setExportStatus("KPI Excel export downloaded.");
   }
 
-  function handleDownloadCsv() {
-    downloadKpiCsv(row);
-    setExportStatus("KPI CSV export downloaded.");
-  }
-
   return (
     <section className="kpiGrid" aria-label="KPI Report Mode">
       <div className="inputPanel">
@@ -85,16 +79,11 @@ export function KpiReportMode() {
         <div className="actionsBar">
           <div>
             <h2 className="panelTitle">KPI Row Preview</h2>
-            <p className="helperText">Edit any cell before copying. Line breaks are kept inside each spreadsheet cell.</p>
           </div>
           <div className="buttonRow">
             <button type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
               <UiIcon name="copy" />
               Copy KPI Row
-            </button>
-            <button type="button" onClick={handleDownloadCsv} disabled={isKpiRowEmpty(row)}>
-              <UiIcon name="download" />
-              Download KPI CSV
             </button>
             <button type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
               <UiIcon name="excel" />
@@ -132,17 +121,6 @@ export function KpiReportMode() {
         <div className="statusLine" aria-live="polite">
           {[formatStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
-
-        {issues.length > 0 && (
-          <div className="flagsPanel kpiIssues" aria-label="KPI issues">
-            <h2>KPI issues</h2>
-            <ul>
-              {issues.map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </section>
   );
