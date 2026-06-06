@@ -1,5 +1,4 @@
 import {
-  ChevronDown,
   Download,
   Moon,
   Plus,
@@ -171,6 +170,26 @@ function TrashIcon({ size = 24 }: LucideProps): ReactElement {
   );
 }
 
+function ChevronDownIcon({ size = 24 }: LucideProps): ReactElement {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="2 3.5 28 28"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeMiterlimit={10}
+      strokeLinecap="square"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M3 11L16 24L29 11" />
+    </svg>
+  );
+}
+
 function CheckIcon({ size = 24 }: LucideProps): ReactElement {
   return (
     <svg
@@ -191,7 +210,7 @@ const icons = {
   add: Plus,
   check: CheckIcon,
   clear: TrashIcon,
-  collapseInput: ChevronDown,
+  collapseInput: ChevronDownIcon,
   copy: CopyIcon,
   download: Download,
   excel: ExcelIcon,
