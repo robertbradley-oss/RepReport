@@ -49,11 +49,11 @@ export type KpiReportRow = {
 };
 
 export const KPI_COLUMNS = [
-  { key: "top3Achievements", label: "Top3Achievements" },
-  { key: "threeBestTickets", label: "3BestTickets" },
-  { key: "worstTicket1", label: "#1 of 3WorstTickets" },
-  { key: "worstTicket2", label: "#2 of 3WorstTickets" },
-  { key: "worstTicket3", label: "#3 of 3WorstTickets" },
+  { key: "top3Achievements", label: "Top 3 Achievements" },
+  { key: "threeBestTickets", label: "3 Best Tickets" },
+  { key: "worstTicket1", label: "#1 of 3 Worst Tickets" },
+  { key: "worstTicket2", label: "#2 of 3 Worst Tickets" },
+  { key: "worstTicket3", label: "#3 of 3 Worst Tickets" },
 ] as const;
 
 export type KpiColumnKey = (typeof KPI_COLUMNS)[number]["key"];

@@ -110,7 +110,7 @@ function addKpiReadMeSheet(workbook: ExcelJS.Workbook): void {
   sheet.addRows([
     ["RepReport KPI Export Notes"],
     ["The KPI Report sheet contains one spreadsheet-ready row with five KPI columns."],
-    ["Top3Achievements, 3BestTickets, and each worst-ticket cell preserve line breaks where Excel supports wrapped text."],
+    ["Top 3 Achievements, 3 Best Tickets, and each worst-ticket cell preserve line breaks where Excel supports wrapped text."],
     ["Formatting is intentionally plain: Arial 10, black text, white rows, gray grid borders, and wrapped cells."],
   ]);
   sheet.columns = [{ width: 110 }];

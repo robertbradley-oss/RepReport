@@ -2,7 +2,7 @@ import { buildKpiTsv, parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { kpiNotesTemplate } from "../src/sampleData.ts";
 import { KPI_COLUMNS } from "../src/types.ts";
 
-const expectedKpiLabels = ["Top3Achievements", "3BestTickets", "#1 of 3WorstTickets", "#2 of 3WorstTickets", "#3 of 3WorstTickets"];
+const expectedKpiLabels = ["Top 3 Achievements", "3 Best Tickets", "#1 of 3 Worst Tickets", "#2 of 3 Worst Tickets", "#3 of 3 Worst Tickets"];
 
 const { row, issues } = parseKpiNotes(kpiNotesTemplate);
 

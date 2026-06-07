@@ -202,23 +202,23 @@ function collectKpiIssues(row: KpiReportRow, unsectioned: string[]): string[] {
   const issues: string[] = [];
 
   if (!row.top3Achievements) {
-    issues.push("Top3Achievements section was not found.");
+    issues.push("Top 3 Achievements section was not found.");
   }
 
   if (!row.threeBestTickets) {
-    issues.push("3BestTickets section was not found.");
+    issues.push("3 Best Tickets section was not found.");
   }
 
   if (!row.worstTicket1) {
-    issues.push("#1 of 3WorstTickets is empty.");
+    issues.push("#1 of 3 Worst Tickets is empty.");
   }
 
   if (!row.worstTicket2) {
-    issues.push("#2 of 3WorstTickets is empty.");
+    issues.push("#2 of 3 Worst Tickets is empty.");
   }
 
   if (!row.worstTicket3) {
-    issues.push("#3 of 3WorstTickets is empty.");
+    issues.push("#3 of 3 Worst Tickets is empty.");
   }
 
   if (unsectioned.length > 0) {
