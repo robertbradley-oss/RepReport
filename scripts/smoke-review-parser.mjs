@@ -41,6 +41,7 @@ assertEqual(platformCount("Unknown"), 1, "Batch bonus summary should count unkno
 assertEqual(bonusSummary.verifiedAmazonCount, 2, "Batch bonus summary should count verified Amazon reviews.");
 assertEqual(bonusSummary.unverifiedAmazonCount, 1, "Batch bonus summary should count unverified Amazon reviews.");
 assertEqual(bonusSummary.photoReviewCount, 2, "Batch bonus summary should count photo reviews.");
+assertEqual(bonusSummary.videoReviewCount, 0, "Batch bonus summary should count video reviews.");
 assertEqual(
   REVIEW_COLUMNS.map((column) => column.label).join("|"),
   expectedReviewLabels.join("|"),

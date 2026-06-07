@@ -37,10 +37,6 @@ export function ReviewLogMode() {
   const sourceNotesSummary = formatSourceNotesSummary(rows.length);
   const notesCharacterCount = notes.length;
   const notesLineCount = notes.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
-  const visibleRowsLabel =
-    rows.length === visibleRows.length
-      ? `${rows.length} row${rows.length === 1 ? "" : "s"}`
-      : `${visibleRows.length} of ${rows.length} rows`;
 
   function handleParse() {
     const parsedRows = parseReviewNotes(notes);
@@ -193,9 +189,6 @@ export function ReviewLogMode() {
       <div className="resultsPanel reviewOutputCard">
         <div className="panelHeader resultsHeader">
           <h2 className="panelTitle">Review Log Rows</h2>
-          <span className="rowCountBadge" aria-live="polite">
-            {visibleRowsLabel}
-          </span>
         </div>
 
         <div className="actionsBar reviewActionsBar">

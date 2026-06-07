@@ -31,6 +31,7 @@ export type BonusSummary = {
   unverifiedAmazonCount: number;
   amazonCount: number;
   photoReviewCount: number;
+  videoReviewCount: number;
   needsAttentionCount: number;
   estimatedBonusTotal: number;
 };
@@ -85,6 +86,7 @@ export function calculateBonusSummary(rows: ReviewRow[]): BonusSummary {
     unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && !row.amazonVerifiedPurchase).length,
     amazonCount: rows.filter((row) => row.platform === "Amazon").length,
     photoReviewCount: rows.filter((row) => row.containsPictures === "Y").length,
+    videoReviewCount: rows.filter((row) => row.containsVideo === "Y").length,
     needsAttentionCount: rows.filter((row) => row.reviewLink.trim() === "" || row.platform === "Unknown").length,
     estimatedBonusTotal: rows.reduce((sum, row) => sum + calculateBonus(row), 0),
   };
