@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { BonusSummary } from "../lib/reviewParser";
 
 type SummaryPanelProps = {
@@ -6,13 +7,17 @@ type SummaryPanelProps = {
 };
 
 export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
+  const [isPlatformBreakdownOpen, setIsPlatformBreakdownOpen] = useState(false);
   const fullPlatformCounts = summary.platformCounts.map(({ platform, count }) => `${platform}: ${count}`).join(", ");
-  const visiblePlatformCounts = [...summary.platformCounts]
-    .sort((left, right) => right.count - left.count || left.platform.localeCompare(right.platform))
+  const platformCountsByVolume = [...summary.platformCounts].sort(
+    (left, right) => right.count - left.count || left.platform.localeCompare(right.platform),
+  );
+  const visiblePlatformCounts = platformCountsByVolume
     .slice(0, 3)
     .map(({ platform, count }) => `${platform}: ${count}`)
     .join(", ");
   const hiddenPlatformCount = Math.max(summary.platformCounts.length - 3, 0);
+  const hasPlatformCounts = summary.platformCounts.length > 0;
 
   return (
     <section className="summaryPanel" aria-label="Review summary">
@@ -20,13 +25,20 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
         <span>Total reviews</span>
         <strong>{summary.totalReviews}</strong>
       </div>
-      <div className="summaryCard">
+      <button
+        className="summaryCard platformSummaryButton"
+        type="button"
+        onClick={() => setIsPlatformBreakdownOpen(true)}
+        disabled={!hasPlatformCounts}
+        aria-haspopup="dialog"
+        aria-label="Show platform breakdown"
+      >
         <span>Platforms</span>
         <strong className="platformCounts" title={fullPlatformCounts || "None"}>
           {visiblePlatformCounts || "None"}
-          {hiddenPlatformCount > 0 && <span className="platformOverflow">+{hiddenPlatformCount} more</span>}
+          {hiddenPlatformCount > 0 && <> <span className="platformOverflow">+{hiddenPlatformCount} more</span></>}
         </strong>
-      </div>
+      </button>
       <div className="summaryCard">
         <span>Verified Amazon</span>
         <strong>
@@ -53,6 +65,26 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
         <span>Estimated bonus</span>
         <strong>${summary.estimatedBonusTotal}</strong>
       </div>
+      {isPlatformBreakdownOpen && (
+        <div className="platformBreakdownBackdrop" role="presentation" onClick={() => setIsPlatformBreakdownOpen(false)}>
+          <div className="platformBreakdownDialog" role="dialog" aria-modal="true" aria-labelledby="platform-breakdown-title" onClick={(event) => event.stopPropagation()}>
+            <div className="platformBreakdownHeader">
+              <h3 id="platform-breakdown-title">Platform breakdown</h3>
+              <button className="secondaryButton platformBreakdownClose" type="button" onClick={() => setIsPlatformBreakdownOpen(false)}>
+                Close
+              </button>
+            </div>
+            <div className="platformBreakdownList">
+              {platformCountsByVolume.map(({ platform, count }) => (
+                <div className="platformBreakdownRow" key={platform}>
+                  <span>{platform}</span>
+                  <strong>{count}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

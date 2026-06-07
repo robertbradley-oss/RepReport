@@ -787,6 +787,26 @@ button:disabled {
   line-height: 1.35;
 }
 
+.platformSummaryButton {
+  align-items: stretch;
+  box-shadow: none;
+  cursor: pointer;
+  justify-content: start;
+  min-height: 68px;
+  text-align: left;
+  transform: none;
+}
+
+.platformSummaryButton:hover:not(:disabled) {
+  border-color: #b8c1cc;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transform: none;
+}
+
+.platformSummaryButton:active:not(:disabled) {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
 .summaryPanel .platformOverflow {
   color: #6b7682;
   display: inline-block;
@@ -794,6 +814,72 @@ button:disabled {
   font-weight: 500;
   margin-left: 5px;
   white-space: nowrap;
+}
+
+.platformBreakdownBackdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.22);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 18px;
+  position: fixed;
+  z-index: 40;
+}
+
+.platformBreakdownDialog {
+  background: #ffffff;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  max-width: 360px;
+  padding: 14px;
+  width: min(360px, 100%);
+}
+
+.platformBreakdownHeader {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.platformBreakdownHeader h3 {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.platformBreakdownClose {
+  min-height: 30px;
+  padding: 5px 9px;
+}
+
+.platformBreakdownList {
+  display: grid;
+  gap: 6px;
+}
+
+.platformBreakdownRow {
+  align-items: center;
+  border-top: 1px solid #edf0f3;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+
+.platformBreakdownRow span {
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.platformBreakdownRow strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .summaryPanel .summarySub {
@@ -1464,6 +1550,34 @@ button:disabled {
 [data-theme="dark"] .resultsPanel,
 [data-theme="dark"] .reviewLeftColumn .flagsPanel {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .platformSummaryButton:hover:not(:disabled) {
+  border-color: #4a525c;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.38);
+}
+
+[data-theme="dark"] .platformBreakdownBackdrop {
+  background: rgba(3, 7, 12, 0.48);
+}
+
+[data-theme="dark"] .platformBreakdownDialog {
+  background: var(--d-surface);
+  border-color: var(--d-border-strong);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48);
+}
+
+[data-theme="dark"] .platformBreakdownHeader h3,
+[data-theme="dark"] .platformBreakdownRow strong {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .platformBreakdownRow {
+  border-color: var(--d-border);
+}
+
+[data-theme="dark"] .platformBreakdownRow span {
+  color: var(--d-soft);
 }
 
 /* Text */
