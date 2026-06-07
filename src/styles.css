@@ -787,6 +787,23 @@ button:disabled {
   line-height: 1.35;
 }
 
+.summaryPanel .platformCountLine {
+  align-items: baseline;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  justify-content: space-between;
+  line-height: 1.25;
+}
+
+.summaryPanel .platformCountLine span {
+  color: inherit;
+  display: inline;
+  font-size: inherit;
+  line-height: inherit;
+  overflow-wrap: normal;
+}
+
 .platformSummaryButton {
   align-items: stretch;
   box-shadow: none;
@@ -809,10 +826,10 @@ button:disabled {
 
 .summaryPanel .platformOverflow {
   color: #6b7682;
-  display: inline-block;
+  display: block;
   font-size: 12px;
   font-weight: 500;
-  margin-left: 5px;
+  margin-top: 2px;
   white-space: nowrap;
 }
 

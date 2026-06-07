@@ -12,11 +12,8 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
   const platformCountsByVolume = [...summary.platformCounts].sort(
     (left, right) => right.count - left.count || left.platform.localeCompare(right.platform),
   );
-  const visiblePlatformCounts = platformCountsByVolume
-    .slice(0, 3)
-    .map(({ platform, count }) => `${platform}: ${count}`)
-    .join(", ");
-  const hiddenPlatformCount = Math.max(summary.platformCounts.length - 3, 0);
+  const visiblePlatformCounts = platformCountsByVolume.slice(0, 2);
+  const hiddenPlatformCount = Math.max(summary.platformCounts.length - 2, 0);
   const hasPlatformCounts = summary.platformCounts.length > 0;
 
   return (
@@ -34,10 +31,19 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
         aria-label="Show platform breakdown"
       >
         <span>Platforms</span>
-        <strong className="platformCounts" title={fullPlatformCounts || "None"}>
-          {visiblePlatformCounts || "None"}
-          {hiddenPlatformCount > 0 && <> <span className="platformOverflow">+{hiddenPlatformCount} more</span></>}
-        </strong>
+        <div className="platformCounts" title={fullPlatformCounts || "None"}>
+          {visiblePlatformCounts.length > 0 ? (
+            visiblePlatformCounts.map(({ platform, count }) => (
+              <strong className="platformCountLine" key={platform}>
+                <span>{platform}</span>
+                <span>{count}</span>
+              </strong>
+            ))
+          ) : (
+            <strong className="platformCountLine">None</strong>
+          )}
+          {hiddenPlatformCount > 0 && <span className="platformOverflow">+{hiddenPlatformCount} more</span>}
+        </div>
       </button>
       <div className="summaryCard">
         <span>Verified Amazon</span>
