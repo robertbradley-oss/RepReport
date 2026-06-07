@@ -41,7 +41,7 @@ export function KpiReportMode() {
     <section className="kpiGrid" aria-label="KPI Report Mode">
       <div className="inputPanel">
         <label className="panelLabel" htmlFor="kpi-notes">
-          KPI Summary
+          KPI Notes
         </label>
         <textarea
           id="kpi-notes"
