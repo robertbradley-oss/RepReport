@@ -787,6 +787,15 @@ button:disabled {
   line-height: 1.35;
 }
 
+.summaryPanel .platformOverflow {
+  color: #6b7682;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+
 .summaryPanel .summarySub {
   color: #6b7785;
   display: inline;

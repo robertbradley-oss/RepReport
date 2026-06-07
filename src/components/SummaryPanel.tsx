@@ -6,7 +6,13 @@ type SummaryPanelProps = {
 };
 
 export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
-  const platformCounts = summary.platformCounts.map(({ platform, count }) => `${platform}: ${count}`).join(", ");
+  const fullPlatformCounts = summary.platformCounts.map(({ platform, count }) => `${platform}: ${count}`).join(", ");
+  const visiblePlatformCounts = [...summary.platformCounts]
+    .sort((left, right) => right.count - left.count || left.platform.localeCompare(right.platform))
+    .slice(0, 3)
+    .map(({ platform, count }) => `${platform}: ${count}`)
+    .join(", ");
+  const hiddenPlatformCount = Math.max(summary.platformCounts.length - 3, 0);
 
   return (
     <section className="summaryPanel" aria-label="Review summary">
@@ -16,7 +22,10 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
       </div>
       <div className="summaryCard">
         <span>Platforms</span>
-        <strong className="platformCounts">{platformCounts || "None"}</strong>
+        <strong className="platformCounts" title={fullPlatformCounts || "None"}>
+          {visiblePlatformCounts || "None"}
+          {hiddenPlatformCount > 0 && <span className="platformOverflow">+{hiddenPlatformCount} more</span>}
+        </strong>
       </div>
       <div className="summaryCard">
         <span>Verified Amazon</span>

@@ -176,16 +176,12 @@ function ChevronDownIcon({ size = 24 }: LucideProps): ReactElement {
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
-      viewBox="2 3.5 28 28"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeMiterlimit={10}
-      strokeLinecap="square"
+      viewBox="0 0 12 12"
+      fill="currentColor"
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M3 11L16 24L29 11" />
+      <path d="m6,9.25c-.192,0-.384-.073-.53-.22L1.22,4.78c-.293-.293-.293-.768,0-1.061s.768-.293,1.061,0l3.72,3.72,3.72-3.72c.293-.293.768-.293,1.061,0s.293.768,0,1.061l-4.25,4.25c-.146.146-.338.22-.53.22Z" />
     </svg>
   );
 }
