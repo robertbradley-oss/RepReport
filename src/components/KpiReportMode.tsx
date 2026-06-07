@@ -7,40 +7,25 @@ import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
 export function KpiReportMode() {
   const [notes, setNotes] = useState("");
   const [row, setRow] = useState<KpiReportRow>(createBlankKpiRow());
-  const [issues, setIssues] = useState<string[]>([]);
-  const [copyStatus, setCopyStatus] = useState("");
-  const [exportStatus, setExportStatus] = useState("");
-  const [formatStatus, setFormatStatus] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const copySuccessTimer = useRef<number | undefined>(undefined);
 
   function handleFormat() {
     const result = parseKpiNotes(notes);
     setRow(result.row);
-    setIssues(result.issues);
-    setCopyStatus("");
-    setExportStatus("");
-    setFormatStatus(result.issues.length > 0 ? `Formatted KPI row with ${result.issues.length} issue${result.issues.length === 1 ? "" : "s"}.` : "Formatted 1 KPI row.");
   }
 
   function handleClear() {
     setNotes("");
     setRow(createBlankKpiRow());
-    setIssues([]);
-    setCopyStatus("");
-    setExportStatus("");
-    setFormatStatus("");
   }
 
   function updateCell(key: KpiColumnKey, value: string) {
     setRow((currentRow) => ({ ...currentRow, [key]: value }));
-    setCopyStatus("");
-    setExportStatus("");
   }
 
   async function handleCopyRow() {
     const copied = await copyText(buildKpiTsv(row));
-    setCopyStatus(copied ? "Copied 1 KPI row." : "Copy failed. Select the KPI row cells and copy manually.");
     if (copied) {
       setCopySuccess(true);
       window.clearTimeout(copySuccessTimer.current);
@@ -49,9 +34,7 @@ export function KpiReportMode() {
   }
 
   async function handleExportExcel() {
-    setExportStatus("Building KPI Excel file...");
     await exportKpiExcel(row);
-    setExportStatus("KPI Excel export downloaded.");
   }
 
   return (
@@ -88,11 +71,11 @@ export function KpiReportMode() {
             <h2 className="panelTitle">KPI Row Preview</h2>
           </div>
           <div className="buttonRow">
-            <button type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
+            <button className="primaryButton copyPrimaryButton" type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
               <CopyResultIcon copied={copySuccess} />
               Copy KPI Row
             </button>
-            <button type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
+            <button className="primaryButton excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
               <UiIcon name="excel" />
               Export KPI Excel
             </button>
@@ -123,10 +106,6 @@ export function KpiReportMode() {
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div className="statusLine" aria-live="polite">
-          {[formatStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
       </div>
     </section>
