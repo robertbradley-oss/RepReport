@@ -230,7 +230,9 @@ export function ReviewLogMode() {
           onRowsChange={handleVisibleRowsChange}
           emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
         />
-        <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
+        {rows.length > 0 && (
+          <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
+        )}
         <div className="statusLine" aria-live="polite">
           {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
         </div>
