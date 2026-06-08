@@ -145,7 +145,7 @@ export function ReviewLogMode() {
               <span>{notesLineCount.toLocaleString()} note lines</span>
             </div>
             <div className="buttonRow parseActions">
-              <button className="primaryButton" type="button" onClick={handleParse}>
+              <button className="primaryButton neuButton" type="button" onClick={handleParse}>
                 <UiIcon name="parse" />
                 Generate Review Table
               </button>
@@ -195,11 +195,11 @@ export function ReviewLogMode() {
           <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
           <div className="actionStack" aria-label="Review output actions">
             <div className="buttonRow primaryActions">
-              <button className="primaryButton copyPrimaryButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
+              <button className="primaryButton copyPrimaryButton neuButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
                 <CopyResultIcon copied={copySuccess} />
                 Copy Rows
               </button>
-              <button className="primaryButton excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
+              <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
                 <UiIcon name="excel" size={18} />
                 Export Excel
               </button>

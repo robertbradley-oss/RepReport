@@ -742,6 +742,70 @@ button:disabled {
   border-color: #1d6f42;
 }
 
+.neuButton {
+  border: 2px solid #cecece;
+  border-radius: 999px;
+  box-shadow: inset 3px 3px 8px rgba(188, 188, 188, 0.95), inset -3px -3px 8px rgba(255, 255, 255, 0.9);
+  color: #3f4650;
+  min-height: 36px;
+  padding: 7px 15px;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 180ms ease, transform 120ms ease,
+    color 160ms ease;
+}
+
+.neuButton:hover:not(:disabled),
+.neuButton:focus-visible {
+  box-shadow: inset 2px 2px 5px rgba(188, 188, 188, 0.9), inset -2px -2px 5px rgba(255, 255, 255, 0.9),
+    2px 2px 5px rgba(188, 188, 188, 0.65), -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+
+.neuButton:focus-visible {
+  outline: 2px solid #1d6f42;
+  outline-offset: 2px;
+}
+
+.neuButton:active:not(:disabled) {
+  box-shadow: inset 4px 4px 8px rgba(164, 164, 164, 0.8), inset -3px -3px 7px rgba(255, 255, 255, 0.7);
+}
+
+.neuButton:disabled {
+  box-shadow: inset 2px 2px 5px rgba(190, 190, 190, 0.7), inset -2px -2px 5px rgba(255, 255, 255, 0.65);
+  opacity: 0.68;
+}
+
+.primaryButton.neuButton,
+.excelPrimaryButton.neuButton {
+  background: #1d6f42;
+  border-color: #26794b;
+  color: #ffffff;
+  box-shadow: inset 3px 3px 8px rgba(15, 78, 44, 0.78), inset -3px -3px 8px rgba(255, 255, 255, 0.16);
+}
+
+.primaryButton.neuButton:hover:not(:disabled),
+.primaryButton.neuButton:focus-visible,
+.excelPrimaryButton.neuButton:hover:not(:disabled),
+.excelPrimaryButton.neuButton:focus-visible {
+  background: #1b6a3f;
+  border-color: #2c8655;
+  box-shadow: inset 2px 2px 5px rgba(15, 78, 44, 0.74), inset -2px -2px 5px rgba(255, 255, 255, 0.18),
+    2px 2px 6px rgba(20, 90, 52, 0.28), -2px -2px 6px rgba(255, 255, 255, 0.72);
+}
+
+.copyPrimaryButton.neuButton {
+  background: #111827;
+  border-color: #252f3d;
+  color: #ffffff;
+  box-shadow: inset 3px 3px 8px rgba(5, 8, 14, 0.82), inset -3px -3px 8px rgba(255, 255, 255, 0.11);
+}
+
+.copyPrimaryButton.neuButton:hover:not(:disabled),
+.copyPrimaryButton.neuButton:focus-visible {
+  background: #151e2f;
+  border-color: #303b4d;
+  box-shadow: inset 2px 2px 5px rgba(5, 8, 14, 0.78), inset -2px -2px 5px rgba(255, 255, 255, 0.13),
+    2px 2px 6px rgba(17, 24, 39, 0.3), -2px -2px 6px rgba(255, 255, 255, 0.72);
+}
+
 .summaryPanel {
   display: grid;
   gap: 10px;
@@ -1679,6 +1743,53 @@ button:disabled {
 [data-theme="dark"] .copyPrimaryButton:hover:not(:disabled) {
   background: #2f3741;
   border-color: #46505b;
+}
+
+[data-theme="dark"] .neuButton {
+  border-color: #3b444f;
+  box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.42), inset -3px -3px 8px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .neuButton:hover:not(:disabled),
+[data-theme="dark"] .neuButton:focus-visible {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.42), inset -2px -2px 5px rgba(255, 255, 255, 0.07),
+    2px 2px 6px rgba(0, 0, 0, 0.32), -2px -2px 6px rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .primaryButton.neuButton,
+[data-theme="dark"] .excelPrimaryButton.neuButton {
+  background: var(--d-green);
+  border-color: #319761;
+  box-shadow: inset 3px 3px 8px rgba(6, 51, 28, 0.64), inset -3px -3px 8px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .primaryButton.neuButton:hover:not(:disabled),
+[data-theme="dark"] .primaryButton.neuButton:focus-visible,
+[data-theme="dark"] .excelPrimaryButton.neuButton:hover:not(:disabled),
+[data-theme="dark"] .excelPrimaryButton.neuButton:focus-visible {
+  background: var(--d-green-strong);
+  border-color: #3ba66c;
+  box-shadow: inset 2px 2px 5px rgba(6, 51, 28, 0.62), inset -2px -2px 5px rgba(255, 255, 255, 0.1),
+    2px 2px 6px rgba(0, 0, 0, 0.34), -2px -2px 6px rgba(79, 187, 129, 0.09);
+}
+
+[data-theme="dark"] .copyPrimaryButton.neuButton {
+  background: #262d36;
+  border-color: #495363;
+  box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .copyPrimaryButton.neuButton:hover:not(:disabled),
+[data-theme="dark"] .copyPrimaryButton.neuButton:focus-visible {
+  background: #2f3741;
+  border-color: #566273;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.07),
+    2px 2px 6px rgba(0, 0, 0, 0.36), -2px -2px 6px rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .neuButton:disabled {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.35), inset -2px -2px 5px rgba(255, 255, 255, 0.04);
+  opacity: 0.62;
 }
 
 [data-theme="dark"] .filterButton.active {

@@ -71,11 +71,11 @@ export function KpiReportMode() {
             <h2 className="panelTitle">KPI Row Preview</h2>
           </div>
           <div className="buttonRow">
-            <button className="primaryButton copyPrimaryButton" type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
+            <button className="primaryButton copyPrimaryButton neuButton" type="button" onClick={handleCopyRow} disabled={isKpiRowEmpty(row)}>
               <CopyResultIcon copied={copySuccess} />
               Copy KPI Row
             </button>
-            <button className="primaryButton excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
+            <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
               <UiIcon name="excel" />
               Export KPI Excel
             </button>
