@@ -1,6 +1,7 @@
 import {
   Download,
   Moon,
+  Pencil,
   Plus,
   RotateCcw,
   Search,
@@ -215,6 +216,7 @@ const icons = {
   loadSample: RotateCcw,
   moon: Moon,
   parse: ParseIcon,
+  edit: Pencil,
   reviewLog: ReviewLogIcon,
   search: Search,
   sun: Sun,

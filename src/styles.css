@@ -346,6 +346,34 @@ button:disabled {
   color: #1d6f42;
 }
 
+.workspaceTabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 14px;
+}
+
+.workspaceTab {
+  background: #ffffff;
+  border-color: #d9dde3;
+  border-radius: 999px;
+  color: #4b5563;
+  min-height: 34px;
+  padding: 6px 13px;
+}
+
+.workspaceTab:hover:not(:disabled) {
+  border-color: #aeb8c4;
+}
+
+.workspaceTab.active,
+.workspaceTab.active:hover:not(:disabled) {
+  background: #eaf6ee;
+  border-color: #1d6f42;
+  color: #1d6f42;
+}
+
 .modeContent.slideForward {
   animation: rrSlideForward 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -987,6 +1015,13 @@ button:disabled {
   color: #1d6f42;
 }
 
+.iconButton {
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px;
+  width: 30px;
+}
+
 .rowNumberButton:hover {
   box-shadow: none;
   transform: none;
@@ -1419,6 +1454,289 @@ button:disabled {
   margin: 6px 0 0;
 }
 
+.promiseDashboard {
+  max-width: 1180px;
+}
+
+.promisePanel {
+  display: grid;
+  gap: 14px;
+}
+
+.promiseHeader {
+  align-items: center;
+}
+
+.promiseHeader .helperText {
+  margin: 4px 0 0;
+}
+
+.promiseToolbar {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.promiseSearchField {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #5b6773;
+  display: flex;
+  gap: 8px;
+  min-height: 34px;
+  max-width: 420px;
+  padding: 0 11px;
+  width: min(420px, 100%);
+}
+
+.promiseSearchField input {
+  background: transparent;
+  border: 0;
+  color: #1f2933;
+  min-width: 0;
+  outline: none;
+  padding: 7px 0;
+  width: 100%;
+}
+
+.promiseCount {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 500;
+  min-height: 26px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.promiseForm {
+  background: #f9fafb;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.promiseFormHeader {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.promiseFormHeader h3 {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.promiseFormHeader .buttonRow {
+  margin-top: 0;
+}
+
+.promiseFormGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.promiseField {
+  display: grid;
+  gap: 5px;
+  grid-column: span 4;
+  min-width: 0;
+}
+
+.promiseFieldWide {
+  grid-column: span 6;
+}
+
+.promiseNoteField {
+  grid-column: span 12;
+}
+
+.promiseField span {
+  color: #3e4c59;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.promiseField input,
+.promiseField select,
+.promiseField textarea {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  color: #1f2933;
+  line-height: 1.35;
+  min-width: 0;
+  padding: 7px;
+  width: 100%;
+}
+
+.promiseField textarea {
+  resize: vertical;
+}
+
+.promiseField input:focus,
+.promiseField select:focus,
+.promiseField textarea:focus,
+.promiseSearchField:focus-within {
+  border-color: #6b7280;
+  outline: none;
+}
+
+.promiseCardGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.promiseCard {
+  background: #ffffff;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px;
+}
+
+.promiseCardHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.promiseCardTitle {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.promiseCardTitle strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.promiseBadges,
+.promiseCardActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.promiseCardActions {
+  flex: 0 0 auto;
+}
+
+.promiseBadge {
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  min-height: 24px;
+  padding: 4px 8px;
+}
+
+.platformBadge {
+  background: #eef4fb;
+  border-color: #c5d3e4;
+  color: #274968;
+}
+
+.statusBadge {
+  background: #f3f4f6;
+  color: #3e4c59;
+}
+
+.statusBadge-promised {
+  background: #eaf6ee;
+  border-color: #9fceb0;
+  color: #0f7a3a;
+}
+
+.statusBadge-followed-up {
+  background: #eef4fb;
+  border-color: #b7cbe3;
+  color: #1155cc;
+}
+
+.statusBadge-converted {
+  background: #f1f7e8;
+  border-color: #bed998;
+  color: #4d751b;
+}
+
+.statusBadge-closed {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #5b6773;
+}
+
+.promiseMeta {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin: 0;
+}
+
+.promiseMeta div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.promiseMeta dt {
+  color: #6b7682;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: none;
+}
+
+.promiseMeta dd {
+  color: #263442;
+  font-size: 13px;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.promiseTicketLink {
+  width: fit-content;
+}
+
+.promiseNotePreview {
+  color: #4b5563;
+  display: -webkit-box;
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.promiseEmptyState {
+  min-height: 260px;
+}
+
 .statusLine {
   color: #315b3c;
   font-size: 13px;
@@ -1548,6 +1866,19 @@ button:disabled {
     justify-content: flex-start;
   }
 
+  .promiseFormGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .promiseField,
+  .promiseFieldWide {
+    grid-column: span 3;
+  }
+
+  .promiseNoteField {
+    grid-column: span 6;
+  }
+
   .expandedField.reviewCol-ticketLink,
   .expandedField.reviewCol-reviewLink,
   .expandedField.reviewCol-customerContactTicketLink,
@@ -1578,6 +1909,23 @@ button:disabled {
 
   .parseActions .dangerButton {
     margin-left: 0;
+  }
+
+  .promiseHeader,
+  .promiseToolbar,
+  .promiseFormHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .promiseSearchField {
+    max-width: none;
+  }
+
+  .promiseField,
+  .promiseFieldWide,
+  .promiseNoteField {
+    grid-column: span 6;
   }
 }
 
@@ -1823,6 +2171,23 @@ button:disabled {
   color: var(--d-green-text);
 }
 
+[data-theme="dark"] .workspaceTab {
+  background: var(--d-surface);
+  border-color: var(--d-border-strong);
+  color: var(--d-muted);
+}
+
+[data-theme="dark"] .workspaceTab:hover:not(:disabled) {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .workspaceTab.active,
+[data-theme="dark"] .workspaceTab.active:hover:not(:disabled) {
+  background: #163024;
+  border-color: var(--d-green-strong);
+  color: var(--d-green-text);
+}
+
 /* Theme toggle */
 [data-theme="dark"] .themeToggle {
   background: linear-gradient(180deg, #1b2129 0%, #232b34 100%);
@@ -1863,7 +2228,12 @@ button:disabled {
 [data-theme="dark"] textarea,
 [data-theme="dark"] .inputPanel textarea,
 [data-theme="dark"] .expandedField textarea,
-[data-theme="dark"] .expandedField select {
+[data-theme="dark"] .expandedField select,
+[data-theme="dark"] .promiseSearchField,
+[data-theme="dark"] .promiseSearchField input,
+[data-theme="dark"] .promiseField input,
+[data-theme="dark"] .promiseField select,
+[data-theme="dark"] .promiseField textarea {
   background: #12171d;
   border-color: var(--d-border-strong);
   color: var(--d-text);
@@ -1908,13 +2278,21 @@ button:disabled {
 [data-theme="dark"] .reviewTable textarea:focus,
 [data-theme="dark"] .expandedField textarea:focus,
 [data-theme="dark"] .expandedField select:focus,
-[data-theme="dark"] .inputPanel textarea:focus {
+[data-theme="dark"] .inputPanel textarea:focus,
+[data-theme="dark"] .promiseField input:focus,
+[data-theme="dark"] .promiseField select:focus,
+[data-theme="dark"] .promiseField textarea:focus,
+[data-theme="dark"] .promiseSearchField:focus-within {
   border-color: #5a626c;
 }
 
 /* Badges / chips / misc surfaces */
 [data-theme="dark"] .flagsHeader span,
-[data-theme="dark"] .yesNoBadge {
+[data-theme="dark"] .yesNoBadge,
+[data-theme="dark"] .promiseCount,
+[data-theme="dark"] .promiseBadge,
+[data-theme="dark"] .statusBadge,
+[data-theme="dark"] .statusBadge-closed {
   background: var(--d-surface-2);
   border-color: var(--d-border-strong);
   color: var(--d-soft);
@@ -1966,6 +2344,50 @@ button:disabled {
 
 [data-theme="dark"] .urlChip:hover {
   border-color: #45576a;
+}
+
+[data-theme="dark"] .promiseForm,
+[data-theme="dark"] .promiseCard {
+  background: var(--d-surface-2);
+  border-color: var(--d-border);
+}
+
+[data-theme="dark"] .promiseCard {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .promiseFormHeader h3,
+[data-theme="dark"] .promiseCardTitle strong {
+  color: var(--d-text);
+}
+
+[data-theme="dark"] .promiseField span,
+[data-theme="dark"] .promiseMeta dd {
+  color: var(--d-soft);
+}
+
+[data-theme="dark"] .promiseMeta dt,
+[data-theme="dark"] .promiseNotePreview {
+  color: var(--d-muted);
+}
+
+[data-theme="dark"] .platformBadge,
+[data-theme="dark"] .statusBadge-followed-up {
+  background: #1a2531;
+  border-color: #334b65;
+  color: #91c4f1;
+}
+
+[data-theme="dark"] .statusBadge-promised {
+  background: #14301f;
+  border-color: #2f6b46;
+  color: var(--d-green-text);
+}
+
+[data-theme="dark"] .statusBadge-converted {
+  background: #202f16;
+  border-color: #4b682b;
+  color: #a8d56c;
 }
 
 [data-theme="dark"] .missingLinkChip {

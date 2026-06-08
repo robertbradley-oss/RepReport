@@ -57,3 +57,36 @@ export const KPI_COLUMNS = [
 ] as const;
 
 export type KpiColumnKey = (typeof KPI_COLUMNS)[number]["key"];
+
+export const REVIEW_PROMISE_PLATFORMS = [
+  "Google",
+  "Amazon",
+  "Trustpilot",
+  "iSpring",
+  "Costco",
+  "Costco.ca",
+  "Home Depot",
+  "Home Depot Canada",
+  "Zoro",
+  "Lowe's",
+  "Other",
+] as const;
+
+export type ReviewPromisePlatform = (typeof REVIEW_PROMISE_PLATFORMS)[number];
+
+export const REVIEW_PROMISE_STATUSES = ["Promised", "Followed Up", "Converted", "Closed"] as const;
+
+export type ReviewPromiseStatus = (typeof REVIEW_PROMISE_STATUSES)[number];
+
+export type ReviewPromiseEntry = {
+  id: string;
+  createdAt: string;
+  customerName: string;
+  platform: ReviewPromisePlatform;
+  ticketNumber?: string;
+  ticketLink?: string;
+  modelNumber?: string;
+  promiseNote?: string;
+  followUpDate?: string;
+  status: ReviewPromiseStatus;
+};

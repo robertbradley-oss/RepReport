@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
+import { ReviewPromisesPanel } from "./ReviewPromisesPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { reviewLogTemplate } from "../sampleData";
@@ -17,6 +18,7 @@ import {
 import type { ReviewRow } from "../types";
 
 export function ReviewLogMode() {
+  const [activeWorkspace, setActiveWorkspace] = useState<"reviews" | "promises">("reviews");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<ReviewRow[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
@@ -106,130 +108,157 @@ export function ReviewLogMode() {
   }
 
   return (
-    <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Review Log Mode">
-      <div className="reviewLeftColumn">
-        <div className="inputPanel reviewInputCard">
-        {isSourceNotesCollapsed ? (
-          <div className="sourceNotesBar">
-            <strong>{sourceNotesSummary}</strong>
-            <div className="sourceNotesActions">
-              <button type="button" onClick={() => setIsSourceNotesCollapsed(false)}>
-                <UiIcon name="collapseInput" />
-                Expand
-              </button>
-              <button className="dangerButton" type="button" onClick={handleClear}>
-                <UiIcon name="clear" />
-                Clear
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="panelHeader">
-              <label className="panelLabel" htmlFor="review-notes">
-                Review Notes
-              </label>
-            </div>
-            <textarea
-              id="review-notes"
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Paste review notes here..."
-              spellCheck={false}
-              data-gramm="false"
-              data-gramm_editor="false"
-              data-enable-grammarly="false"
-            />
-            <div className="sourceNotesMeta" aria-live="polite">
-              <span>{notesCharacterCount === 0 ? "Empty" : `${notesCharacterCount.toLocaleString()} chars`}</span>
-              <span>{notesLineCount.toLocaleString()} note lines</span>
-            </div>
-            <div className="buttonRow parseActions">
-              <button className="primaryButton neuButton" type="button" onClick={handleParse}>
-                <UiIcon name="parse" />
-                Generate Review Table
-              </button>
-              <button className="dangerButton" type="button" onClick={handleClear}>
-                <UiIcon name="clear" />
-                Clear
-              </button>
-            </div>
-            <div className="templateHelper">
-              <button
-                type="button"
-                className="templateSummary"
-                aria-expanded={isTemplateOpen}
-                aria-controls="review-template-drawer"
-                onClick={() => setIsTemplateOpen((open) => !open)}
-              >
-                <UiIcon name="template" />
-                Template tools
-              </button>
-              <div className={`templateDrawer${isTemplateOpen ? " open" : ""}`} id="review-template-drawer">
-                <div className="templateDrawerInner">
-                  <div className="buttonRow templateActions">
-                    <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
-                      <UiIcon name="copy" />
-                      Copy Template
+    <>
+      <nav className="workspaceTabs" aria-label="Review workspace">
+        <button
+          className={`workspaceTab ${activeWorkspace === "reviews" ? "active" : ""}`}
+          type="button"
+          aria-pressed={activeWorkspace === "reviews"}
+          onClick={() => setActiveWorkspace("reviews")}
+        >
+          <UiIcon name="reviewLog" />
+          Reviews
+        </button>
+        <button
+          className={`workspaceTab ${activeWorkspace === "promises" ? "active" : ""}`}
+          type="button"
+          aria-pressed={activeWorkspace === "promises"}
+          onClick={() => setActiveWorkspace("promises")}
+        >
+          <UiIcon name="add" />
+          Promises
+        </button>
+      </nav>
+
+      {activeWorkspace === "reviews" ? (
+        <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Reviews">
+          <div className="reviewLeftColumn">
+            <div className="inputPanel reviewInputCard">
+              {isSourceNotesCollapsed ? (
+                <div className="sourceNotesBar">
+                  <strong>{sourceNotesSummary}</strong>
+                  <div className="sourceNotesActions">
+                    <button type="button" onClick={() => setIsSourceNotesCollapsed(false)}>
+                      <UiIcon name="collapseInput" />
+                      Expand
+                    </button>
+                    <button className="dangerButton" type="button" onClick={handleClear}>
+                      <UiIcon name="clear" />
+                      Clear
                     </button>
                   </div>
-                  <pre className="templateBlock">{reviewLogTemplate}</pre>
-                  <div className="templateStatus" aria-live="polite">
-                    {templateStatus}
+                </div>
+              ) : (
+                <>
+                  <div className="panelHeader">
+                    <label className="panelLabel" htmlFor="review-notes">
+                      Review Notes
+                    </label>
                   </div>
+                  <textarea
+                    id="review-notes"
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    placeholder="Paste review notes here..."
+                    spellCheck={false}
+                    data-gramm="false"
+                    data-gramm_editor="false"
+                    data-enable-grammarly="false"
+                  />
+                  <div className="sourceNotesMeta" aria-live="polite">
+                    <span>{notesCharacterCount === 0 ? "Empty" : `${notesCharacterCount.toLocaleString()} chars`}</span>
+                    <span>{notesLineCount.toLocaleString()} note lines</span>
+                  </div>
+                  <div className="buttonRow parseActions">
+                    <button className="primaryButton neuButton" type="button" onClick={handleParse}>
+                      <UiIcon name="parse" />
+                      Generate Review Table
+                    </button>
+                    <button className="dangerButton" type="button" onClick={handleClear}>
+                      <UiIcon name="clear" />
+                      Clear
+                    </button>
+                  </div>
+                  <div className="templateHelper">
+                    <button
+                      type="button"
+                      className="templateSummary"
+                      aria-expanded={isTemplateOpen}
+                      aria-controls="review-template-drawer"
+                      onClick={() => setIsTemplateOpen((open) => !open)}
+                    >
+                      <UiIcon name="template" />
+                      Template tools
+                    </button>
+                    <div className={`templateDrawer${isTemplateOpen ? " open" : ""}`} id="review-template-drawer">
+                      <div className="templateDrawerInner">
+                        <div className="buttonRow templateActions">
+                          <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
+                            <UiIcon name="copy" />
+                            Copy Template
+                          </button>
+                        </div>
+                        <pre className="templateBlock">{reviewLogTemplate}</pre>
+                        <div className="templateStatus" aria-live="polite">
+                          {templateStatus}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            {flags.length > 0 && <FlagsPanel flags={flags} />}
+          </div>
+
+          <div className="resultsPanel reviewOutputCard">
+            <div className="panelHeader resultsHeader">
+              <h2 className="panelTitle">Review Log Rows</h2>
+            </div>
+
+            <div className="actionsBar reviewActionsBar">
+              <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
+              <div className="actionStack" aria-label="Review output actions">
+                <div className="buttonRow primaryActions">
+                  <button className="primaryButton copyPrimaryButton neuButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
+                    <CopyResultIcon copied={copySuccess} />
+                    Copy Rows
+                  </button>
+                  <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
+                    <UiIcon name="excel" size={18} />
+                    Export Excel
+                  </button>
+                  <button
+                    className={flaggedOnly ? "filterButton active" : "filterButton"}
+                    type="button"
+                    aria-pressed={flaggedOnly}
+                    onClick={() => setFlaggedOnly((enabled) => !enabled)}
+                  >
+                    <UiIcon name="filter" />
+                    Show Missing Models ({flags.length})
+                  </button>
                 </div>
               </div>
             </div>
-          </>
-        )}
-        </div>
-        {flags.length > 0 && <FlagsPanel flags={flags} />}
-      </div>
 
-      <div className="resultsPanel reviewOutputCard">
-        <div className="panelHeader resultsHeader">
-          <h2 className="panelTitle">Review Log Rows</h2>
-        </div>
-
-        <div className="actionsBar reviewActionsBar">
-          <SummaryPanel summary={bonusSummary} flagCount={flags.length} />
-          <div className="actionStack" aria-label="Review output actions">
-            <div className="buttonRow primaryActions">
-              <button className="primaryButton copyPrimaryButton neuButton" type="button" onClick={handleCopyRows} disabled={rows.length === 0}>
-                <CopyResultIcon copied={copySuccess} />
-                Copy Rows
-              </button>
-              <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
-                <UiIcon name="excel" size={18} />
-                Export Excel
-              </button>
-              <button
-                className={flaggedOnly ? "filterButton active" : "filterButton"}
-                type="button"
-                aria-pressed={flaggedOnly}
-                onClick={() => setFlaggedOnly((enabled) => !enabled)}
-              >
-                <UiIcon name="filter" />
-                Show Missing Models ({flags.length})
-              </button>
+            <EditableReviewTable
+              density="compact"
+              rows={visibleRows}
+              rowNumbers={visibleRowNumbers}
+              onRowsChange={handleVisibleRowsChange}
+              emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
+            />
+            {rows.length > 0 && (
+              <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
+            )}
+            <div className="statusLine" aria-live="polite">
+              {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
             </div>
           </div>
-        </div>
-
-        <EditableReviewTable
-          density="compact"
-          rows={visibleRows}
-          rowNumbers={visibleRowNumbers}
-          onRowsChange={handleVisibleRowsChange}
-          emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
-        />
-        {rows.length > 0 && (
-          <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
-        )}
-        <div className="statusLine" aria-live="polite">
-          {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
-        </div>
-      </div>
-    </section>
+        </section>
+      ) : (
+        <ReviewPromisesPanel />
+      )}
+    </>
   );
 }
