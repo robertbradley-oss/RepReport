@@ -459,33 +459,43 @@ button:disabled {
   color: var(--rr-brand-text);
 }
 
+/* Tab slide transition — matches RepStack's springy directional slide.
+   Forward (to a later tab) enters from the right; back enters from the left. */
 .modeContent.slideForward {
-  animation: rrSlideForward 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: rrSlideForward 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both;
 }
 
 .modeContent.slideBack {
-  animation: rrSlideBack 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: rrSlideBack 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both;
 }
 
 @keyframes rrSlideForward {
-  from {
+  0% {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(70px);
   }
 
-  to {
+  60% {
+    opacity: 1;
+  }
+
+  100% {
     opacity: 1;
     transform: translateX(0);
   }
 }
 
 @keyframes rrSlideBack {
-  from {
+  0% {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-70px);
   }
 
-  to {
+  60% {
+    opacity: 1;
+  }
+
+  100% {
     opacity: 1;
     transform: translateX(0);
   }
