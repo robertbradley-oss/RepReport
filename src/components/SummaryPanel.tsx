@@ -53,16 +53,9 @@ export function SummaryPanel({ summary, flagCount }: SummaryPanelProps) {
         </strong>
       </div>
       <div className="summaryCard">
-        <span>Photos</span>
+        <span>Photos &amp; videos</span>
         <strong>
-          {summary.photoReviewCount}
-          <span className="summarySub"> / {summary.totalReviews}</span>
-        </strong>
-      </div>
-      <div className="summaryCard">
-        <span>Videos</span>
-        <strong>
-          {summary.videoReviewCount}
+          {summary.photoReviewCount + summary.videoReviewCount}
           <span className="summarySub"> / {summary.totalReviews}</span>
         </strong>
       </div>
