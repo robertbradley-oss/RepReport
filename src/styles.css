@@ -1,10 +1,63 @@
 :root {
   color: #1f2933;
-  background: #eef2f7;
+  background: #eef1f6;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
   font-size: 13px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+
+  /* ---- Design tokens (aligned with RepStack: Apple-style glass + soft-UI) ---- */
+  --rr-bg: #eef1f6;
+  --rr-ink: #1d1d1f;
+  --rr-ink-secondary: #54545a;
+  --rr-ink-tertiary: #86868b;
+  --rr-ink-inverse: #f5f5f7;
+
+  /* Brand green accent (kept from RepReport) */
+  --rr-brand: #1d6f42;
+  --rr-brand-strong: #17592f;
+  --rr-brand-text: #1d6f42;
+  --rr-accent-soft: rgba(29, 111, 66, 0.14);
+  --rr-accent-ring: rgba(29, 111, 66, 0.32);
+
+  /* Glass surfaces + hairlines */
+  --rr-surface-glass: rgba(255, 255, 255, 0.55);
+  --rr-surface-glass-strong: rgba(255, 255, 255, 0.8);
+  --rr-hairline: rgba(15, 23, 42, 0.08);
+  --rr-hairline-strong: rgba(15, 23, 42, 0.14);
+  --rr-glass-blur: blur(20px) saturate(180%);
+
+  /* Neumorphic card shadow (dual light/dark) */
+  --rr-neu-card-shadow-dark: #c9cfd9;
+  --rr-neu-card-shadow-light: #ffffff;
+  --rr-shadow-card: 8px 8px 22px var(--rr-neu-card-shadow-dark),
+    -8px -8px 22px var(--rr-neu-card-shadow-light);
+  --rr-shadow-card-sm: 5px 5px 14px var(--rr-neu-card-shadow-dark),
+    -5px -5px 14px var(--rr-neu-card-shadow-light);
+  --rr-shadow-resting: 0 1px 2px rgba(15, 23, 42, 0.035),
+    0 10px 24px -12px rgba(15, 23, 42, 0.14);
+  --rr-shadow-raised: 0 2px 4px rgba(15, 23, 42, 0.06),
+    0 18px 36px -16px rgba(15, 23, 42, 0.2);
+  --rr-glass-bevel: inset 1.5px 1.5px 0 0 rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+
+  /* Soft-UI form fields */
+  --rr-neu-surface: rgba(255, 255, 255, 0.5);
+  --rr-neu-surface-focus: rgba(255, 255, 255, 0.85);
+  --rr-neu-shadow-out: 0 0 0 1px rgba(15, 23, 42, 0.05),
+    3px 3px 8px rgba(15, 23, 42, 0.05), -3px -3px 8px rgba(255, 255, 255, 0.65);
+  --rr-neu-shadow-in: 0 0 0 1px rgba(29, 111, 66, 0.22),
+    inset 2px 2px 5px rgba(15, 23, 42, 0.07), inset -2px -2px 5px rgba(255, 255, 255, 0.55);
+
+  /* Background ambient glows */
+  --rr-glow-1: #c9d6ff;
+  --rr-glow-2: #e3d3ff;
+  --rr-glow-3: #d3ead8;
+
+  --rr-radius-panel: 22px;
+  --rr-radius-card: 16px;
+  --rr-radius-field: 13px;
 }
 
 * {
@@ -12,10 +65,15 @@
 }
 
 body {
-  background: #eef2f7;
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--rr-bg);
+  background-image:
+    radial-gradient(900px 540px at 10% -10%, var(--rr-glow-1) 0%, transparent 60%),
+    radial-gradient(760px 500px at 95% 5%, var(--rr-glow-2) 0%, transparent 62%),
+    radial-gradient(680px 420px at 52% 112%, var(--rr-glow-3) 0%, transparent 60%);
+  background-attachment: fixed;
 }
 
 .srOnly {
@@ -45,40 +103,43 @@ textarea,
 
 button {
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  color: #1f2933;
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: 9999px;
+  color: var(--rr-ink);
   cursor: pointer;
   display: inline-flex;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   gap: 6px;
-  min-height: 32px;
-  padding: 6px 11px;
-  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 110ms ease, color 120ms ease;
+  min-height: 34px;
+  padding: 7px 14px;
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-glass-bevel), var(--rr-shadow-resting);
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 180ms ease, transform 150ms ease, color 150ms ease;
 }
 
 button:hover:not(:disabled) {
-  border-color: #6b7280;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  box-shadow: var(--rr-glass-bevel), var(--rr-shadow-raised);
   transform: translateY(-1px);
 }
 
 button:active:not(:disabled) {
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.16);
-  transform: translateY(1px) scale(0.985);
+  box-shadow: var(--rr-glass-bevel), var(--rr-shadow-resting);
+  transform: scale(0.98);
 }
 
 button:focus-visible {
-  outline: 2px solid #1d6f42;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--rr-glass-bevel), var(--rr-shadow-raised), 0 0 0 3px var(--rr-accent-ring);
 }
 
 button:disabled {
-  background: #f3f4f6;
-  border-color: #e5e7eb;
-  color: #8a96a3;
+  background: rgba(243, 244, 246, 0.7);
+  border-color: var(--rr-hairline);
+  box-shadow: none;
+  color: #9aa3ad;
   cursor: not-allowed;
 }
 
@@ -93,16 +154,16 @@ button:disabled {
 }
 
 .primaryButton {
-  background: #1d6f42;
-  border-color: #1d6f42;
+  background: var(--rr-brand);
+  border-color: rgba(15, 78, 44, 0.55);
   color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px -12px rgba(20, 90, 52, 0.55);
 }
 
 .primaryButton:hover:not(:disabled) {
   background: #1a6239;
-  border-color: #195e38;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 2px 6px rgba(20, 90, 52, 0.28);
+  border-color: rgba(15, 78, 44, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 16px 32px -12px rgba(20, 90, 52, 0.6);
 }
 
 .primaryButton:active:not(:disabled) {
@@ -111,19 +172,21 @@ button:disabled {
 }
 
 .secondaryButton {
-  background: #ffffff;
-  border-color: #d1d5db;
-  color: #374151;
+  background: var(--rr-surface-glass-strong);
+  border-color: var(--rr-hairline);
+  color: var(--rr-ink-secondary);
 }
 
 .dangerButton {
-  background: #fff7f7;
-  border-color: #f0b8b8;
-  color: #9f1c1c;
+  background: rgba(255, 69, 58, 0.1);
+  border-color: rgba(255, 69, 58, 0.28);
+  color: #8f1d17;
+  box-shadow: var(--rr-shadow-resting);
 }
 
 .dangerButton:hover:not(:disabled) {
-  border-color: #c24141;
+  background: rgba(255, 69, 58, 0.16);
+  border-color: rgba(255, 69, 58, 0.4);
 }
 
 /* Copy button icon that swaps to a checkmark on success. Scoped to the icon:
@@ -171,15 +234,17 @@ button:disabled {
 
 .appHeader {
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-panel);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card);
   display: flex;
   gap: 16px;
   justify-content: space-between;
-  margin: 0 0 14px;
-  padding: 10px 16px;
+  margin: 0 0 16px;
+  padding: 14px 20px;
 }
 
 .brandBlock {
@@ -291,29 +356,33 @@ button:disabled {
   position: relative;
   display: inline-grid;
   grid-template-columns: repeat(2, minmax(132px, 1fr));
-  gap: 4px;
-  margin-bottom: 16px;
-  padding: 4px;
-  background: #eaeef4;
-  border: 1px solid #e3e8ef;
-  border-radius: 12px;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 6px;
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: 18px;
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card-sm);
 }
 
 .modeTabIndicator {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc(50% - 6px);
-  border-radius: 9px;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc(50% - 9px);
+  border-radius: 13px;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1), 0 1px 3px rgba(15, 23, 42, 0.06);
-  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 6px 14px -6px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 260ms cubic-bezier(0.34, 1.2, 0.5, 1);
   z-index: 0;
 }
 
 .modeTabs[data-active="kpiReport"] .modeTabIndicator {
-  transform: translateX(calc(100% + 4px));
+  transform: translateX(calc(100% + 6px));
 }
 
 .modeTab {
@@ -325,9 +394,10 @@ button:disabled {
   padding: 8px 16px;
   background: transparent;
   border: 0;
-  border-radius: 9px;
-  color: #5b6773;
-  font-weight: 500;
+  border-radius: 13px;
+  box-shadow: none;
+  color: var(--rr-ink-secondary);
+  font-weight: 600;
   transition: color 160ms ease;
 }
 
@@ -476,12 +546,14 @@ button:disabled {
 
 .inputPanel,
 .resultsPanel {
-  background: #ffffff;
-  border: 1px solid #d9dde3;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-panel);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card);
   min-width: 0;
-  padding: 20px;
+  padding: 22px;
 }
 
 .reviewInputCard,
@@ -570,15 +642,25 @@ button:disabled {
 }
 
 .inputPanel textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: none;
+  border-radius: var(--rr-radius-field);
+  background: var(--rr-neu-surface);
+  box-shadow: var(--rr-neu-shadow-out);
+  color: var(--rr-ink);
   /* Text-cursor SVG adapted to 24px so browsers accept it as a cursor. */
   cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22%23000000%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M12%2C13%20L10.5%2C13%20C10.2238576%2C13%2010%2C12.7761424%2010%2C12.5%20C10%2C12.2238576%2010.2238576%2C12%2010.5%2C12%20L12%2C12%20L12%2C5.5%20C12%2C4.67157288%2011.3284271%2C4%2010.5%2C4%20L9.5%2C4%20C9.22385763%2C4%209%2C3.77614237%209%2C3.5%20C9%2C3.22385763%209.22385763%2C3%209.5%2C3%20L10.5%2C3%20C11.3177995%2C3%2012.0438856%2C3.39267155%2012.5%2C3.99975627%20C12.9561144%2C3.39267155%2013.6822005%2C3%2014.5%2C3%20L15.5%2C3%20C15.7761424%2C3%2016%2C3.22385763%2016%2C3.5%20C16%2C3.77614237%2015.7761424%2C4%2015.5%2C4%20L14.5%2C4%20C13.6715729%2C4%2013%2C4.67157288%2013%2C5.5%20L13%2C12%20L14.5%2C12%20C14.7761424%2C12%2015%2C12.2238576%2015%2C12.5%20C15%2C12.7761424%2014.7761424%2C13%2014.5%2C13%20L13%2C13%20L13%2C19.5%20C13%2C20.3284271%2013.6715729%2C21%2014.5%2C21%20L15.5%2C21%20C15.7761424%2C21%2016%2C21.2238576%2016%2C21.5%20C16%2C21.7761424%2015.7761424%2C22%2015.5%2C22%20L14.5%2C22%20C13.6822005%2C22%2012.9561144%2C21.6073285%2012.5%2C21.0002437%20C12.0438856%2C21.6073285%2011.3177995%2C22%2010.5%2C22%20L9.5%2C22%20C9.22385763%2C22%209%2C21.7761424%209%2C21.5%20C9%2C21.2238576%209.22385763%2C21%209.5%2C21%20L10.5%2C21%20C11.3284271%2C21%2012%2C20.3284271%2012%2C19.5%20L12%2C13%20Z%22%2F%3E%3C%2Fsvg%3E") 12 12, text;
   line-height: 1.35;
   min-height: 540px;
-  padding: 10px;
+  outline: none;
+  padding: 12px 14px;
   resize: vertical;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
   width: 100%;
+}
+
+.inputPanel textarea:focus {
+  background: var(--rr-neu-surface-focus);
+  box-shadow: var(--rr-neu-shadow-in);
 }
 
 .reviewInputCard #review-notes {
@@ -641,6 +723,9 @@ button:disabled {
   background: transparent;
   border: 0;
   border-radius: 6px;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: #5b6773;
   cursor: pointer;
   display: inline-flex;
@@ -750,14 +835,16 @@ button:disabled {
 }
 
 .copyPrimaryButton {
-  background: #111827;
-  border-color: #111827;
+  background: #1d1d1f;
+  border-color: rgba(15, 23, 42, 0.6);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px -12px rgba(15, 23, 42, 0.5);
 }
 
 .copyPrimaryButton:hover:not(:disabled) {
-  background: #1f2937;
-  border-color: #1f2937;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 6px rgba(17, 24, 39, 0.28);
+  background: #2a2a2e;
+  border-color: rgba(15, 23, 42, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 16px 32px -12px rgba(15, 23, 42, 0.58);
 }
 
 .copyPrimaryButton:active:not(:disabled) {
@@ -766,8 +853,10 @@ button:disabled {
 }
 
 .excelPrimaryButton {
-  background: #1d6f42;
-  border-color: #1d6f42;
+  background: var(--rr-brand);
+  border-color: rgba(15, 78, 44, 0.55);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px -12px rgba(20, 90, 52, 0.55);
 }
 
 .neuButton {
@@ -843,13 +932,16 @@ button:disabled {
 }
 
 .summaryCard {
-  background: #ffffff;
-  border: 1px solid #d9dde3;
-  border-radius: 6px;
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-card);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card-sm);
   display: grid;
   gap: 4px;
   min-height: 68px;
-  padding: 10px 12px;
+  padding: 13px 15px;
 }
 
 .summaryPanel span {
@@ -891,7 +983,7 @@ button:disabled {
 
 .platformSummaryButton {
   align-items: stretch;
-  box-shadow: none;
+  box-shadow: var(--rr-shadow-card-sm);
   cursor: pointer;
   justify-content: start;
   min-height: 68px;
@@ -900,13 +992,14 @@ button:disabled {
 }
 
 .platformSummaryButton:hover:not(:disabled) {
-  border-color: #b8c1cc;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  transform: none;
+  border-color: var(--rr-hairline-strong);
+  box-shadow: var(--rr-shadow-card);
+  transform: translateY(-1px);
 }
 
 .platformSummaryButton:active:not(:disabled) {
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--rr-shadow-card-sm);
+  transform: none;
 }
 
 .summaryPanel .platformOverflow {
@@ -1028,8 +1121,8 @@ button:disabled {
 }
 
 .tableWrap {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid var(--rr-hairline);
+  border-radius: 14px;
   max-height: 530px;
   overflow: auto;
 }
@@ -1122,7 +1215,8 @@ button:disabled {
 .rowNumberButton {
   background: transparent;
   border-color: transparent;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: none;
   color: #4f6070;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -1264,13 +1358,16 @@ button:disabled {
 
 .expandedField textarea,
 .expandedField select {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 5px;
-  color: #1f2933;
+  background: var(--rr-neu-surface);
+  border: none;
+  border-radius: var(--rr-radius-field);
+  box-shadow: var(--rr-neu-shadow-out);
+  color: var(--rr-ink);
   line-height: 1.35;
   min-width: 0;
-  padding: 7px;
+  outline: none;
+  padding: 9px 11px;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
   width: 100%;
 }
 
@@ -1280,7 +1377,8 @@ button:disabled {
 
 .expandedField textarea:focus,
 .expandedField select:focus {
-  border-color: #6b7280;
+  background: var(--rr-neu-surface-focus);
+  box-shadow: var(--rr-neu-shadow-in);
   outline: none;
 }
 
@@ -1383,10 +1481,10 @@ button:disabled {
 
 .emptyState {
   align-items: center;
-  background: #fdfdfd;
-  border: 1px dashed #d1d5db;
-  border-radius: 8px;
-  color: #4b5563;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1.5px dashed var(--rr-hairline-strong);
+  border-radius: var(--rr-radius-card);
+  color: var(--rr-ink-secondary);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1398,13 +1496,14 @@ button:disabled {
 
 .emptyStateIcon {
   align-items: center;
-  background: #eaf6ee;
+  background: var(--rr-accent-soft);
   border-radius: 999px;
-  color: #1d6f42;
+  color: var(--rr-brand);
   display: inline-flex;
-  height: 48px;
+  height: 52px;
   justify-content: center;
-  width: 48px;
+  width: 52px;
+  box-shadow: var(--rr-shadow-card-sm);
 }
 
 .emptyState strong {
@@ -1480,15 +1579,17 @@ button:disabled {
 
 .promiseSearchField {
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
+  background: var(--rr-neu-surface);
+  border: none;
   border-radius: 999px;
-  color: #5b6773;
+  box-shadow: var(--rr-neu-shadow-out);
+  color: var(--rr-ink-secondary);
   display: flex;
   gap: 8px;
-  min-height: 34px;
+  min-height: 38px;
   max-width: 420px;
-  padding: 0 11px;
+  padding: 0 14px;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
   width: min(420px, 100%);
 }
 
@@ -1515,12 +1616,12 @@ button:disabled {
 }
 
 .promiseForm {
-  background: #f9fafb;
-  border: 1px solid #d9dde3;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-card);
   display: grid;
   gap: 12px;
-  padding: 14px;
+  padding: 16px;
 }
 
 .promiseFormHeader {
@@ -1572,13 +1673,16 @@ button:disabled {
 .promiseField input,
 .promiseField select,
 .promiseField textarea {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 5px;
-  color: #1f2933;
+  background: var(--rr-neu-surface);
+  border: none;
+  border-radius: var(--rr-radius-field);
+  box-shadow: var(--rr-neu-shadow-out);
+  color: var(--rr-ink);
   line-height: 1.35;
   min-width: 0;
-  padding: 7px;
+  outline: none;
+  padding: 9px 11px;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
   width: 100%;
 }
 
@@ -1590,7 +1694,8 @@ button:disabled {
 .promiseField select:focus,
 .promiseField textarea:focus,
 .promiseSearchField:focus-within {
-  border-color: #6b7280;
+  background: var(--rr-neu-surface-focus);
+  box-shadow: var(--rr-neu-shadow-in);
   outline: none;
 }
 
@@ -1601,14 +1706,16 @@ button:disabled {
 }
 
 .promiseCard {
-  background: #ffffff;
-  border: 1px solid #d9dde3;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-card);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card-sm);
   display: grid;
   gap: 10px;
   min-width: 0;
-  padding: 13px;
+  padding: 16px;
 }
 
 .promiseCardHeader {
@@ -1750,12 +1857,14 @@ button:disabled {
 }
 
 .reviewLeftColumn .flagsPanel {
-  background: #ffffff;
-  border: 1px solid #d9dde3;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  border-radius: var(--rr-radius-panel);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  box-shadow: var(--rr-shadow-card);
   margin-top: 0;
-  padding: 16px;
+  padding: 18px;
 }
 
 .flagsTableScroll {
@@ -1948,10 +2057,46 @@ button:disabled {
   --d-green-strong: #2a945a;
   --d-green-text: #4fbb81;
   color: var(--d-text);
+
+  /* Re-map the shared design tokens for dark so glass/soft-UI styling stays
+     consistent with light mode instead of leaking pale shadows. */
+  --rr-ink: #e7eaee;
+  --rr-ink-secondary: #aab0bd;
+  --rr-ink-tertiary: #7e8593;
+  --rr-surface-glass: rgba(255, 255, 255, 0.045);
+  --rr-surface-glass-strong: rgba(255, 255, 255, 0.07);
+  --rr-hairline: rgba(255, 255, 255, 0.1);
+  --rr-hairline-strong: rgba(255, 255, 255, 0.16);
+  --rr-accent-soft: rgba(79, 187, 129, 0.18);
+  --rr-accent-ring: rgba(79, 187, 129, 0.4);
+  --rr-neu-card-shadow-dark: #0b0d11;
+  --rr-neu-card-shadow-light: #20242c;
+  --rr-shadow-card: 8px 8px 22px var(--rr-neu-card-shadow-dark),
+    -8px -8px 22px var(--rr-neu-card-shadow-light);
+  --rr-shadow-card-sm: 5px 5px 14px var(--rr-neu-card-shadow-dark),
+    -5px -5px 14px var(--rr-neu-card-shadow-light);
+  --rr-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+  --rr-shadow-raised: 0 2px 4px rgba(0, 0, 0, 0.45), 0 18px 36px -16px rgba(0, 0, 0, 0.65);
+  --rr-glass-bevel: inset 1.5px 1.5px 0 0 rgba(255, 255, 255, 0.05),
+    inset -1px -1px 0 0 rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --rr-neu-surface: rgba(255, 255, 255, 0.05);
+  --rr-neu-surface-focus: rgba(255, 255, 255, 0.09);
+  --rr-neu-shadow-out: 0 0 0 1px rgba(255, 255, 255, 0.05),
+    3px 3px 8px rgba(0, 0, 0, 0.45), -3px -3px 8px rgba(255, 255, 255, 0.035);
+  --rr-neu-shadow-in: 0 0 0 1px rgba(79, 187, 129, 0.35),
+    inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.035);
+  --rr-glow-1: rgba(40, 70, 130, 0.35);
+  --rr-glow-2: rgba(70, 45, 120, 0.32);
+  --rr-glow-3: rgba(26, 80, 50, 0.3);
 }
 
 [data-theme="dark"] body {
-  background: var(--d-bg);
+  background-color: var(--d-bg);
+  background-image:
+    radial-gradient(900px 540px at 10% -10%, var(--rr-glow-1) 0%, transparent 60%),
+    radial-gradient(760px 500px at 95% 5%, var(--rr-glow-2) 0%, transparent 62%),
+    radial-gradient(680px 420px at 52% 112%, var(--rr-glow-3) 0%, transparent 60%);
+  background-attachment: fixed;
 }
 
 /* Surfaces / cards */
@@ -1965,13 +2110,13 @@ button:disabled {
 }
 
 [data-theme="dark"] .appHeader {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--rr-shadow-card);
 }
 
 [data-theme="dark"] .inputPanel,
 [data-theme="dark"] .resultsPanel,
 [data-theme="dark"] .reviewLeftColumn .flagsPanel {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--rr-shadow-card);
 }
 
 [data-theme="dark"] .platformSummaryButton:hover:not(:disabled) {
@@ -2353,7 +2498,7 @@ button:disabled {
 }
 
 [data-theme="dark"] .promiseCard {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--rr-shadow-card-sm);
 }
 
 [data-theme="dark"] .promiseFormHeader h3,
