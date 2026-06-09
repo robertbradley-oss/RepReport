@@ -13,12 +13,13 @@
   --rr-ink-tertiary: #86868b;
   --rr-ink-inverse: #f5f5f7;
 
-  /* Brand green accent (kept from RepReport) */
-  --rr-brand: #1d6f42;
-  --rr-brand-strong: #17592f;
-  --rr-brand-text: #1d6f42;
-  --rr-accent-soft: rgba(29, 111, 66, 0.14);
-  --rr-accent-ring: rgba(29, 111, 66, 0.32);
+  /* Brand green accent — single unified emerald scale */
+  --rr-brand: #1c7a47;
+  --rr-brand-strong: #166538;
+  --rr-brand-text: #1c7a47;
+  --rr-brand-deep: #0f5b30;
+  --rr-accent-soft: rgba(28, 122, 71, 0.13);
+  --rr-accent-ring: rgba(28, 122, 71, 0.32);
 
   /* Glass surfaces + hairlines */
   --rr-surface-glass: rgba(255, 255, 255, 0.55);
@@ -50,10 +51,10 @@
   --rr-neu-shadow-in: 0 0 0 1px rgba(29, 111, 66, 0.22),
     inset 2px 2px 5px rgba(15, 23, 42, 0.07), inset -2px -2px 5px rgba(255, 255, 255, 0.55);
 
-  /* Background ambient glows */
-  --rr-glow-1: #c9d6ff;
-  --rr-glow-2: #e3d3ff;
-  --rr-glow-3: #d3ead8;
+  /* Background ambient glows — green-harmonized with a cool counterpoint */
+  --rr-glow-1: #c3e6d1;
+  --rr-glow-2: #d3e7f5;
+  --rr-glow-3: #e6efd2;
 
   --rr-radius-panel: 22px;
   --rr-radius-card: 16px;
@@ -275,7 +276,7 @@ button:disabled {
 }
 
 .brandReport {
-  color: #2f9e4f;
+  color: #1f8a4d;
 }
 
 .appModeLabel {
@@ -413,35 +414,7 @@ button:disabled {
 
 .modeTab.active,
 .modeTab.active:hover:not(:disabled) {
-  color: #1d6f42;
-}
-
-.workspaceTabs {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: -4px 0 14px;
-}
-
-.workspaceTab {
-  background: #ffffff;
-  border-color: #d9dde3;
-  border-radius: 999px;
-  color: #4b5563;
-  min-height: 34px;
-  padding: 6px 13px;
-}
-
-.workspaceTab:hover:not(:disabled) {
-  border-color: #aeb8c4;
-}
-
-.workspaceTab.active,
-.workspaceTab.active:hover:not(:disabled) {
-  background: #eaf6ee;
-  border-color: #1d6f42;
-  color: #1d6f42;
+  color: var(--rr-brand-text);
 }
 
 .modeContent.slideForward {
@@ -892,35 +865,44 @@ button:disabled {
 
 .primaryButton.neuButton,
 .excelPrimaryButton.neuButton {
-  background: #1d6f42;
-  border-color: #26794b;
+  background: var(--rr-brand);
+  border: 1px solid rgba(15, 78, 44, 0.55);
   color: #ffffff;
-  box-shadow: inset 3px 3px 8px rgba(15, 78, 44, 0.78), inset -3px -3px 8px rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px -12px rgba(20, 90, 52, 0.55);
 }
 
 .primaryButton.neuButton:hover:not(:disabled),
 .primaryButton.neuButton:focus-visible,
 .excelPrimaryButton.neuButton:hover:not(:disabled),
 .excelPrimaryButton.neuButton:focus-visible {
-  background: #1b6a3f;
-  border-color: #2c8655;
-  box-shadow: inset 2px 2px 5px rgba(15, 78, 44, 0.74), inset -2px -2px 5px rgba(255, 255, 255, 0.18),
-    2px 2px 6px rgba(20, 90, 52, 0.28), -2px -2px 6px rgba(255, 255, 255, 0.72);
+  background: var(--rr-brand-strong);
+  border-color: rgba(15, 78, 44, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 16px 32px -12px rgba(20, 90, 52, 0.62);
+}
+
+.primaryButton.neuButton:active:not(:disabled),
+.excelPrimaryButton.neuButton:active:not(:disabled) {
+  background: var(--rr-brand-deep);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.24);
 }
 
 .copyPrimaryButton.neuButton {
-  background: #111827;
-  border-color: #252f3d;
+  background: #1d1d1f;
+  border: 1px solid rgba(15, 23, 42, 0.6);
   color: #ffffff;
-  box-shadow: inset 3px 3px 8px rgba(5, 8, 14, 0.82), inset -3px -3px 8px rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px -12px rgba(15, 23, 42, 0.5);
 }
 
 .copyPrimaryButton.neuButton:hover:not(:disabled),
 .copyPrimaryButton.neuButton:focus-visible {
-  background: #151e2f;
-  border-color: #303b4d;
-  box-shadow: inset 2px 2px 5px rgba(5, 8, 14, 0.78), inset -2px -2px 5px rgba(255, 255, 255, 0.13),
-    2px 2px 6px rgba(17, 24, 39, 0.3), -2px -2px 6px rgba(255, 255, 255, 0.72);
+  background: #2a2a2e;
+  border-color: rgba(15, 23, 42, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 16px 32px -12px rgba(15, 23, 42, 0.58);
+}
+
+.copyPrimaryButton.neuButton:active:not(:disabled) {
+  background: #0b101b;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .summaryPanel {
@@ -1085,12 +1067,12 @@ button:disabled {
 }
 
 .bonusCard {
-  background: #eaf6ee;
-  border-color: #9fceb0;
+  background: #e8f4ec;
+  border-color: rgba(28, 122, 71, 0.32);
 }
 
 .bonusCard strong {
-  color: #0f7a3a;
+  color: var(--rr-brand);
 }
 
 .attentionCard {
@@ -1103,9 +1085,9 @@ button:disabled {
 }
 
 .filterButton.active {
-  background: #eaf6ee;
-  border-color: #1d6f42;
-  color: #1d6f42;
+  background: var(--rr-accent-soft);
+  border-color: rgba(28, 122, 71, 0.45);
+  color: var(--rr-brand);
 }
 
 .iconButton {
@@ -2085,9 +2067,9 @@ button:disabled {
     3px 3px 8px rgba(0, 0, 0, 0.45), -3px -3px 8px rgba(255, 255, 255, 0.035);
   --rr-neu-shadow-in: 0 0 0 1px rgba(79, 187, 129, 0.35),
     inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.035);
-  --rr-glow-1: rgba(40, 70, 130, 0.35);
-  --rr-glow-2: rgba(70, 45, 120, 0.32);
-  --rr-glow-3: rgba(26, 80, 50, 0.3);
+  --rr-glow-1: rgba(28, 92, 60, 0.34);
+  --rr-glow-2: rgba(34, 78, 108, 0.3);
+  --rr-glow-3: rgba(40, 96, 62, 0.28);
 }
 
 [data-theme="dark"] body {
@@ -2313,23 +2295,6 @@ button:disabled {
 
 [data-theme="dark"] .modeTab.active,
 [data-theme="dark"] .modeTab.active:hover:not(:disabled) {
-  color: var(--d-green-text);
-}
-
-[data-theme="dark"] .workspaceTab {
-  background: var(--d-surface);
-  border-color: var(--d-border-strong);
-  color: var(--d-muted);
-}
-
-[data-theme="dark"] .workspaceTab:hover:not(:disabled) {
-  color: var(--d-text);
-}
-
-[data-theme="dark"] .workspaceTab.active,
-[data-theme="dark"] .workspaceTab.active:hover:not(:disabled) {
-  background: #163024;
-  border-color: var(--d-green-strong);
   color: var(--d-green-text);
 }
 

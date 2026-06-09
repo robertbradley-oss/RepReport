@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
-import { ReviewPromisesPanel } from "./ReviewPromisesPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { reviewLogTemplate } from "../sampleData";
@@ -18,7 +17,6 @@ import {
 import type { ReviewRow } from "../types";
 
 export function ReviewLogMode() {
-  const [activeWorkspace, setActiveWorkspace] = useState<"reviews" | "promises">("reviews");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<ReviewRow[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
@@ -108,30 +106,7 @@ export function ReviewLogMode() {
   }
 
   return (
-    <>
-      <nav className="workspaceTabs" aria-label="Review workspace">
-        <button
-          className={`workspaceTab ${activeWorkspace === "reviews" ? "active" : ""}`}
-          type="button"
-          aria-pressed={activeWorkspace === "reviews"}
-          onClick={() => setActiveWorkspace("reviews")}
-        >
-          <UiIcon name="reviewLog" />
-          Reviews
-        </button>
-        <button
-          className={`workspaceTab ${activeWorkspace === "promises" ? "active" : ""}`}
-          type="button"
-          aria-pressed={activeWorkspace === "promises"}
-          onClick={() => setActiveWorkspace("promises")}
-        >
-          <UiIcon name="add" />
-          Promises
-        </button>
-      </nav>
-
-      {activeWorkspace === "reviews" ? (
-        <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Reviews">
+    <section className={`reviewLogGrid${isSourceNotesCollapsed ? " sourceNotesCollapsed" : ""}`} aria-label="Reviews">
           <div className="reviewLeftColumn">
             <div className="inputPanel reviewInputCard">
               {isSourceNotesCollapsed ? (
@@ -255,10 +230,6 @@ export function ReviewLogMode() {
               {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
             </div>
           </div>
-        </section>
-      ) : (
-        <ReviewPromisesPanel />
-      )}
-    </>
+    </section>
   );
 }
