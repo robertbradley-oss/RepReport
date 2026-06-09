@@ -327,10 +327,10 @@ button:disabled {
   height: 28px;
   width: 56px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(214, 222, 233, 0.75);
   box-shadow:
-    inset 2px 2px 4px rgba(15, 23, 42, 0.06),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.8);
+    inset 3px 3px 5px rgba(15, 23, 42, 0.11),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.9);
   transition:
     background 0.45s ease,
     box-shadow 0.45s ease;
@@ -390,8 +390,8 @@ button:disabled {
 
 .theme-switch-input:focus-visible ~ .theme-switch-track {
   box-shadow:
-    inset 2px 2px 4px rgba(15, 23, 42, 0.06),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.8),
+    inset 3px 3px 5px rgba(15, 23, 42, 0.11),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.9),
     0 0 0 3px var(--rr-accent-ring);
 }
 
@@ -2380,16 +2380,16 @@ button:disabled {
 
 /* Theme switch (dark) */
 [data-theme="dark"] .theme-switch-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.28);
   box-shadow:
-    inset 2px 2px 4px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.04);
+    inset 3px 3px 5px rgba(0, 0, 0, 0.6),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.05);
 }
 
 [data-theme="dark"] .theme-switch-input:focus-visible ~ .theme-switch-track {
   box-shadow:
-    inset 2px 2px 4px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.04),
+    inset 3px 3px 5px rgba(0, 0, 0, 0.6),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.05),
     0 0 0 3px var(--rr-accent-ring);
 }
 
