@@ -97,9 +97,14 @@ assert(
 
 const packageTsvRecords = parseTsvRecords(batchReviewPackage.pasteRows.tsv);
 const packageTsvRecordsWithHeader = parseTsvRecords(batchReviewPackage.pasteRows.tsvWithHeader);
+const clipboardTsvRecords = parseTsvRecords(batchReviewClipboardPayload.tsv);
 assertEqual(packageTsvRecords.length, batchReviewRows.length, "Paste Rows TSV row count should match parsed review count.");
 assertEqual(packageTsvRecordsWithHeader.length, batchReviewRows.length + 1, "Paste Rows TSV with header should add exactly one header row.");
 assertEqual(packageTsvRecords[0].length, 8, "Paste Rows TSV records should keep exactly 8 cells.");
+assertEqual(clipboardTsvRecords.length, batchReviewRows.length, "Review clipboard TSV row count should match parsed review count.");
+assertEqual(clipboardTsvRecords[0].length, 8, "Review clipboard TSV records should keep exactly 8 cells.");
+assertEqual(clipboardTsvRecords[0][0], batchReviewRows[0].ticketLink, "Review clipboard TSV should start with the first review row.");
+assert(!batchReviewClipboardPayload.tsv.startsWith("Ticket Link"), "Review clipboard TSV should not include the Review Log header row.");
 assertEqual(getTicketLinkChipLabel(batchReviewRows[0]), "Ticket #100001", "Ticket Link display chip should use a compact ticket label.");
 assertEqual(getReviewLinkChipLabel(batchReviewRows[0]), "Open Review", "Review Link display chip should use a compact review label.");
 assertEqual(
@@ -124,8 +129,10 @@ assert(
   flaggedDisplayRows.every(({ row }) => row.flags.join("|") === "Model missing"),
   "Missing-model filter should include only model reminder rows.",
 );
-assertEqual(countMatches(batchReviewClipboardPayload.html, /<th>/g), 8, "Review clipboard HTML should keep exactly 8 header columns.");
+assert(!batchReviewClipboardPayload.html.includes("<thead"), "Review clipboard HTML should not include a header section.");
+assertEqual(countMatches(batchReviewClipboardPayload.html, /<th>/g), 0, "Review clipboard HTML should not include header cells.");
 assertEqual(countMatches(batchReviewClipboardPayload.html, /<tbody><tr>|<\/tr><tr>/g), batchReviewRows.length, "Review clipboard HTML should keep parsed row count.");
+assertEqual(countMatches(batchReviewClipboardPayload.html, /<td(?:\s|>)/g), batchReviewRows.length * 8, "Review clipboard HTML should keep 8 cells per data row.");
 assert(
   batchReviewClipboardPayload.html.includes("Ticket #100001<br>Alice Verified<br>Amazon"),
   "Review clipboard HTML should preserve multiline cells with line breaks.",

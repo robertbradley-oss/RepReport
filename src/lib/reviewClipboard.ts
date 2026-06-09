@@ -25,7 +25,6 @@ export function buildReviewClipboardPayload(rows: ReviewRow[]): ReviewClipboardP
 }
 
 export function buildReviewClipboardHtml(rows: ReviewRow[]): string {
-  const headerCells = REVIEW_COLUMNS.map((column) => `<th>${escapeHtml(column.label)}</th>`).join("");
   const bodyRows = rows
     .map(
       (row) =>
@@ -40,7 +39,6 @@ export function buildReviewClipboardHtml(rows: ReviewRow[]): string {
 
   return [
     '<table style="border-collapse:collapse;">',
-    `<thead><tr>${headerCells}</tr></thead>`,
     `<tbody>${bodyRows}</tbody>`,
     "</table>",
   ].join("");
