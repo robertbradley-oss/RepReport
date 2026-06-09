@@ -130,16 +130,24 @@ export function ReviewLogMode() {
                       Review Notes
                     </label>
                   </div>
-                  <textarea
-                    id="review-notes"
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                    placeholder="Paste review notes here..."
-                    spellCheck={false}
-                    data-gramm="false"
-                    data-gramm_editor="false"
-                    data-enable-grammarly="false"
-                  />
+                  <div className="notesField">
+                    <textarea
+                      id="review-notes"
+                      value={notes}
+                      onChange={(event) => setNotes(event.target.value)}
+                      placeholder=""
+                      spellCheck={false}
+                      data-gramm="false"
+                      data-gramm_editor="false"
+                      data-enable-grammarly="false"
+                    />
+                    {notes.length === 0 && (
+                      <div className="notesFieldHint" aria-hidden="true">
+                        <UiIcon name="reviewLog" size={26} />
+                        <span>Paste review notes here…</span>
+                      </div>
+                    )}
+                  </div>
                   <div className="sourceNotesMeta" aria-live="polite">
                     <span>{notesCharacterCount === 0 ? "Empty" : `${notesCharacterCount.toLocaleString()} chars`}</span>
                     <span>{notesLineCount.toLocaleString()} note lines</span>

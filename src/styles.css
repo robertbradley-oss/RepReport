@@ -276,11 +276,33 @@ button:disabled {
 }
 
 .appModeLabel {
-  color: #5b6773;
-  font-size: 13px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
+  padding: 6px 13px 6px 11px;
+  border-radius: 9999px;
+  background: var(--rr-surface-glass);
+  border: 1px solid var(--rr-hairline);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  color: var(--rr-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
+}
+
+.appModeLabel::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rr-brand);
+  box-shadow: 0 0 0 3px var(--rr-accent-soft);
+}
+
+[data-theme="dark"] .appModeLabel::before {
+  background: var(--d-green-text);
 }
 
 /* Theme switch — ported from RepStack for a consistent toggle + animation */
@@ -656,6 +678,36 @@ button:disabled {
   box-shadow: var(--rr-neu-shadow-in);
 }
 
+/* Centered empty-state hint layered over an empty notes field. The overlay is
+   click-through so the textarea underneath stays fully interactive. */
+.notesField {
+  position: relative;
+  display: grid;
+}
+
+.notesFieldHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--rr-ink-tertiary);
+  text-align: center;
+  pointer-events: none;
+}
+
+.notesFieldHint svg {
+  opacity: 0.45;
+}
+
+.notesFieldHint span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .reviewInputCard #review-notes {
   max-height: min(46vh, 420px);
   min-height: 300px;
@@ -927,8 +979,8 @@ button:disabled {
 
 .summaryPanel {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 13px;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   max-width: none;
   width: 100%;
 }
