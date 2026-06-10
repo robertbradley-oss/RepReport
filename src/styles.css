@@ -48,6 +48,10 @@
   --rr-neu-shadow-in: 0 0 0 1px rgba(29, 111, 66, 0.22),
     inset 2px 2px 5px rgba(15, 23, 42, 0.07), inset -2px -2px 5px rgba(255, 255, 255, 0.55);
 
+  /* Neumorphic card shadows — same values as RepStack's tab-switch */
+  --rr-neu-card-shadow-dark: #c7cdd7;
+  --rr-neu-card-shadow-light: #ffffff;
+
   /* Background ambient glows — green-harmonized with a cool counterpoint */
   --rr-glow-1: #c3e6d1;
   --rr-glow-2: #d3e7f5;
@@ -229,39 +233,45 @@ button:disabled {
   padding: 18px;
 }
 
+/* Transparent 3-column header, mirroring RepStack: brand lockup left,
+   mode tabs center, controls right. Collapses to two rows on small screens. */
 .appHeader {
   align-items: center;
-  background: var(--rr-surface-glass-strong);
-  border: 1px solid var(--rr-hairline);
-  border-radius: var(--rr-radius-panel);
-  -webkit-backdrop-filter: var(--rr-glass-blur);
-  backdrop-filter: var(--rr-glass-blur);
-  box-shadow: var(--rr-shadow-card);
-  display: flex;
+  display: grid;
   gap: 16px;
-  justify-content: space-between;
+  grid-template-areas: "brand tabs actions";
+  grid-template-columns: 1fr auto 1fr;
   margin: 0 0 16px;
-  padding: 14px 20px;
+  padding: 8px 4px;
 }
 
 .brandBlock {
   align-items: center;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  grid-area: brand;
+  justify-self: start;
   min-width: 0;
 }
 
 .brandMark {
   display: block;
   flex: 0 0 auto;
-  height: 34px;
-  width: 34px;
+  height: 50px;
+  width: 50px;
+  filter: drop-shadow(0 8px 18px rgba(28, 72, 46, 0.12));
+}
+
+.brandLockup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .brandWordmark {
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.035em;
   line-height: 1;
   margin: 0;
   white-space: nowrap;
@@ -275,34 +285,22 @@ button:disabled {
   color: #1f8a4d;
 }
 
-.appModeLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 6px 13px 6px 11px;
-  border-radius: 9999px;
-  background: var(--rr-surface-glass);
-  border: 1px solid var(--rr-hairline);
-  -webkit-backdrop-filter: var(--rr-glass-blur);
-  backdrop-filter: var(--rr-glass-blur);
+.brandTagline {
   color: var(--rr-ink-secondary);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 3.5px 0 0;
   white-space: nowrap;
 }
 
-.appModeLabel::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--rr-brand);
-  box-shadow: 0 0 0 3px var(--rr-accent-soft);
-}
-
-[data-theme="dark"] .appModeLabel::before {
-  background: var(--d-green-text);
+.headerActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  grid-area: actions;
+  justify-self: end;
 }
 
 /* Theme switch — ported from RepStack for a consistent toggle + animation */
@@ -310,7 +308,6 @@ button:disabled {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  margin-left: 6px;
   cursor: pointer;
 }
 
@@ -395,68 +392,58 @@ button:disabled {
     0 0 0 3px var(--rr-accent-ring);
 }
 
+/* Mode tabs — exact port of RepStack's .tab-switch / .tab-switch-button:
+   glass pill with neumorphic raise, active tab pressed in with inset shadows.
+   Only the active text color differs (emerald instead of RepStack ink). */
 .modeTabs {
-  position: relative;
-  display: inline-grid;
-  grid-template-columns: repeat(2, minmax(132px, 1fr));
+  display: inline-flex;
+  grid-area: tabs;
+  justify-self: center;
   gap: 6px;
-  margin-bottom: 18px;
   padding: 6px;
   background: var(--rr-surface-glass-strong);
   border: 1px solid var(--rr-hairline);
   border-radius: 18px;
   -webkit-backdrop-filter: var(--rr-glass-blur);
   backdrop-filter: var(--rr-glass-blur);
-  box-shadow: var(--rr-shadow-card-sm);
-}
-
-.modeTabIndicator {
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 6px;
-  width: calc(50% - 9px);
-  border-radius: 13px;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 6px 14px -6px rgba(15, 23, 42, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition: transform 260ms cubic-bezier(0.34, 1.2, 0.5, 1);
-  z-index: 0;
-}
-
-.modeTabs[data-active="kpiReport"] .modeTabIndicator {
-  transform: translateX(calc(100% + 6px));
+  box-shadow:
+    6px 6px 16px var(--rr-neu-card-shadow-dark),
+    -6px -6px 16px var(--rr-neu-card-shadow-light);
 }
 
 .modeTab {
-  position: relative;
-  z-index: 1;
   justify-content: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 8px 16px;
+  min-height: 0;
+  padding: 6px 18px;
   background: transparent;
   border: 0;
   border-radius: 13px;
   box-shadow: none;
   color: var(--rr-ink-secondary);
+  font-size: 14px;
   font-weight: 600;
-  transition: color 160ms ease;
+  transition:
+    color 0.2s ease,
+    box-shadow 0.3s ease;
 }
 
 .modeTab:hover:not(:disabled) {
   box-shadow: none;
-  color: #1f2933;
+  color: var(--rr-ink);
   transform: none;
 }
 
 .modeTab:active:not(:disabled) {
   box-shadow: none;
+  transform: none;
 }
 
 .modeTab.active,
 .modeTab.active:hover:not(:disabled) {
   color: var(--rr-brand-text);
+  box-shadow:
+    inset 4px 4px 9px var(--rr-neu-card-shadow-dark),
+    inset -4px -4px 9px var(--rr-neu-card-shadow-light);
 }
 
 /* Tab slide transition — matches RepStack's springy directional slide.
@@ -548,8 +535,7 @@ button:disabled {
    cell for 320ms, which previously caused lag. Disabled under reduced-motion. */
 @media (prefers-reduced-motion: no-preference) {
   .theme-animating body,
-  .theme-animating .appHeader,
-  .theme-animating .appModeLabel,
+  .theme-animating .brandTagline,
   .theme-animating .brandRep,
   .theme-animating .brandReport,
   .theme-animating .modeTabs,
@@ -2066,13 +2052,30 @@ button:disabled {
   }
 
   .appHeader {
-    gap: 10px;
+    gap: 12px;
+    grid-template-areas:
+      "brand actions"
+      "tabs tabs";
+    grid-template-columns: 1fr auto;
     margin: 0 0 12px;
-    padding: 10px 12px;
+    padding: 6px 2px;
+  }
+
+  .appHeader .modeTabs {
+    justify-self: start;
+  }
+
+  .brandMark {
+    height: 38px;
+    width: 38px;
   }
 
   .brandWordmark {
-    font-size: 20px;
+    font-size: 24px;
+  }
+
+  .brandTagline {
+    font-size: 12px;
   }
 
   .summaryPanel {
@@ -2127,6 +2130,8 @@ button:disabled {
   --rr-ink: #e7eaee;
   --rr-ink-secondary: #aab0bd;
   --rr-ink-tertiary: #7e8593;
+  --rr-neu-card-shadow-dark: #0b0d11;
+  --rr-neu-card-shadow-light: #20242c;
   --rr-surface-glass: rgba(255, 255, 255, 0.045);
   --rr-surface-glass-strong: rgba(255, 255, 255, 0.07);
   --rr-hairline: rgba(255, 255, 255, 0.1);
@@ -2162,17 +2167,12 @@ button:disabled {
 }
 
 /* Surfaces / cards */
-[data-theme="dark"] .appHeader,
 [data-theme="dark"] .inputPanel,
 [data-theme="dark"] .resultsPanel,
 [data-theme="dark"] .reviewLeftColumn .flagsPanel,
 [data-theme="dark"] .summaryCard {
   background: var(--d-surface);
   border-color: var(--d-border);
-}
-
-[data-theme="dark"] .appHeader {
-  box-shadow: var(--rr-shadow-card);
 }
 
 [data-theme="dark"] .inputPanel,
@@ -2228,7 +2228,7 @@ button:disabled {
   color: var(--d-text);
 }
 
-[data-theme="dark"] .appModeLabel,
+[data-theme="dark"] .brandTagline,
 [data-theme="dark"] .helperText,
 [data-theme="dark"] .workflowStep,
 [data-theme="dark"] .pasteFormatNote,
@@ -2357,12 +2357,6 @@ button:disabled {
 [data-theme="dark"] .modeTabs {
   background: #11161c;
   border-color: var(--d-border);
-}
-
-[data-theme="dark"] .modeTabIndicator {
-  background: linear-gradient(180deg, #3f4c5a 0%, #354250 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(79, 187, 129, 0.45);
 }
 
 [data-theme="dark"] .modeTab {

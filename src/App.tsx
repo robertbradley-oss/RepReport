@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
-import { UiIcon } from "./components/UiIcon";
 
 type AppMode = "reviewLog" | "kpiReport";
 type Theme = "light" | "dark";
@@ -26,7 +25,6 @@ export default function App() {
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const themeAnimTimer = useRef<number | undefined>(undefined);
-  const activeModeLabel = activeMode === "reviewLog" ? "Review Log Mode" : "KPI Report Mode";
   const isDark = theme === "dark";
 
   useEffect(() => {
@@ -63,11 +61,36 @@ export default function App() {
     <main className="appShell">
       <header className="appHeader">
         <div className="brandBlock">
-          <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={36} height={36} />
-          <h1 className="brandWordmark">
-            <span className="brandRep">Rep</span>
-            <span className="brandReport">Report</span>
-          </h1>
+          <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={48} height={48} />
+          <div className="brandLockup">
+            <h1 className="brandWordmark">
+              <span className="brandRep">Rep</span>
+              <span className="brandReport">Report</span>
+            </h1>
+            <p className="brandTagline">Reviews, reported.</p>
+          </div>
+        </div>
+
+        <nav className="modeTabs" aria-label="RepReport modes">
+          <button
+            className={`modeTab ${activeMode === "reviewLog" ? "active" : ""}`}
+            type="button"
+            onClick={() => selectMode("reviewLog")}
+            aria-pressed={activeMode === "reviewLog"}
+          >
+            Review Log
+          </button>
+          <button
+            className={`modeTab ${activeMode === "kpiReport" ? "active" : ""}`}
+            type="button"
+            onClick={() => selectMode("kpiReport")}
+            aria-pressed={activeMode === "kpiReport"}
+          >
+            KPI Report
+          </button>
+        </nav>
+
+        <div className="headerActions">
           <label className="theme-switch" title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
             <input
               type="checkbox"
@@ -84,30 +107,7 @@ export default function App() {
             </span>
           </label>
         </div>
-        <p className="appModeLabel">{activeModeLabel}</p>
       </header>
-
-      <nav className="modeTabs" data-active={activeMode} aria-label="RepReport modes">
-        <span className="modeTabIndicator" aria-hidden="true" />
-        <button
-          className={`modeTab ${activeMode === "reviewLog" ? "active" : ""}`}
-          type="button"
-          onClick={() => selectMode("reviewLog")}
-          aria-pressed={activeMode === "reviewLog"}
-        >
-          <UiIcon name="reviewLog" />
-          Review Log
-        </button>
-        <button
-          className={`modeTab ${activeMode === "kpiReport" ? "active" : ""}`}
-          type="button"
-          onClick={() => selectMode("kpiReport")}
-          aria-pressed={activeMode === "kpiReport"}
-        >
-          <UiIcon name="kpiReport" />
-          KPI Report
-        </button>
-      </nav>
 
       <div className={`modeContent ${direction === "forward" ? "slideForward" : "slideBack"}`} key={activeMode}>
         {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode />}
