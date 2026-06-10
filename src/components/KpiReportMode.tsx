@@ -8,11 +8,41 @@ export function KpiReportMode() {
   const [notes, setNotes] = useState("");
   const [row, setRow] = useState<KpiReportRow>(createBlankKpiRow());
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isReadingNotes, setIsReadingNotes] = useState(false);
+  const [rowEntering, setRowEntering] = useState(false);
   const copySuccessTimer = useRef<number | undefined>(undefined);
+  const rowEnteringTimer = useRef<number | undefined>(undefined);
 
+  function applyFormattedRow(formattedRow: KpiReportRow, transferred: boolean) {
+    setRowEntering(transferred);
+    window.clearTimeout(rowEnteringTimer.current);
+    if (transferred) {
+      rowEnteringTimer.current = window.setTimeout(() => setRowEntering(false), 1600);
+    }
+    setRow(formattedRow);
+  }
+
+  /** Same two-beat transfer as the Review Log: scan the notes, then the KPI
+   *  row prints with its cells filling left to right. */
   function handleFormat() {
+    if (isReadingNotes) {
+      return;
+    }
     const result = parseKpiNotes(notes);
-    setRow(result.row);
+    const animate =
+      !isKpiRowEmpty(result.row) &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!animate) {
+      applyFormattedRow(result.row, false);
+      return;
+    }
+
+    setIsReadingNotes(true);
+    window.setTimeout(() => {
+      setIsReadingNotes(false);
+      applyFormattedRow(result.row, true);
+    }, 700);
   }
 
   function handleClear() {
@@ -43,7 +73,7 @@ export function KpiReportMode() {
         <label className="panelLabel" htmlFor="kpi-notes">
           KPI Notes
         </label>
-        <div className="notesField">
+        <div className={`notesField${isReadingNotes ? " notesFieldReading" : ""}`}>
           <textarea
             id="kpi-notes"
             value={notes}
@@ -60,9 +90,16 @@ export function KpiReportMode() {
               <span>Paste weekly KPI summary here…</span>
             </div>
           )}
+          {isReadingNotes && (
+            <div className="notesScanOverlay" aria-hidden="true">
+              <span className="notesScanVeil" />
+              <span className="notesScanLine" />
+              <span className="notesScanBadge">Scanning</span>
+            </div>
+          )}
         </div>
         <div className="buttonRow">
-          <button className="primaryButton" type="button" onClick={handleFormat}>
+          <button className="primaryButton" type="button" onClick={handleFormat} disabled={isReadingNotes}>
             <UiIcon name="parse" />
             Format KPI
           </button>
@@ -73,7 +110,7 @@ export function KpiReportMode() {
         </div>
       </div>
 
-      <div className="resultsPanel">
+      <div className={`resultsPanel${rowEntering ? " kpiTransferIn" : ""}`}>
         <div className="actionsBar">
           <div>
             <h2 className="panelTitle">KPI Row Preview</h2>

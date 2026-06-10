@@ -517,41 +517,126 @@ button:disabled {
 }
 
 /* ------------------- Notes → table transfer animation ------------------- */
-/* Ghost copies of pasted note lines fly from the input panel to the rows
-   table when Generate Review Table is clicked (spawned via WAAPI in
-   ReviewLogMode), while the freshly parsed rows stagger in from the left. */
-.transferGhostLayer {
-  position: fixed;
+/* Generate Review Table plays in two beats (sequenced in ReviewLogMode):
+   1. Read — an emerald scan bar sweeps down the pasted notes while the text
+      dims, as if the panel is being read.
+   2. Print — the parse applies, the notes collapse, and the parsed rows
+      print into the table top to bottom, each flashing accent green like
+      freshly written output. */
+.notesScanOverlay {
+  position: absolute;
   inset: 0;
+  overflow: hidden;
+  border-radius: var(--rr-radius-field);
   pointer-events: none;
-  z-index: 80;
+  z-index: 2;
+  /* Viewfinder corner brackets framing the scanned region. */
+  background:
+    linear-gradient(var(--rr-brand), var(--rr-brand)) left 6px top 6px / 16px 2px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) left 6px top 6px / 2px 16px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px top 6px / 16px 2px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px top 6px / 2px 16px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) left 6px bottom 6px / 16px 2px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) left 6px bottom 6px / 2px 16px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px bottom 6px / 16px 2px,
+    linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px bottom 6px / 2px 16px;
+  background-repeat: no-repeat;
 }
 
-.transferGhost {
-  position: fixed;
+/* Already-scanned region: a faint accent wash that grows behind the line. */
+.notesScanVeil {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  background: linear-gradient(180deg, rgba(28, 122, 71, 0.03), rgba(28, 122, 71, 0.09));
+  animation: notesScanVeil 0.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+}
+
+@keyframes notesScanVeil {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* The scan line itself: thin, bright, with a soft glow. */
+.notesScanLine {
+  position: absolute;
+  left: 8px;
+  right: 8px;
   top: 0;
-  left: 0;
-  max-width: 330px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 4px 12px;
-  border-radius: 9px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--rr-brand) 10%, var(--rr-brand) 90%, transparent);
+  box-shadow:
+    0 0 2px var(--rr-brand),
+    0 0 12px 1px var(--rr-accent-ring);
+  animation: notesScanLine 0.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+}
+
+@keyframes notesScanLine {
+  from {
+    top: 4px;
+  }
+  to {
+    top: calc(100% - 6px);
+  }
+}
+
+.notesScanBadge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
   background: var(--rr-surface-glass-strong);
   border: 1px solid var(--rr-accent-ring);
-  box-shadow:
-    0 0 0 3px var(--rr-accent-soft),
-    var(--rr-shadow-card-sm);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--rr-ink);
-  opacity: 0;
-  will-change: transform, opacity;
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  backdrop-filter: var(--rr-glass-blur);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rr-brand-text);
 }
 
-/* The receiving panel pulses with the accent ring as the first ghosts land. */
+.notesScanBadge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rr-brand);
+  box-shadow: 0 0 0 2px var(--rr-accent-soft);
+  animation: notesScanDot 0.7s ease-in-out infinite;
+}
+
+@keyframes notesScanDot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* The text fades as the scan passes over it — being "absorbed". */
+.notesFieldReading textarea {
+  color: var(--rr-ink-tertiary);
+  opacity: 0.55;
+  transition: color 0.7s ease, opacity 0.7s ease;
+}
+
+/* Print beat: the receiving panel pulses once, the summary cards appear,
+   and rows print top to bottom. A fresh parse renders one <tr> per review
+   (details rows only mount when expanded). */
 .resultsPanel.rowsTransferIn {
-  animation: panelReceive 0.8s ease 0.74s;
+  animation: panelReceive 0.7s ease;
 }
 
 @keyframes panelReceive {
@@ -559,56 +644,71 @@ button:disabled {
   100% {
     box-shadow: var(--rr-shadow-card);
   }
-  35% {
+  30% {
     box-shadow:
       0 0 0 3px var(--rr-accent-ring),
       var(--rr-shadow-card);
   }
 }
 
-/* The summary cards and rows hold back until the ghosts arrive (~0.8s
-   flight), then fill in row by row as the ghosts land. A fresh parse renders
-   one <tr> per review (details rows only mount when expanded). */
-.rowsTransferIn .summaryPanel {
-  animation: rowTransferIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
-  animation-delay: 0.72s;
+.rowsTransferIn .summaryPanel,
+.rowsTransferIn .reviewTable thead {
+  animation: rowFadeIn 0.45s ease-out both;
 }
 
-.rowsTransferIn .reviewTable tbody tr {
-  animation: rowTransferIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
-  animation-delay: 1.24s;
-}
-
-.rowsTransferIn .reviewTable tbody tr:nth-child(1) {
-  animation-delay: 0.76s;
-}
-
-.rowsTransferIn .reviewTable tbody tr:nth-child(2) {
-  animation-delay: 0.86s;
-}
-
-.rowsTransferIn .reviewTable tbody tr:nth-child(3) {
-  animation-delay: 0.96s;
-}
-
-.rowsTransferIn .reviewTable tbody tr:nth-child(4) {
-  animation-delay: 1.06s;
-}
-
-.rowsTransferIn .reviewTable tbody tr:nth-child(5) {
-  animation-delay: 1.16s;
-}
-
-@keyframes rowTransferIn {
+@keyframes rowFadeIn {
   from {
     opacity: 0;
-    transform: translateX(-16px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
+
+/* Cell content materializes: it resolves from a soft blur while drifting in,
+   so text reads as being written into the table rather than popping on.
+   Delays form a diagonal wave — left to right within a row, top to bottom
+   across rows — driven by --row/--col indexes set via nth-child below.
+   (.kpiTable also carries .reviewTable, so both tables share the indexes.) */
+.rowsTransferIn .reviewTable tbody td {
+  animation: cellMaterialize 0.55s ease-out both;
+  animation-delay: calc(0.08s + var(--row, 5) * 90ms + var(--col, 9) * 26ms);
+}
+
+.resultsPanel.kpiTransferIn {
+  animation: panelReceive 0.7s ease;
+}
+
+/* KPI: one row, five cells — a slower pure left-to-right sweep. */
+.kpiTransferIn .kpiTable tbody td {
+  animation: cellMaterialize 0.6s ease-out both;
+  animation-delay: calc(0.05s + var(--col, 5) * 120ms);
+}
+
+@keyframes cellMaterialize {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reviewTable tbody tr:nth-child(1) { --row: 0; }
+.reviewTable tbody tr:nth-child(2) { --row: 1; }
+.reviewTable tbody tr:nth-child(3) { --row: 2; }
+.reviewTable tbody tr:nth-child(4) { --row: 3; }
+.reviewTable tbody tr:nth-child(5) { --row: 4; }
+
+.reviewTable tbody td:nth-child(1) { --col: 0; }
+.reviewTable tbody td:nth-child(2) { --col: 1; }
+.reviewTable tbody td:nth-child(3) { --col: 2; }
+.reviewTable tbody td:nth-child(4) { --col: 3; }
+.reviewTable tbody td:nth-child(5) { --col: 4; }
+.reviewTable tbody td:nth-child(6) { --col: 5; }
+.reviewTable tbody td:nth-child(7) { --col: 6; }
+.reviewTable tbody td:nth-child(8) { --col: 7; }
+.reviewTable tbody td:nth-child(9) { --col: 8; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

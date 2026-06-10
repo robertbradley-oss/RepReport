@@ -28,10 +28,10 @@ export function ReviewLogMode() {
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [rowsEntering, setRowsEntering] = useState(false);
+  const [isReadingNotes, setIsReadingNotes] = useState(false);
   const copySuccessTimer = useRef<number | undefined>(undefined);
   const rowsEnteringTimer = useRef<number | undefined>(undefined);
   const notesFieldRef = useRef<HTMLDivElement | null>(null);
-  const resultsPanelRef = useRef<HTMLDivElement | null>(null);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -42,77 +42,11 @@ export function ReviewLogMode() {
   const notesCharacterCount = notes.length;
   const notesLineCount = notes.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
 
-  /** Fly ghost copies of the pasted note lines from the input panel over to
-   *  the rows table, so generating reads as a transfer of information.
-   *  Returns true when the flight was started (rects measured, motion ok). */
-  function spawnTransferGhosts(): boolean {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return false;
-    }
-    const from = notesFieldRef.current?.getBoundingClientRect();
-    const to = resultsPanelRef.current?.getBoundingClientRect();
-    if (!from || !to) {
-      return false;
-    }
-    const lines = notes
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .slice(0, 10);
-    if (lines.length === 0) {
-      return false;
-    }
-
-    const layer = document.createElement("div");
-    layer.className = "transferGhostLayer";
-    document.body.appendChild(layer);
-
-    const flightMs = 820;
-    const staggerMs = 80;
-    lines.forEach((line, index) => {
-      const ghost = document.createElement("span");
-      ghost.className = "transferGhost";
-      ghost.textContent = line.length > 44 ? `${line.slice(0, 44)}…` : line;
-      layer.appendChild(ghost);
-
-      const startX = from.left + 16;
-      const startY = from.top + 14 + index * 24;
-      const endX = to.left + 28;
-      const endY = Math.min(to.top + 175 + index * 34, window.innerHeight - 40);
-      const arcY = Math.min(startY, endY) - 44;
-
-      ghost.animate(
-        [
-          { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 0 },
-          { transform: `translate(${startX + 14}px, ${startY - 4}px) scale(1.04)`, opacity: 1, offset: 0.14 },
-          {
-            transform: `translate(${(startX + endX) / 2}px, ${arcY}px) scale(1)`,
-            opacity: 1,
-            offset: 0.55,
-          },
-          { transform: `translate(${endX}px, ${endY + 4}px) scale(0.94)`, opacity: 0.9, offset: 0.9 },
-          { transform: `translate(${endX}px, ${endY}px) scale(0.78)`, opacity: 0 },
-        ],
-        {
-          duration: flightMs,
-          delay: index * staggerMs,
-          easing: "cubic-bezier(0.35, 0, 0.2, 1)",
-          fill: "both",
-        },
-      );
-    });
-
-    window.setTimeout(() => layer.remove(), flightMs + (lines.length - 1) * staggerMs + 140);
-    return true;
-  }
-
-  function handleParse() {
-    const parsedRows = parseReviewNotes(notes);
-    const transferring = parsedRows.length > 0 && spawnTransferGhosts();
-    setRowsEntering(transferring);
+  function applyParsedRows(parsedRows: ReviewRow[], transferred: boolean) {
+    setRowsEntering(transferred);
     window.clearTimeout(rowsEnteringTimer.current);
-    if (transferring) {
-      rowsEnteringTimer.current = window.setTimeout(() => setRowsEntering(false), 2400);
+    if (transferred) {
+      rowsEnteringTimer.current = window.setTimeout(() => setRowsEntering(false), 1800);
     }
     setRows(parsedRows);
     setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));
@@ -125,6 +59,30 @@ export function ReviewLogMode() {
         ? `Parsed ${parsedRows.length} row${parsedRows.length === 1 ? "" : "s"} with ${collectFlags(parsedRows).length} model reminder${collectFlags(parsedRows).length === 1 ? "" : "s"}.`
         : "No review rows found.",
     );
+  }
+
+  /** Generate plays a two-beat transfer: a scan bar sweeps down the pasted
+   *  notes (reading them), then the parsed rows print into the table. */
+  function handleParse() {
+    if (isReadingNotes) {
+      return;
+    }
+    const parsedRows = parseReviewNotes(notes);
+    const animate =
+      parsedRows.length > 0 &&
+      notesFieldRef.current !== null &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!animate) {
+      applyParsedRows(parsedRows, false);
+      return;
+    }
+
+    setIsReadingNotes(true);
+    window.setTimeout(() => {
+      setIsReadingNotes(false);
+      applyParsedRows(parsedRows, true);
+    }, 700);
   }
 
   function handleClear() {
@@ -204,7 +162,10 @@ export function ReviewLogMode() {
                       Review Notes
                     </label>
                   </div>
-                  <div className="notesField" ref={notesFieldRef}>
+                  <div
+                    className={`notesField${isReadingNotes ? " notesFieldReading" : ""}`}
+                    ref={notesFieldRef}
+                  >
                     <textarea
                       id="review-notes"
                       value={notes}
@@ -221,13 +182,25 @@ export function ReviewLogMode() {
                         <span>Paste review notes here…</span>
                       </div>
                     )}
+                    {isReadingNotes && (
+                      <div className="notesScanOverlay" aria-hidden="true">
+                        <span className="notesScanVeil" />
+                        <span className="notesScanLine" />
+                        <span className="notesScanBadge">Scanning</span>
+                      </div>
+                    )}
                   </div>
                   <div className="sourceNotesMeta" aria-live="polite">
                     <span>{notesCharacterCount === 0 ? "Empty" : `${notesCharacterCount.toLocaleString()} chars`}</span>
                     <span>{notesLineCount.toLocaleString()} note lines</span>
                   </div>
                   <div className="buttonRow parseActions">
-                    <button className="primaryButton neuButton" type="button" onClick={handleParse}>
+                    <button
+                      className="primaryButton neuButton"
+                      type="button"
+                      onClick={handleParse}
+                      disabled={isReadingNotes}
+                    >
                       <UiIcon name="parse" />
                       Generate Review Table
                     </button>
@@ -268,10 +241,7 @@ export function ReviewLogMode() {
             {flags.length > 0 && <FlagsPanel flags={flags} />}
           </div>
 
-          <div
-            className={`resultsPanel reviewOutputCard${rowsEntering ? " rowsTransferIn" : ""}`}
-            ref={resultsPanelRef}
-          >
+          <div className={`resultsPanel reviewOutputCard${rowsEntering ? " rowsTransferIn" : ""}`}>
             <div className="panelHeader resultsHeader">
               <h2 className="panelTitle">Review Log Rows</h2>
             </div>
