@@ -58,7 +58,7 @@ export function ReviewLogMode() {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .slice(0, 7);
+      .slice(0, 10);
     if (lines.length === 0) {
       return false;
     }
@@ -67,7 +67,8 @@ export function ReviewLogMode() {
     layer.className = "transferGhostLayer";
     document.body.appendChild(layer);
 
-    const lastDelay = (lines.length - 1) * 55;
+    const flightMs = 820;
+    const staggerMs = 80;
     lines.forEach((line, index) => {
       const ghost = document.createElement("span");
       ghost.className = "transferGhost";
@@ -77,24 +78,31 @@ export function ReviewLogMode() {
       const startX = from.left + 16;
       const startY = from.top + 14 + index * 24;
       const endX = to.left + 28;
-      const endY = Math.min(to.top + 170 + index * 30, window.innerHeight - 40);
+      const endY = Math.min(to.top + 175 + index * 34, window.innerHeight - 40);
+      const arcY = Math.min(startY, endY) - 44;
 
       ghost.animate(
         [
           { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 0 },
-          { transform: `translate(${startX + 10}px, ${startY}px) scale(1)`, opacity: 0.95, offset: 0.12 },
+          { transform: `translate(${startX + 14}px, ${startY - 4}px) scale(1.04)`, opacity: 1, offset: 0.14 },
           {
-            transform: `translate(${(startX + endX) / 2}px, ${Math.min(startY, endY) - 26}px) scale(0.97)`,
-            opacity: 0.95,
-            offset: 0.58,
+            transform: `translate(${(startX + endX) / 2}px, ${arcY}px) scale(1)`,
+            opacity: 1,
+            offset: 0.55,
           },
-          { transform: `translate(${endX}px, ${endY}px) scale(0.92)`, opacity: 0 },
+          { transform: `translate(${endX}px, ${endY + 4}px) scale(0.94)`, opacity: 0.9, offset: 0.9 },
+          { transform: `translate(${endX}px, ${endY}px) scale(0.78)`, opacity: 0 },
         ],
-        { duration: 640, delay: index * 55, easing: "cubic-bezier(0.3, 0, 0.25, 1)", fill: "both" },
+        {
+          duration: flightMs,
+          delay: index * staggerMs,
+          easing: "cubic-bezier(0.35, 0, 0.2, 1)",
+          fill: "both",
+        },
       );
     });
 
-    window.setTimeout(() => layer.remove(), 640 + lastDelay + 120);
+    window.setTimeout(() => layer.remove(), flightMs + (lines.length - 1) * staggerMs + 140);
     return true;
   }
 
@@ -104,7 +112,7 @@ export function ReviewLogMode() {
     setRowsEntering(transferring);
     window.clearTimeout(rowsEnteringTimer.current);
     if (transferring) {
-      rowsEnteringTimer.current = window.setTimeout(() => setRowsEntering(false), 1600);
+      rowsEnteringTimer.current = window.setTimeout(() => setRowsEntering(false), 2400);
     }
     setRows(parsedRows);
     setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));

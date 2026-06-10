@@ -535,42 +535,68 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 9px;
   background: var(--rr-surface-glass-strong);
-  border: 1px solid var(--rr-hairline);
-  box-shadow: var(--rr-shadow-card-sm);
+  border: 1px solid var(--rr-accent-ring);
+  box-shadow:
+    0 0 0 3px var(--rr-accent-soft),
+    var(--rr-shadow-card-sm);
   font-size: 12px;
-  color: var(--rr-ink-secondary);
+  font-weight: 500;
+  color: var(--rr-ink);
   opacity: 0;
   will-change: transform, opacity;
 }
 
-/* Each review renders as a pair of <tr>s (summary + details), so the
-   entrance stagger steps every two rows to move whole reviews together. */
+/* The receiving panel pulses with the accent ring as the first ghosts land. */
+.resultsPanel.rowsTransferIn {
+  animation: panelReceive 0.8s ease 0.74s;
+}
+
+@keyframes panelReceive {
+  0%,
+  100% {
+    box-shadow: var(--rr-shadow-card);
+  }
+  35% {
+    box-shadow:
+      0 0 0 3px var(--rr-accent-ring),
+      var(--rr-shadow-card);
+  }
+}
+
+/* The summary cards and rows hold back until the ghosts arrive (~0.8s
+   flight), then fill in row by row as the ghosts land. A fresh parse renders
+   one <tr> per review (details rows only mount when expanded). */
+.rowsTransferIn .summaryPanel {
+  animation: rowTransferIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+  animation-delay: 0.72s;
+}
+
 .rowsTransferIn .reviewTable tbody tr {
   animation: rowTransferIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
-  animation-delay: 0.56s;
+  animation-delay: 1.24s;
 }
 
-.rowsTransferIn .reviewTable tbody tr:nth-child(-n + 2) {
-  animation-delay: 0.26s;
+.rowsTransferIn .reviewTable tbody tr:nth-child(1) {
+  animation-delay: 0.76s;
 }
 
-.rowsTransferIn .reviewTable tbody tr:nth-child(n + 3):nth-child(-n + 4) {
-  animation-delay: 0.32s;
+.rowsTransferIn .reviewTable tbody tr:nth-child(2) {
+  animation-delay: 0.86s;
 }
 
-.rowsTransferIn .reviewTable tbody tr:nth-child(n + 5):nth-child(-n + 6) {
-  animation-delay: 0.38s;
+.rowsTransferIn .reviewTable tbody tr:nth-child(3) {
+  animation-delay: 0.96s;
 }
 
-.rowsTransferIn .reviewTable tbody tr:nth-child(n + 7):nth-child(-n + 8) {
-  animation-delay: 0.44s;
+.rowsTransferIn .reviewTable tbody tr:nth-child(4) {
+  animation-delay: 1.06s;
 }
 
-.rowsTransferIn .reviewTable tbody tr:nth-child(n + 9):nth-child(-n + 10) {
-  animation-delay: 0.5s;
+.rowsTransferIn .reviewTable tbody tr:nth-child(5) {
+  animation-delay: 1.16s;
 }
 
 @keyframes rowTransferIn {
