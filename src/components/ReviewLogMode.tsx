@@ -27,7 +27,11 @@ export function ReviewLogMode() {
   const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [rowsEntering, setRowsEntering] = useState(false);
   const copySuccessTimer = useRef<number | undefined>(undefined);
+  const rowsEnteringTimer = useRef<number | undefined>(undefined);
+  const notesFieldRef = useRef<HTMLDivElement | null>(null);
+  const resultsPanelRef = useRef<HTMLDivElement | null>(null);
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -38,8 +42,70 @@ export function ReviewLogMode() {
   const notesCharacterCount = notes.length;
   const notesLineCount = notes.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
 
+  /** Fly ghost copies of the pasted note lines from the input panel over to
+   *  the rows table, so generating reads as a transfer of information.
+   *  Returns true when the flight was started (rects measured, motion ok). */
+  function spawnTransferGhosts(): boolean {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return false;
+    }
+    const from = notesFieldRef.current?.getBoundingClientRect();
+    const to = resultsPanelRef.current?.getBoundingClientRect();
+    if (!from || !to) {
+      return false;
+    }
+    const lines = notes
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 7);
+    if (lines.length === 0) {
+      return false;
+    }
+
+    const layer = document.createElement("div");
+    layer.className = "transferGhostLayer";
+    document.body.appendChild(layer);
+
+    const lastDelay = (lines.length - 1) * 55;
+    lines.forEach((line, index) => {
+      const ghost = document.createElement("span");
+      ghost.className = "transferGhost";
+      ghost.textContent = line.length > 44 ? `${line.slice(0, 44)}…` : line;
+      layer.appendChild(ghost);
+
+      const startX = from.left + 16;
+      const startY = from.top + 14 + index * 24;
+      const endX = to.left + 28;
+      const endY = Math.min(to.top + 170 + index * 30, window.innerHeight - 40);
+
+      ghost.animate(
+        [
+          { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 0 },
+          { transform: `translate(${startX + 10}px, ${startY}px) scale(1)`, opacity: 0.95, offset: 0.12 },
+          {
+            transform: `translate(${(startX + endX) / 2}px, ${Math.min(startY, endY) - 26}px) scale(0.97)`,
+            opacity: 0.95,
+            offset: 0.58,
+          },
+          { transform: `translate(${endX}px, ${endY}px) scale(0.92)`, opacity: 0 },
+        ],
+        { duration: 640, delay: index * 55, easing: "cubic-bezier(0.3, 0, 0.25, 1)", fill: "both" },
+      );
+    });
+
+    window.setTimeout(() => layer.remove(), 640 + lastDelay + 120);
+    return true;
+  }
+
   function handleParse() {
     const parsedRows = parseReviewNotes(notes);
+    const transferring = parsedRows.length > 0 && spawnTransferGhosts();
+    setRowsEntering(transferring);
+    window.clearTimeout(rowsEnteringTimer.current);
+    if (transferring) {
+      rowsEnteringTimer.current = window.setTimeout(() => setRowsEntering(false), 1600);
+    }
     setRows(parsedRows);
     setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));
     setFlaggedOnly(false);
@@ -130,7 +196,7 @@ export function ReviewLogMode() {
                       Review Notes
                     </label>
                   </div>
-                  <div className="notesField">
+                  <div className="notesField" ref={notesFieldRef}>
                     <textarea
                       id="review-notes"
                       value={notes}
@@ -194,7 +260,10 @@ export function ReviewLogMode() {
             {flags.length > 0 && <FlagsPanel flags={flags} />}
           </div>
 
-          <div className="resultsPanel reviewOutputCard">
+          <div
+            className={`resultsPanel reviewOutputCard${rowsEntering ? " rowsTransferIn" : ""}`}
+            ref={resultsPanelRef}
+          >
             <div className="panelHeader resultsHeader">
               <h2 className="panelTitle">Review Log Rows</h2>
             </div>

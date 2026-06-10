@@ -516,6 +516,74 @@ button:disabled {
   min-width: 0;
 }
 
+/* ------------------- Notes → table transfer animation ------------------- */
+/* Ghost copies of pasted note lines fly from the input panel to the rows
+   table when Generate Review Table is clicked (spawned via WAAPI in
+   ReviewLogMode), while the freshly parsed rows stagger in from the left. */
+.transferGhostLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+}
+
+.transferGhost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  max-width: 330px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 9px;
+  background: var(--rr-surface-glass-strong);
+  border: 1px solid var(--rr-hairline);
+  box-shadow: var(--rr-shadow-card-sm);
+  font-size: 12px;
+  color: var(--rr-ink-secondary);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Each review renders as a pair of <tr>s (summary + details), so the
+   entrance stagger steps every two rows to move whole reviews together. */
+.rowsTransferIn .reviewTable tbody tr {
+  animation: rowTransferIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+  animation-delay: 0.56s;
+}
+
+.rowsTransferIn .reviewTable tbody tr:nth-child(-n + 2) {
+  animation-delay: 0.26s;
+}
+
+.rowsTransferIn .reviewTable tbody tr:nth-child(n + 3):nth-child(-n + 4) {
+  animation-delay: 0.32s;
+}
+
+.rowsTransferIn .reviewTable tbody tr:nth-child(n + 5):nth-child(-n + 6) {
+  animation-delay: 0.38s;
+}
+
+.rowsTransferIn .reviewTable tbody tr:nth-child(n + 7):nth-child(-n + 8) {
+  animation-delay: 0.44s;
+}
+
+.rowsTransferIn .reviewTable tbody tr:nth-child(n + 9):nth-child(-n + 10) {
+  animation-delay: 0.5s;
+}
+
+@keyframes rowTransferIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
