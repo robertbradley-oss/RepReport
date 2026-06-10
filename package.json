@@ -10,7 +10,8 @@
     "smoke:review": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/smoke-review-parser.mjs",
     "smoke:kpi": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/smoke-kpi-parser.mjs",
     "smoke:exports": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/smoke-export-shapes.mjs",
-    "smoke": "npm run smoke:review && npm run smoke:kpi && npm run smoke:exports"
+    "smoke:roundtrip": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/check-verified-roundtrip.mjs",
+    "smoke": "npm run smoke:review && npm run smoke:kpi && npm run smoke:exports && npm run smoke:roundtrip"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",
