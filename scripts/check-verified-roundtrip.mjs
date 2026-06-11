@@ -18,20 +18,46 @@ const notes = [
   "6/5/26",
   "Plain Amazon review without the marker line.",
   "Jeff Johns - RO5004F",
+  "",
+  "Ticket #240063 - photo/video",
+  "https://support.ispringfilter.com/scp/tickets.php?id=240063",
+  "https://www.google.com/search?q=ispring+reviews+natalie",
+  "6/4/26",
+  "Love the system, attached photos and a video of the install.",
+  "Natalie Wilson - RCC7AK",
+  "",
+  "240064 - video",
+  "https://support.ispringfilter.com/scp/tickets.php?id=240064",
+  "https://www.trustpilot.com/reviews/aa1858422cd19168d0329f11",
+  "6/3/26",
+  "Posted a video review of the unboxing.",
+  "Marcus Lee - RO600",
 ].join("\n");
 
 const rows = parseReviewNotes(notes);
 const summary = calculateBonusSummary(rows);
 
 const checks = [
-  ["two rows parsed", rows.length === 2],
+  ["four rows parsed", rows.length === 4],
   ["row 1 platform Amazon", rows[0].platform === "Amazon"],
   ["row 1 verified", rows[0].amazonVerifiedPurchase === true],
   ["row 1 text keeps no marker", !/verified purchase/i.test(rows[0].reviewText)],
   ["row 1 text intact", rows[0].reviewText.includes("Great filter")],
   ["row 2 not verified", rows[1].amazonVerifiedPurchase === false],
   ["summary verified 1 of 2 amazon", summary.verifiedAmazonCount === 1 && summary.amazonCount === 2],
-  ["verified bonus 25", rows[0].amazonVerifiedPurchase && summary.estimatedBonusTotal === 25 + 15],
+  ["row 3 has photo", rows[2].containsPictures === "Y"],
+  ["row 3 has video", rows[2].containsVideo === "Y"],
+  ["row 3 ticket parsed", (rows[2].ticketNumber ?? "").includes("240063")],
+  ["row 3 text has no media residue", !/photo\s*\/|\/\s*video|\*{2,3}/i.test(rows[2].reviewText)],
+  ["row 3 text intact", rows[2].reviewText.includes("Love the system")],
+  ["row 4 bare-number video detected", rows[3].containsVideo === "Y"],
+  ["row 4 no photo", rows[3].containsPictures === "N"],
+  ["row 4 text intact", rows[3].reviewText.includes("unboxing")],
+  ["summary photo 1 video 2", summary.photoReviewCount === 1 && summary.videoReviewCount === 2],
+  [
+    "bonus math (25 + 15 amazon, 20 google photo, 15 trustpilot)",
+    summary.estimatedBonusTotal === 25 + 15 + 20 + 15,
+  ],
 ];
 
 let failed = false;

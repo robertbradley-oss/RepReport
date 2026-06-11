@@ -1,5 +1,10 @@
 import type { FlagItem, ReviewRow } from "../types";
-import { containsInternalPhotoMarker, isInternalPhotoMarkerLine, stripInternalNoteMarkers } from "./internalNoteMarkers";
+import {
+  containsInternalPhotoMarker,
+  containsInternalVideoMarker,
+  isInternalNoteMarkerLine,
+  stripInternalNoteMarkers,
+} from "./internalNoteMarkers";
 
 const urlRegex = /https?:\/\/[^\s]+/gi;
 const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
@@ -124,10 +129,33 @@ function splitBlocks(input: string): string[] {
 }
 
 function normalizePastedNotes(input: string): string {
+  // Media suffixes like "- photo", "- video", "- photo/video" become internal
+  // marker lines so photo/video detection survives the line-level parsing.
+  const mediaSuffixToMarkers = (media: string | undefined): string => {
+    if (!media) {
+      return "";
+    }
+    const markers: string[] = [];
+    if (/photo/i.test(media)) markers.push("***PHOTO***");
+    if (/video/i.test(media)) markers.push("***VIDEO***");
+    return markers.length > 0 ? `${markers.join("\n")}\n` : "";
+  };
+  const mediaSuffixPattern = "(?:photo|video)(?:\\s*\\/\\s*(?:photo|video))?";
+
   const expanded = input
     .replace(/\r\n/g, "\n")
-    .replace(/(Ticket\s*#?\s*\d+|#\d{3,})(\s*-\s*PHOTO)?/gi, (_match, ticket: string, photo: string | undefined) =>
-      photo ? `${ticket}\n***PHOTO***\n` : `${ticket}\n`,
+    // Bare ticket numbers with a media suffix (RepStack export first lines).
+    // Rewritten to the canonical "Ticket #N" form so the line both starts a
+    // new block and keeps its media markers attached to the right review.
+    .replace(
+      new RegExp(`^(\\d{3,})\\s*-\\s*(${mediaSuffixPattern})\\s*$`, "gim"),
+      (_match, ticket: string, media: string) =>
+        `Ticket #${ticket}\n${mediaSuffixToMarkers(media)}`,
+    )
+    .replace(
+      new RegExp(`(Ticket\\s*#?\\s*\\d+|#\\d{3,})(\\s*-\\s*${mediaSuffixPattern})?`, "gi"),
+      (_match, ticket: string, media: string | undefined) =>
+        `${ticket}\n${mediaSuffixToMarkers(media)}`,
     )
     .replace(/(https?:\/\/)/gi, "\n$1")
     .replace(/(dpr=1)(\d{1,2}\/\d{1,2}\/\d{2,4})(?=\S)/gi, "$1\n$2\n")
@@ -163,7 +191,7 @@ function parseBlock(block: string): ReviewRow {
   const reviewDateOrStatus = parseDateOrStatus(lines, ratingOrStatus);
   const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus));
   const containsPictures = containsInternalPhotoMarker(block) ? "Y" : "N";
-  const containsVideo = "N";
+  const containsVideo = containsInternalVideoMarker(block) ? "Y" : "N";
   // Every review pasted into RepReport is a 5-star review by workflow, so the
   // "Verified 5 star?" column is always Y. Amazon verified-purchase status is
   // tracked separately (for bonus only) and detected from the notes.
@@ -426,7 +454,7 @@ function parseReviewText(
     if (line === customerModelLine) return false;
     if (line === ratingOrStatus) return false;
     if (line === reviewDateOrStatus) return false;
-    if (isInternalPhotoMarkerLine(line)) return false;
+    if (isInternalNoteMarkerLine(line)) return false;
     if (/^verified purchase$/i.test(line)) return false;
     return true;
   });
