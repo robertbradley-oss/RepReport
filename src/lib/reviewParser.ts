@@ -117,8 +117,13 @@ function splitBlocks(input: string): string[] {
   for (const line of lines) {
     const beginsNewBlock =
       current.length > 0 &&
-      isBlockStart(line) &&
-      (hasReviewUrl(current) || hasCustomerModelLine(current) || isTicketStart(line));
+      ((isBlockStart(line) &&
+        (hasReviewUrl(current) || hasCustomerModelLine(current) || isTicketStart(line))) ||
+        // A leading media-marker line (RepStack ticketless export) starts the
+        // next review — but only once the current review is complete, so a
+        // marker that legitimately sits after a review URL doesn't split its
+        // own review.
+        (isInternalNoteMarkerLine(line) && hasCustomerModelLine(current)));
 
     if (beginsNewBlock) {
       blocks.push(current);
@@ -163,6 +168,12 @@ function normalizePastedNotes(input: string): string {
       new RegExp(`(Ticket\\s*#?\\s*\\d+|#\\d{3,})(\\s*-\\s*${mediaSuffixPattern})?`, "gi"),
       (_match, ticket: string, media: string | undefined) =>
         `${ticket}\n${mediaSuffixToMarkers(media)}`,
+    )
+    // Ticketless reviews export the media label as a standalone first line
+    // (e.g. "- photo/video"). Convert that whole line to markers too.
+    .replace(
+      new RegExp(`^\\s*-\\s*(${mediaSuffixPattern})\\s*$`, "gim"),
+      (_match, media: string) => mediaSuffixToMarkers(media).trimEnd(),
     )
     .replace(/(https?:\/\/)/gi, "\n$1")
     .replace(/(dpr=1)(\d{1,2}\/\d{1,2}\/\d{2,4})(?=\S)/gi, "$1\n$2\n")

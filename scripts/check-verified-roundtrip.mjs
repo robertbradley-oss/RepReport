@@ -2,6 +2,7 @@
 // must parse as a verified Amazon review, with the marker absent from the
 // review text and counted in the bonus summary.
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { buildReviewClipboardHtml } from "../src/lib/reviewClipboard.ts";
 
 const notes = [
   "240061",
@@ -32,19 +33,25 @@ const notes = [
   "6/3/26",
   "Posted a video review of the unboxing.",
   "Marcus Lee - RO600",
+  "",
+  "- photo/video",
+  "https://www.amazon.com/gp/customer-reviews/R55ABCDEF12/ref=cm_cr_arp_d_rvw_ttl?ie=UTF8",
+  "6/2/26",
+  "No ticket on this one but it has both a photo and a video attached.",
+  "Dana Cole - WGB22B-PB",
 ].join("\n");
 
 const rows = parseReviewNotes(notes);
 const summary = calculateBonusSummary(rows);
 
 const checks = [
-  ["four rows parsed", rows.length === 4],
+  ["five rows parsed", rows.length === 5],
   ["row 1 platform Amazon", rows[0].platform === "Amazon"],
   ["row 1 verified", rows[0].amazonVerifiedPurchase === true],
   ["row 1 text keeps no marker", !/verified purchase/i.test(rows[0].reviewText)],
   ["row 1 text intact", rows[0].reviewText.includes("Great filter")],
   ["row 2 not verified", rows[1].amazonVerifiedPurchase === false],
-  ["summary verified 1 of 2 amazon", summary.verifiedAmazonCount === 1 && summary.amazonCount === 2],
+  ["summary verified 1 of 3 amazon", summary.verifiedAmazonCount === 1 && summary.amazonCount === 3],
   ["row 3 has photo", rows[2].containsPictures === "Y"],
   ["row 3 has video", rows[2].containsVideo === "Y"],
   ["row 3 ticket parsed", (rows[2].ticketNumber ?? "").includes("240063")],
@@ -53,12 +60,24 @@ const checks = [
   ["row 4 bare-number video detected", rows[3].containsVideo === "Y"],
   ["row 4 no photo", rows[3].containsPictures === "N"],
   ["row 4 text intact", rows[3].reviewText.includes("unboxing")],
-  ["summary photo 1 video 2", summary.photoReviewCount === 1 && summary.videoReviewCount === 2],
+  ["row 5 ticketless platform Amazon", rows[4].platform === "Amazon"],
+  ["row 5 ticketless photo detected", rows[4].containsPictures === "Y"],
+  ["row 5 ticketless video detected", rows[4].containsVideo === "Y"],
+  ["row 5 text has no media residue", !/photo\s*\/|\/\s*video|\*{2,3}|^-\s*$/im.test(rows[4].reviewText)],
+  ["row 5 text intact", rows[4].reviewText.includes("No ticket on this one")],
+  ["summary photo 2 video 3", summary.photoReviewCount === 2 && summary.videoReviewCount === 3],
   ["row 3 google photo+video bonus is 30", calculateBonus(rows[2]) === 10 + 10 + 10],
   ["row 4 trustpilot video bonus stays 15", calculateBonus(rows[3]) === 15],
+  ["row 5 amazon photo+video bonus is 30", calculateBonus(rows[4]) === 15 + 5 + 10],
   [
-    "bonus total (25 verified amazon + 15 amazon + 30 google p/v + 15 trustpilot)",
-    summary.estimatedBonusTotal === 25 + 15 + 30 + 15,
+    "bonus total (25 + 15 amazon, 30 google p/v, 15 trustpilot, 30 amazon p/v)",
+    summary.estimatedBonusTotal === 25 + 15 + 30 + 15 + 30,
+  ],
+  // Copy Rows must paint every photo/video "Y" cell yellow. Across the five
+  // rows that is: row3 photo+video, row4 video, row5 photo+video = 5 cells.
+  [
+    "copy highlights all 5 photo/video Y cells yellow",
+    (buildReviewClipboardHtml(rows).match(/background-color:#ffff00;">Y</g) || []).length === 5,
   ],
 ];
 
