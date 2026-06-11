@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 96 360 336" role="img" aria-label="RepReport">
+  <rect x="112" y="320" width="62" height="90" rx="12" fill="#14273f" stroke="#ffffff" stroke-width="8" />
+  <rect x="194" y="270" width="62" height="140" rx="12" fill="#14273f" stroke="#ffffff" stroke-width="8" />
+  <rect x="276" y="210" width="62" height="200" rx="12" fill="#2f9ae5" stroke="#ffffff" stroke-width="8" />
+  <rect x="358" y="150" width="62" height="260" rx="12" fill="#35a94e" stroke="#ffffff" stroke-width="8" />
+  <path d="M100 298 C 200 252, 300 212, 374 150" fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="round" />
+  <path d="M100 298 C 200 252, 300 212, 374 150" fill="none" stroke="#14273f" stroke-width="22" stroke-linecap="round" />
+  <path d="M414 116 L352.5 124 L396.5 175.6 Z" fill="#14273f" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" />
+</svg>
