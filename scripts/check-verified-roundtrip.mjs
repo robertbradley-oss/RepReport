@@ -1,7 +1,7 @@
 // One-off check: a RepStack export block with the "Verified Purchase" marker
 // must parse as a verified Amazon review, with the marker absent from the
 // review text and counted in the bonus summary.
-import { calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
 
 const notes = [
   "240061",
@@ -54,9 +54,11 @@ const checks = [
   ["row 4 no photo", rows[3].containsPictures === "N"],
   ["row 4 text intact", rows[3].reviewText.includes("unboxing")],
   ["summary photo 1 video 2", summary.photoReviewCount === 1 && summary.videoReviewCount === 2],
+  ["row 3 google photo+video bonus is 30", calculateBonus(rows[2]) === 10 + 10 + 10],
+  ["row 4 trustpilot video bonus stays 15", calculateBonus(rows[3]) === 15],
   [
-    "bonus math (25 + 15 amazon, 20 google photo, 15 trustpilot)",
-    summary.estimatedBonusTotal === 25 + 15 + 20 + 15,
+    "bonus total (25 verified amazon + 15 amazon + 30 google p/v + 15 trustpilot)",
+    summary.estimatedBonusTotal === 25 + 15 + 30 + 15,
   ],
 ];
 

@@ -56,21 +56,28 @@ export function collectFlags(rows: ReviewRow[]): FlagItem[] {
 }
 
 export function calculateBonus(row: ReviewRow): number {
+  const hasPhoto = row.containsPictures === "Y";
+  const hasVideo = row.containsVideo === "Y";
+
   if (row.platform === "Google") {
-    return row.containsPictures === "Y" ? 20 : 10;
+    return 10 + (hasPhoto ? 10 : 0) + (hasVideo ? 10 : 0);
   }
 
   if (row.platform === "Trustpilot") {
     return 15;
   }
 
-  if (flatTwentyFiveDollarPlatforms.has(row.platform) || row.platform === "Lowe's") {
-    return 25;
-  }
-
   if (row.platform === "Amazon") {
     const baseBonus = row.amazonVerifiedPurchase ? 25 : 15;
-    return row.containsPictures === "Y" ? baseBonus + 5 : baseBonus;
+    return baseBonus + (hasPhoto ? 5 : 0) + (hasVideo ? 10 : 0);
+  }
+
+  if (row.platform === "Home Depot" || row.platform === "Lowe's") {
+    return 25 + (hasPhoto ? 5 : 0) + (hasVideo ? 10 : 0);
+  }
+
+  if (flatTwentyFiveDollarPlatforms.has(row.platform)) {
+    return 25;
   }
 
   return 0;
