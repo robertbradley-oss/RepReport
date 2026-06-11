@@ -9,6 +9,8 @@ import {
 const urlRegex = /https?:\/\/[^\s]+/gi;
 const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
 const ticketLineRegex = /^(?:ticket\s*#?\s*|#)(\d{3,})\b/i;
+const modelTokenRegex = /\b(?:ICEK|[A-Z]{1,8}\d[A-Z0-9]*(?:[-/][A-Z0-9]+)*)\b/g;
+const modelLabelRegex = /\b(?:model(?:\s+number)?|system|product|sku)\b\s*(?:#|no\.?|number)?\s*[:=-]?\s*/i;
 
 const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /amazon\.com/i],
@@ -207,7 +209,7 @@ function parseBlock(block: string): ReviewRow {
   const parsedRating = parseRating(lines, platform);
   const ratingOrStatus = parsedRating.value;
   const reviewDateOrStatus = parseDateOrStatus(lines, ratingOrStatus);
-  const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.line, ratingOrStatus, reviewDateOrStatus));
+  const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.linesToOmit ?? [], ratingOrStatus, reviewDateOrStatus));
   const containsPictures = containsInternalPhotoMarker(block) ? "Y" : "N";
   const containsVideo = containsInternalVideoMarker(block) ? "Y" : "N";
   // Every review pasted into RepReport is a 5-star review by workflow, so the
@@ -256,7 +258,7 @@ function parseBlock(block: string): ReviewRow {
 }
 
 function buildReviewFlags(parts: {
-  customerModel: { customerName: string; modelNumber: string; line: string } | undefined;
+  customerModel: ParsedCustomerModel | undefined;
 }): string[] {
   const flags: string[] = [];
 
@@ -282,8 +284,16 @@ function detectPlatform(url: string): string {
   return platformMatchers.find(([, matcher]) => matcher.test(url))?.[0] ?? "Unknown";
 }
 
-function parseCustomerModel(lines: string[]): { customerName: string; modelNumber: string; line: string } | undefined {
+type ParsedCustomerModel = {
+  customerName?: string;
+  modelNumber: string;
+  line?: string;
+  linesToOmit?: string[];
+};
+
+function parseCustomerModel(lines: string[]): ParsedCustomerModel | undefined {
   const usefulLines = lines.filter((line) => !singleUrlRegex.test(line) && !ticketLineRegex.test(line));
+  let missingModelMatch: RegExpMatchArray | undefined;
 
   for (const line of [...usefulLines].reverse()) {
     const match = line.match(/^(.+?)\s+-\s+([A-Za-z0-9][A-Za-z0-9._/-]*)$/);
@@ -292,20 +302,99 @@ function parseCustomerModel(lines: string[]): { customerName: string; modelNumbe
         customerName: match[1].trim(),
         modelNumber: match[2].trim(),
         line,
+        linesToOmit: [line],
       };
     }
 
-    const missingModelMatch = line.match(/^(.+?)\s+-\s*$/);
-    if (missingModelMatch) {
-      return {
-        customerName: missingModelMatch[1].trim(),
-        modelNumber: "",
-        line,
-      };
+    missingModelMatch ??= line.match(/^(.+?)\s+-\s*$/) ?? undefined;
+  }
+
+  const fallbackModel = findModelCandidate(lines);
+
+  if (missingModelMatch) {
+    const linesToOmit = [missingModelMatch[0]];
+    if (fallbackModel?.omitLine) {
+      linesToOmit.push(fallbackModel.line);
+    }
+
+    return {
+      customerName: missingModelMatch[1].trim(),
+      modelNumber: fallbackModel?.modelNumber ?? "",
+      line: missingModelMatch[0],
+      linesToOmit,
+    };
+  }
+
+  if (fallbackModel) {
+    return {
+      modelNumber: fallbackModel.modelNumber,
+      line: fallbackModel.omitLine ? fallbackModel.line : undefined,
+      linesToOmit: fallbackModel.omitLine ? [fallbackModel.line] : [],
+    };
+  }
+
+  return undefined;
+}
+
+function findModelCandidate(lines: string[]): { modelNumber: string; line: string; omitLine: boolean } | undefined {
+  const searchableLines = lines.filter((line) => !singleUrlRegex.test(line));
+
+  for (const line of searchableLines) {
+    const labeledModel = extractLabeledModel(line);
+    if (labeledModel) {
+      return { modelNumber: labeledModel, line, omitLine: true };
+    }
+  }
+
+  for (const line of searchableLines) {
+    const standaloneModel = extractStandaloneModel(line);
+    if (standaloneModel) {
+      return { modelNumber: standaloneModel, line, omitLine: true };
+    }
+  }
+
+  for (const line of searchableLines) {
+    if (shouldSkipInlineModelSearch(line)) continue;
+
+    const inlineModel = extractModelToken(line);
+    if (inlineModel) {
+      return { modelNumber: inlineModel, line, omitLine: false };
     }
   }
 
   return undefined;
+}
+
+function extractLabeledModel(line: string): string | undefined {
+  const labelMatch = line.match(modelLabelRegex);
+  if (!labelMatch || labelMatch.index === undefined) {
+    return undefined;
+  }
+
+  return extractModelToken(line.slice(labelMatch.index + labelMatch[0].length));
+}
+
+function extractStandaloneModel(line: string): string | undefined {
+  const normalizedLine = line.replace(/^\s*-\s*/, "").trim();
+  const model = extractModelToken(normalizedLine);
+
+  return model && normalizedLine.toUpperCase() === model ? model : undefined;
+}
+
+function extractModelToken(value: string): string | undefined {
+  modelTokenRegex.lastIndex = 0;
+  const match = modelTokenRegex.exec(value.toUpperCase());
+  return match?.[0];
+}
+
+function shouldSkipInlineModelSearch(line: string): boolean {
+  return (
+    ticketLineRegex.test(line) ||
+    isInternalNoteMarkerLine(line) ||
+    /^verified purchase$/i.test(line) ||
+    /\b\d+(?:\.\d+)?\s*(?:out of\s*)?5\s*stars?\b/i.test(line) ||
+    /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{2,4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/i.test(line)
+  );
 }
 
 function splitGluedCustomerModelLine(line: string): string[] {
@@ -461,15 +550,16 @@ function parseDateOrStatus(lines: string[], ratingOrStatus: string): string {
 function parseReviewText(
   lines: string[],
   allUrls: string[],
-  customerModelLine: string | undefined,
+  linesToOmit: string[],
   ratingOrStatus: string,
   reviewDateOrStatus: string,
 ): string {
   const urlSet = new Set(allUrls);
+  const omittedLines = new Set(linesToOmit);
   const textLines = lines.filter((line) => {
     if (urlSet.has(stripTrailingPunctuation(line))) return false;
     if (ticketLineRegex.test(line)) return false;
-    if (line === customerModelLine) return false;
+    if (omittedLines.has(line)) return false;
     if (line === ratingOrStatus) return false;
     if (line === reviewDateOrStatus) return false;
     if (isInternalNoteMarkerLine(line)) return false;
@@ -537,7 +627,11 @@ function hasReviewUrl(lines: string[]): boolean {
 }
 
 function hasCustomerModelLine(lines: string[]): boolean {
-  return Boolean(parseCustomerModel(lines));
+  return lines.some((line) =>
+    !singleUrlRegex.test(line) &&
+    !ticketLineRegex.test(line) &&
+    (/^(.+?)\s+-\s+([A-Za-z0-9][A-Za-z0-9._/-]*)$/.test(line) || /^(.+?)\s+-\s*$/.test(line)),
+  );
 }
 
 function isTicketStart(line: string): boolean {

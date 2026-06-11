@@ -2,6 +2,7 @@ import { formatFlagsForClipboard } from "../src/lib/flagClipboard.ts";
 import { DEFAULT_REVIEW_TABLE_DENSITY, REVIEW_TABLE_COLUMN_WIDTHS, REVIEW_TABLE_DENSITIES } from "../src/lib/reviewTableLayout.ts";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
 import { calculateBonus, calculateBonusSummary, parseReviewNotes } from "../src/lib/reviewParser.ts";
+import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
 import {
   buildVisibleReviewRows,
   formatSourceNotesSummary,
@@ -300,6 +301,50 @@ const missingLinkRow = rowByTicket("100010");
 assertEqual(missingLinkRow.platform, "Unknown", "Missing review link row should have Unknown platform.");
 assertEqual(missingLinkRow.reviewLink, "", "Missing review link row should export a blank review link.");
 assertFlags(missingLinkRow, [], "Missing review link row should not generate model reminders when the model is present.");
+
+const modelFallbackRows = parseReviewNotes([
+  "Ticket #238500 - RCC7AK",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238500",
+  "https://www.google.com/maps/reviews/model-near-ticket",
+  "6/9/26",
+  "Robert helped us finish setup quickly.",
+  "Mara Tickettop -",
+  "",
+  "Ticket #238501",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238501",
+  "https://www.trustpilot.com/reviews/model-in-text",
+  "Jun 9, 2026",
+  "5 stars",
+  "The WSP50 filter has been working perfectly since support followed up.",
+  "Miles Textmodel -",
+  "",
+  "Ticket #238502",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238502",
+  "https://www.google.com/maps/reviews/hyphen-model",
+  "6/9/26",
+  "Model Number: WGB32B-KDS",
+  "The whole-house system is working well.",
+  "Hana Hyphen -",
+].join("\n"));
+assertEqual(modelFallbackRows.length, 3, "Model fallback fixture should parse every row.");
+assertEqual(modelFallbackRows[0].modelNumber, "RCC7AK", "Parser should detect a model that appears near the ticket number.");
+assertEqual(modelFallbackRows[1].modelNumber, "WSP50", "Parser should detect a model that appears in review/customer text.");
+assertEqual(modelFallbackRows[2].modelNumber, "WGB32B-KDS", "Parser should detect hyphenated model labels.");
+assertFlags(modelFallbackRows[0], [], "Ticket-adjacent model row should not generate model reminders.");
+assertFlags(modelFallbackRows[1], [], "Inline model row should not generate model reminders.");
+assertFlags(modelFallbackRows[2], [], "Hyphenated labeled model row should not generate model reminders.");
+assert(
+  modelFallbackRows[1].replacementSent.includes("The WSP50 filter has been working perfectly"),
+  "Inline model mentions should stay in review text.",
+);
+assert(
+  !modelFallbackRows[2].replacementSent.includes("Model Number: WGB32B-KDS"),
+  "Dedicated model label lines should not stay in review text.",
+);
+const modelFallbackExport = buildReviewExportPackage(modelFallbackRows);
+assertEqual(modelFallbackExport.pasteRows.rows[0][2], "RCC7AK", "Export package should include ticket-adjacent detected models.");
+assertEqual(modelFallbackExport.pasteRows.rows[1][2], "WSP50", "Export package should include inline detected models.");
+assertEqual(modelFallbackExport.pasteRows.rows[2][2], "WGB32B-KDS", "Export package should include hyphenated detected models.");
 
 const unknownPlatformRows = parseReviewNotes([
   "Ticket #100012",
