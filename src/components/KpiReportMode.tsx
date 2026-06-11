@@ -39,10 +39,11 @@ export function KpiReportMode() {
     }
 
     setIsReadingNotes(true);
+    // Matches the 1.8s three-pass scan (down, up, down) in styles.css.
     window.setTimeout(() => {
       setIsReadingNotes(false);
       applyFormattedRow(result.row, true);
-    }, 700);
+    }, 1800);
   }
 
   function handleClear() {
