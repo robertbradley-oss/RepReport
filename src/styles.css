@@ -580,27 +580,73 @@ button:disabled {
     linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px bottom 6px / 16px 2px,
     linear-gradient(var(--rr-brand), var(--rr-brand)) right 6px bottom 6px / 2px 16px;
   background-repeat: no-repeat;
+  /* The viewfinder frame snaps on. */
+  animation: notesScanFrameIn 140ms ease-out both;
 }
 
-/* Already-scanned region: a faint accent wash that grows behind the line. */
+@keyframes notesScanFrameIn {
+  from {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Capture flash right as the scan head reaches the bottom — a quick pulse
+   of light where the line lands, like the document being captured. */
+.notesScanOverlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    130% 70% at 50% 100%,
+    rgba(28, 122, 71, 0.24),
+    rgba(28, 122, 71, 0.06) 55%,
+    transparent 80%
+  );
+  opacity: 0;
+  animation: notesScanFlash 180ms ease-out 510ms both;
+}
+
+@keyframes notesScanFlash {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Already-scanned region: a faint accent wash with fine horizontal scanlines
+   (the digitized texture), revealed top-to-bottom behind the scan head.
+   clip-path instead of scaleY so the texture doesn't stretch mid-sweep. */
 .notesScanVeil {
   position: absolute;
   inset: 0;
-  transform-origin: top;
-  background: linear-gradient(180deg, rgba(28, 122, 71, 0.03), rgba(28, 122, 71, 0.09));
+  background:
+    repeating-linear-gradient(180deg, rgba(28, 122, 71, 0.05) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, rgba(28, 122, 71, 0.03), rgba(28, 122, 71, 0.1));
+  clip-path: inset(0 0 100% 0);
   animation: notesScanVeil 0.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
 }
 
 @keyframes notesScanVeil {
   from {
-    transform: scaleY(0);
+    clip-path: inset(0 0 100% 0);
   }
   to {
-    transform: scaleY(1);
+    clip-path: inset(0 0 0 0);
   }
 }
 
-/* The scan line itself: thin, bright, with a soft glow. */
+/* The scan head: a bright-cored lamp line with a hotspot in the middle,
+   a trailing light tail above it, and a soft preview glow leading below. */
 .notesScanLine {
   position: absolute;
   left: 8px;
@@ -608,11 +654,39 @@ button:disabled {
   top: 0;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--rr-brand) 10%, var(--rr-brand) 90%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #2c9a62 8%,
+    #7ee2ac 50%,
+    #2c9a62 92%,
+    transparent
+  );
   box-shadow:
-    0 0 2px var(--rr-brand),
-    0 0 12px 1px var(--rr-accent-ring);
+    0 0 3px var(--rr-brand),
+    0 0 14px 2px var(--rr-accent-ring),
+    0 0 30px 5px rgba(28, 122, 71, 0.16);
   animation: notesScanLine 0.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+}
+
+.notesScanLine::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 44px;
+  background: linear-gradient(0deg, rgba(28, 122, 71, 0.16), transparent 85%);
+}
+
+.notesScanLine::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  height: 14px;
+  background: linear-gradient(180deg, rgba(28, 122, 71, 0.1), transparent);
 }
 
 @keyframes notesScanLine {
@@ -630,7 +704,7 @@ button:disabled {
   right: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   padding: 3px 10px;
   border-radius: 9999px;
   background: var(--rr-surface-glass-strong);
@@ -651,7 +725,25 @@ button:disabled {
   border-radius: 50%;
   background: var(--rr-brand);
   box-shadow: 0 0 0 2px var(--rr-accent-soft);
-  animation: notesScanDot 0.7s ease-in-out infinite;
+  animation: notesScanDot 0.35s ease-in-out infinite;
+}
+
+/* Mini progress track inside the badge, filling in step with the sweep. */
+.notesScanBadge::after {
+  content: "";
+  width: 26px;
+  height: 3px;
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--rr-brand), var(--rr-brand)) left center / 0% 100% no-repeat,
+    var(--rr-accent-soft);
+  animation: notesScanProgress 0.7s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+}
+
+@keyframes notesScanProgress {
+  to {
+    background-size: 100% 100%;
+  }
 }
 
 @keyframes notesScanDot {
