@@ -5,6 +5,26 @@ import { KPI_COLUMNS } from "../src/types.ts";
 const expectedKpiLabels = ["Top 3 Achievements", "3 Best Tickets", "#1 of 3 Worst Tickets", "#2 of 3 Worst Tickets", "#3 of 3 Worst Tickets"];
 
 const { row, issues } = parseKpiNotes(kpiNotesTemplate);
+const worstTicketFixture = `Top 3 Achievements
+1. Cleared stuck warranty follow-ups.
+2. Improved response quality on technical tickets.
+3. Protected replacement decisions with better verification.
+
+3 Best Tickets
+Ticket #232595 - saved RO troubleshooting case
+Ticket #228169 - clear install walkthrough
+Ticket #237085 - fast warranty closeout
+
+Worst Tickets:
+Ticket #240859
+Difficult softener escalation with salt mush, no softening, frustration, and a full WCS45KG replacement needed to recover the customer.
+Second line stayed with the first worst ticket.
+
+Ticket #239266
+Messy RO troubleshooting with unclear symptoms, pressure/tank confusion, phone pressure, and repeated push for full system replacement before the issue was fully isolated.
+
+Ticket #190512
+ED2000 satisfaction-policy issue needed correction after the first response denied refund/replacement too strongly.`;
 
 assertEqual(issues.length, 0, "Representative KPI template should parse without issues.");
 assertEqual(Object.keys(row).length, 5, "KPI row should contain exactly 5 fields.");
@@ -39,6 +59,34 @@ assertEqual(kpiTsvRecords[0][1], row.threeBestTickets, "KPI TSV should preserve 
 assertEqual(kpiTsvRecords[0][2], row.worstTicket1, "KPI TSV should preserve multiline worst ticket 1 inside one cell.");
 assert(kpiTsvRecords[0][0].includes("\n"), "KPI TSV parsed achievements cell should retain line breaks.");
 assert(kpiTsvRecords[0][2].includes("\n"), "KPI TSV parsed worst-ticket cell should retain line breaks.");
+
+const { row: worstTicketRow, issues: worstTicketIssues } = parseKpiNotes(worstTicketFixture);
+assertEqual(worstTicketIssues.length, 0, "Worst-ticket fixture should parse without issues.");
+assertEqual(
+  worstTicketRow.threeBestTickets,
+  "Ticket #232595\nTicket #228169\nTicket #237085",
+  "Best tickets should remain ticket-number-only.",
+);
+assertEqual(
+  worstTicketRow.worstTicket1,
+  "Ticket #240859\nDifficult softener escalation with salt mush, no softening, frustration, and a full WCS45KG replacement needed to recover the customer.\nSecond line stayed with the first worst ticket.",
+  "Worst ticket 1 should keep a multiline explanation.",
+);
+assertEqual(
+  worstTicketRow.worstTicket2,
+  "Ticket #239266\nMessy RO troubleshooting with unclear symptoms, pressure/tank confusion, phone pressure, and repeated push for full system replacement before the issue was fully isolated.",
+  "Worst ticket 2 should keep its explanation.",
+);
+assertEqual(
+  worstTicketRow.worstTicket3,
+  "Ticket #190512\nED2000 satisfaction-policy issue needed correction after the first response denied refund/replacement too strongly.",
+  "Worst ticket 3 should keep model-number-like explanation text.",
+);
+const worstTicketTsvRecords = parseTsvRecords(buildKpiTsv(worstTicketRow));
+assertEqual(worstTicketTsvRecords.length, 1, "Worst-ticket KPI TSV should contain exactly 1 data row.");
+assertEqual(worstTicketTsvRecords[0].length, 5, "Worst-ticket KPI TSV should contain exactly 5 cells.");
+assertEqual(worstTicketTsvRecords[0][4], worstTicketRow.worstTicket3, "KPI TSV should preserve third worst-ticket multiline content inside one cell.");
+assert(worstTicketTsvRecords[0][4].includes("\nED2000"), "KPI TSV should preserve the third worst-ticket explanation line break.");
 
 const quotedKpiTsvRecords = parseTsvRecords(
   buildKpiTsv({

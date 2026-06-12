@@ -155,7 +155,7 @@ function splitWorstTicketSection(lines: string[]): string[][] {
   let currentGroup: string[] = [];
 
   for (const line of lines) {
-    if (extractTicketNumbers(line).length > 0 && currentGroup.length > 0) {
+    if (isWorstTicketStart(line) && currentGroup.length > 0) {
       groups.push(currentGroup);
       currentGroup = [];
     }
@@ -167,6 +167,10 @@ function splitWorstTicketSection(lines: string[]): string[][] {
   }
 
   return groups;
+}
+
+function isWorstTicketStart(line: string): boolean {
+  return /^ticket\s*#?\s*\d{4,}\b/i.test(cleanListItem(line));
 }
 
 function formatWorstTicket(lines: string[]): string {
