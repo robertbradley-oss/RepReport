@@ -1923,8 +1923,33 @@ button:disabled {
   gap: 10px;
   justify-content: center;
   min-height: 310px;
+  overflow: hidden;
   padding: 32px 24px;
+  position: relative;
   text-align: center;
+}
+
+/* Faint dot grid, faded out behind the centred message (a canvas-waiting feel).
+   Lives on a ::before so the mask doesn't clip the text/icon above it. */
+.emptyState::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1.5px);
+  background-size: 16px 16px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at center, transparent 30%, #000 72%);
+  mask-image: radial-gradient(ellipse 80% 80% at center, transparent 30%, #000 72%);
+}
+
+.emptyState > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="dark"] .emptyState::before {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1.5px);
 }
 
 .emptyStateIcon {
