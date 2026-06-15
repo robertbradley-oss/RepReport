@@ -283,7 +283,7 @@ export function ReviewLogMode() {
               <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>
             )}
             <div className="statusLine" aria-live="polite">
-              {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ")}
+              {[parseStatus, copyStatus, exportStatus].filter(Boolean).join(" ") || null}
             </div>
           </div>
     </section>

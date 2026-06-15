@@ -232,6 +232,11 @@ button:disabled {
   background: #e5483d;
   border-color: #e5483d;
   color: #ffffff;
+  box-shadow: var(--rr-shadow-raised);
+}
+
+.dangerButton:active:not(:disabled) {
+  box-shadow: var(--rr-shadow-resting);
 }
 
 /* Copy button icon that swaps to a checkmark on success. Scoped to the icon:
@@ -2334,6 +2339,12 @@ button:disabled {
   font-weight: 500;
   min-height: 22px;
   padding-top: 8px;
+}
+
+/* When there's no status (e.g. the empty state), collapse it so the table has
+   equal spacing above and below instead of a reserved gap underneath. */
+.statusLine:empty {
+  display: none;
 }
 
 .flagsPanel {
