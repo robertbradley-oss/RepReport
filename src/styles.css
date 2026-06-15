@@ -1925,7 +1925,7 @@ button:disabled {
   flex-direction: column;
   gap: 10px;
   justify-content: center;
-  min-height: 310px;
+  min-height: 400px;
   overflow: hidden;
   padding: 32px 24px;
   position: relative;
@@ -1942,8 +1942,20 @@ button:disabled {
   pointer-events: none;
   background-image: radial-gradient(circle, rgba(28, 122, 71, 0.16) 1.1px, transparent 1.6px);
   background-size: 17px 17px;
-  -webkit-mask-image: radial-gradient(ellipse 85% 85% at center, transparent 26%, #000 68%);
-  mask-image: radial-gradient(ellipse 85% 85% at center, transparent 26%, #000 68%);
+  -webkit-mask-image: radial-gradient(
+    ellipse 96% 96% at center,
+    transparent 22%,
+    #000 50%,
+    #000 72%,
+    transparent 98%
+  );
+  mask-image: radial-gradient(
+    ellipse 96% 96% at center,
+    transparent 22%,
+    #000 50%,
+    #000 72%,
+    transparent 98%
+  );
 }
 
 .emptyState > * {
