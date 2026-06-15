@@ -1914,9 +1914,12 @@ button:disabled {
 
 .emptyState {
   align-items: center;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1.5px dashed var(--rr-hairline-strong);
+  background:
+    linear-gradient(rgba(28, 122, 71, 0.045), rgba(28, 122, 71, 0.045)),
+    rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--rr-hairline);
   border-radius: var(--rr-radius-card);
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.04);
   color: var(--rr-ink-secondary);
   display: flex;
   flex-direction: column;
@@ -3048,8 +3051,11 @@ button:disabled {
 
 /* Empty state */
 [data-theme="dark"] .emptyState {
-  background: #161c22;
+  background:
+    linear-gradient(rgba(126, 226, 172, 0.05), rgba(126, 226, 172, 0.05)),
+    #161c22;
   border-color: var(--d-border-strong);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
   color: var(--d-muted);
 }
 
