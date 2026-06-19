@@ -25,7 +25,8 @@ Use this skill for parser-only work in `src/lib/reviewParser.ts` and representat
 - Replacement sent is the non-Amazon review text column.
 - Amazon Replacement sent must stay blank.
 - Non-Amazon written review text goes into Replacement sent when available.
-- All non-Amazon reviews are verified and receive `Y`.
+- Reviews receive verified `Y` only if the pasted notes clearly support verified status.
+- Do not infer verified `Y` from a 5-star rating or known platform.
 - Amazon reviews receive `Y` only if `Verified` or `Verified Purchase` is clearly present.
 - Amazon without verified wording receives `N`.
 - Contains video? defaults to `N`.

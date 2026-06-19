@@ -1,4 +1,4 @@
-import type { FlagItem, ReviewRow } from "../types";
+import type { FlagItem, ReviewRow, YesNo } from "../types";
 import {
   containsInternalPhotoMarker,
   containsInternalVideoMarker,
@@ -70,7 +70,7 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   if (row.platform === "Amazon") {
-    const baseBonus = row.amazonVerifiedPurchase ? 25 : 15;
+    const baseBonus = row.verifiedFiveStar === "Y" ? 25 : 15;
     return baseBonus + (hasPhoto ? 5 : 0) + (hasVideo ? 10 : 0);
   }
 
@@ -96,8 +96,8 @@ export function calculateBonusSummary(rows: ReviewRow[]): BonusSummary {
   return {
     totalReviews: rows.length,
     platformCounts: Array.from(platformCounts, ([platform, count]) => ({ platform, count })).sort(comparePlatformCounts),
-    verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.amazonVerifiedPurchase).length,
-    unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && !row.amazonVerifiedPurchase).length,
+    verifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar === "Y").length,
+    unverifiedAmazonCount: rows.filter((row) => row.platform === "Amazon" && row.verifiedFiveStar !== "Y").length,
     amazonCount: rows.filter((row) => row.platform === "Amazon").length,
     photoReviewCount: rows.filter((row) => row.containsPictures === "Y").length,
     videoReviewCount: rows.filter((row) => row.containsVideo === "Y").length,
@@ -212,11 +212,8 @@ function parseBlock(block: string): ReviewRow {
   const reviewText = stripInternalNoteMarkers(parseReviewText(lines, allUrls, customerModel?.linesToOmit ?? [], ratingOrStatus, reviewDateOrStatus));
   const containsPictures = containsInternalPhotoMarker(block) ? "Y" : "N";
   const containsVideo = containsInternalVideoMarker(block) ? "Y" : "N";
-  // Every review pasted into RepReport is a 5-star review by workflow, so the
-  // "Verified 5 star?" column is always Y. Amazon verified-purchase status is
-  // tracked separately (for bonus only) and detected from the notes.
-  const verifiedFiveStar = "Y";
-  const amazonVerifiedPurchase = platform === "Amazon" && /\bverified(?:\s+purchase)?\b/i.test(block);
+  const verifiedFiveStar = parseVerifiedStatus(lines, customerModel?.linesToOmit ?? []);
+  const amazonVerifiedPurchase = platform === "Amazon" && verifiedFiveStar === "Y";
   const mentionStatus = parseMentionStatus(reviewText);
 
   flags.push(
@@ -265,6 +262,39 @@ function buildReviewFlags(parts: {
   if (!parts.customerModel?.modelNumber) flags.push(flagMessages.modelMissing);
 
   return flags;
+}
+
+function parseVerifiedStatus(lines: string[], linesToOmit: string[]): YesNo {
+  const omittedLines = new Set(linesToOmit);
+  const verificationLines = lines.filter((line) => !singleUrlRegex.test(line) && !ticketLineRegex.test(line) && !omittedLines.has(line));
+
+  if (verificationLines.some(hasClearUnverifiedStatus)) {
+    return "N";
+  }
+
+  return verificationLines.some(hasClearVerifiedStatus) ? "Y" : "N";
+}
+
+function hasClearUnverifiedStatus(line: string): boolean {
+  return /\b(?:unverified|not\s+verified|not\s+a\s+verified\s+(?:purchase|buyer|customer|review|owner)|not\s+verified\s+(?:purchase|buyer|customer|review|owner)|non[-\s]?verified)\b/i.test(line);
+}
+
+function hasClearVerifiedStatus(line: string): boolean {
+  return (
+    /\bverified\s+(?:purchase|buyer|customer|review|owner)\b/i.test(line) ||
+    /^verified\s*[:=-]\s*(?:y|yes|true)$/i.test(line.trim()) ||
+    line
+      .split(/\s+-\s+|\s+\|\s+/)
+      .some((segment) => /^verified$/i.test(segment.trim()))
+  );
+}
+
+function isVerificationStatusLine(line: string): boolean {
+  const trimmedLine = line.trim();
+  return (
+    /^(?:verified(?:\s+(?:purchase|buyer|customer|review|owner))?|unverified|not\s+verified|not\s+a\s+verified\s+(?:purchase|buyer|customer|review|owner)|not\s+verified\s+(?:purchase|buyer|customer|review|owner)|non[-\s]?verified)$/i.test(trimmedLine) ||
+    /^verified\s*[:=-]\s*(?:y|yes|true)$/i.test(trimmedLine)
+  );
 }
 
 function parseTicketNumber(lines: string[]): string | undefined {
@@ -391,7 +421,7 @@ function shouldSkipInlineModelSearch(line: string): boolean {
   return (
     ticketLineRegex.test(line) ||
     isInternalNoteMarkerLine(line) ||
-    /^verified purchase$/i.test(line) ||
+    isVerificationStatusLine(line) ||
     /\b\d+(?:\.\d+)?\s*(?:out of\s*)?5\s*stars?\b/i.test(line) ||
     /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{2,4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/i.test(line)
   );
@@ -563,7 +593,7 @@ function parseReviewText(
     if (line === ratingOrStatus) return false;
     if (line === reviewDateOrStatus) return false;
     if (isInternalNoteMarkerLine(line)) return false;
-    if (/^verified purchase$/i.test(line)) return false;
+    if (isVerificationStatusLine(line)) return false;
     return true;
   });
 

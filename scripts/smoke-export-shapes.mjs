@@ -98,11 +98,23 @@ assert(
 const packageTsvRecords = parseTsvRecords(batchReviewPackage.pasteRows.tsv);
 const packageTsvRecordsWithHeader = parseTsvRecords(batchReviewPackage.pasteRows.tsvWithHeader);
 const clipboardTsvRecords = parseTsvRecords(batchReviewClipboardPayload.tsv);
+const batchReviewCsvRecords = parseCsvRecords(batchReviewPackage.pasteRows.csv);
+const batchReviewHtmlRows = batchReviewClipboardPayload.html.match(/<tr>.*?<\/tr>/g) ?? [];
 assertEqual(packageTsvRecords.length, batchReviewRows.length, "Paste Rows TSV row count should match parsed review count.");
 assertEqual(packageTsvRecordsWithHeader.length, batchReviewRows.length + 1, "Paste Rows TSV with header should add exactly one header row.");
 assertEqual(packageTsvRecords[0].length, 8, "Paste Rows TSV records should keep exactly 8 cells.");
 assertEqual(clipboardTsvRecords.length, batchReviewRows.length, "Review clipboard TSV row count should match parsed review count.");
 assertEqual(clipboardTsvRecords[0].length, 8, "Review clipboard TSV records should keep exactly 8 cells.");
+assertEqual(batchReviewPackage.pasteRows.rows[0][3], "Y", "Paste Rows data should export verified Amazon as Y.");
+assertEqual(batchReviewPackage.pasteRows.rows[1][3], "N", "Paste Rows data should export Amazon without verified wording as N.");
+assertEqual(packageTsvRecords[0][3], "Y", "Copy Rows TSV should export verified Amazon as Y.");
+assertEqual(packageTsvRecords[1][3], "N", "Copy Rows TSV should export unverified Amazon as N.");
+assertEqual(clipboardTsvRecords[0][3], "Y", "Formatted clipboard plain TSV should export verified Amazon as Y.");
+assertEqual(clipboardTsvRecords[1][3], "N", "Formatted clipboard plain TSV should export unverified Amazon as N.");
+assertEqual(batchReviewCsvRecords[1][3], "Y", "CSV export should export verified Amazon as Y.");
+assertEqual(batchReviewCsvRecords[2][3], "N", "CSV export should export unverified Amazon as N.");
+assert(batchReviewHtmlRows[0].includes("<td>Y</td><td>N</td><td>N</td>"), "Formatted clipboard HTML should show corrected Y/N cells for verified Amazon.");
+assert(batchReviewHtmlRows[1].includes("<td>N</td><td>N</td><td>N</td>"), "Formatted clipboard HTML should show corrected N cells for unverified Amazon.");
 assertEqual(clipboardTsvRecords[0][0], batchReviewRows[0].ticketLink, "Review clipboard TSV should start with the first review row.");
 assert(!batchReviewClipboardPayload.tsv.startsWith("Ticket Link"), "Review clipboard TSV should not include the Review Log header row.");
 assertEqual(getTicketLinkChipLabel(batchReviewRows[0]), "Ticket #100001", "Ticket Link display chip should use a compact ticket label.");
@@ -208,6 +220,8 @@ assertEqual(batchPasteRowsSheet.rowCount, batchReviewPackage.pasteRows.rowCount 
 assertCellBaseStyle(batchPasteRowsSheet.getRow(1).getCell(1), "Paste Rows header A1");
 assertCellBaseStyle(batchPasteRowsSheet.getRow(2).getCell(3), "Paste Rows body C2");
 assertCellBaseStyle(batchPasteRowsSheet.getRow(2).getCell(8), "Paste Rows empty body H2");
+assertEqual(batchPasteRowsSheet.getRow(2).getCell(4).value, "Y", "Excel Paste Rows should show verified Amazon as Y.");
+assertEqual(batchPasteRowsSheet.getRow(3).getCell(4).value, "N", "Excel Paste Rows should show Amazon without verified wording as N.");
 assertLinkStyle(batchPasteRowsSheet.getRow(2).getCell(1), "Paste Rows ticket link A2");
 assertLinkStyle(batchPasteRowsSheet.getRow(2).getCell(2), "Paste Rows review link B2");
 assertYellowFill(batchPasteRowsSheet.getRow(4).getCell(6), "Amazon photo Y cell F4");
@@ -359,7 +373,15 @@ function packageSummaryValue(label) {
   return row?.[1];
 }
 
+function parseCsvRecords(text) {
+  return parseDelimitedRecords(text, ",");
+}
+
 function parseTsvRecords(text) {
+  return parseDelimitedRecords(text, "\t");
+}
+
+function parseDelimitedRecords(text, delimiter) {
   const records = [];
   let record = [];
   let cell = "";
@@ -382,7 +404,7 @@ function parseTsvRecords(text) {
 
     if (char === '"' && cell === "") {
       inQuotes = true;
-    } else if (char === "\t") {
+    } else if (char === delimiter) {
       record.push(cell);
       cell = "";
     } else if (char === "\r" || char === "\n") {

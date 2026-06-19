@@ -249,7 +249,7 @@ function getBrowserReviewColumnLabel(key: ReviewColumnKey): string {
   }
 
   if (key === "verifiedFiveStar") {
-    return "5 star";
+    return "Verified?";
   }
 
   if (key === "containsVideo") {

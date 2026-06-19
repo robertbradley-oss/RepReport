@@ -10,8 +10,8 @@ export type ReviewRow = {
   customerContactTicketLink: string;
   replacementSent: string;
   platform: string;
-  // Amazon "verified purchase" status, detected from the pasted notes. Drives
-  // Amazon bonus only — kept separate from the always-Y verifiedFiveStar column.
+  // Legacy Amazon-only flag retained for existing parser checks. The spreadsheet
+  // verifiedFiveStar value is the source of truth for bonuses and exports.
   amazonVerifiedPurchase: boolean;
   ticketNumber?: string;
   customerName?: string;

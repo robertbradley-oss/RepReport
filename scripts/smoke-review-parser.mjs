@@ -126,7 +126,7 @@ for (const [index, row] of rows.entries()) {
 
 const verifiedAmazonRow = rowByTicket("100001");
 assertEqual(verifiedAmazonRow.platform, "Amazon", "Verified Amazon row should be Amazon.");
-assertEqual(verifiedAmazonRow.verifiedFiveStar, "Y", "Verified Amazon row should export Y for 5 star.");
+assertEqual(verifiedAmazonRow.verifiedFiveStar, "Y", "Verified Amazon row should export Y for verified status.");
 assertEqual(verifiedAmazonRow.amazonVerifiedPurchase, true, "Amazon row with Verified wording should be a verified purchase.");
 assertEqual(verifiedAmazonRow.containsPictures, "N", "Amazon verified row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(verifiedAmazonRow), 25, "Verified Amazon without photo should be worth $25.");
@@ -145,7 +145,7 @@ assertEqual(
 
 const unverifiedAmazonRow = rowByTicket("100002");
 assertEqual(unverifiedAmazonRow.platform, "Amazon", "Unverified Amazon row should be Amazon.");
-assertEqual(unverifiedAmazonRow.verifiedFiveStar, "Y", "Every parsed review defaults to 5 star Y, even unverified Amazon.");
+assertEqual(unverifiedAmazonRow.verifiedFiveStar, "N", "Amazon row without Verified wording should export verified N.");
 assertEqual(unverifiedAmazonRow.amazonVerifiedPurchase, false, "Amazon row without Verified wording should remain an unverified purchase.");
 assertEqual(unverifiedAmazonRow.containsPictures, "N", "Amazon unverified row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(unverifiedAmazonRow), 15, "Unverified Amazon without photo should be worth $15.");
@@ -160,7 +160,7 @@ assertEqual(amazonPhotoRow.containsVideo, "N", "Contains video? should default t
 
 const googleRow = rowByTicket("100004");
 assertEqual(googleRow.platform, "Google", "Google row should detect Google platform.");
-assertEqual(googleRow.verifiedFiveStar, "Y", "Google row should export verified Y.");
+assertEqual(googleRow.verifiedFiveStar, "N", "Google row without verified wording should export verified N.");
 assertEqual(googleRow.ratingOrStatus, "5 out of 5 stars", "Google row without rating should default to 5 out of 5 stars.");
 assertEqual(googleRow.containsPictures, "N", "Google row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(googleRow), 10, "Google without photo should be worth $10.");
@@ -199,7 +199,7 @@ assertEqual(updateReviewRowCell(googleRow, "containsPictures", " y ").containsPi
 const googlePhotoRow = rowByTicket("100005");
 assertEqual(googlePhotoRow.platform, "Google", "Google photo row should detect Google platform.");
 assertEqual(googlePhotoRow.containsPictures, "Y", "***PHOTO*** should set Contains pictures? to Y for Google.");
-assertEqual(googlePhotoRow.verifiedFiveStar, "Y", "Google photo row should export verified Y.");
+assertEqual(googlePhotoRow.verifiedFiveStar, "N", "Google photo row without verified wording should export verified N.");
 assertEqual(calculateBonus(googlePhotoRow), 20, "Google with photo should be worth $20.");
 assert(googlePhotoRow.replacementSent.includes("Robert walked me"), "Google photo Replacement sent should contain review text.");
 assert(!googlePhotoRow.replacementSent.includes("***PHOTO***"), "Google photo Replacement sent should not include the internal photo marker.");
@@ -250,7 +250,7 @@ assert(
 
 const trustpilotRow = rowByTicket("100006");
 assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect Trustpilot platform.");
-assertEqual(trustpilotRow.verifiedFiveStar, "Y", "Trustpilot row should export verified Y.");
+assertEqual(trustpilotRow.verifiedFiveStar, "N", "Trustpilot row without verified wording should export verified N.");
 assertEqual(trustpilotRow.containsPictures, "N", "Trustpilot row without ***PHOTO*** should not mark pictures.");
 assertEqual(calculateBonus(trustpilotRow), 15, "Trustpilot should be worth $15.");
 assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Replacement sent should contain the review text.");
@@ -258,7 +258,7 @@ assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate model r
 
 const costcoRow = rowByTicket("100007");
 assertEqual(costcoRow.platform, "Costco", "Costco row should detect Costco platform.");
-assertEqual(costcoRow.verifiedFiveStar, "Y", "Costco row should export verified Y.");
+assertEqual(costcoRow.verifiedFiveStar, "N", "Costco row without verified wording should export verified N.");
 assertEqual(calculateBonus(costcoRow), 25, "Costco should be worth $25.");
 assert(costcoRow.replacementSent.includes("Good product"), "Costco Replacement sent should contain the review text.");
 assertFlags(costcoRow, [], "Clean Costco row should not generate model reminders.");
@@ -407,7 +407,7 @@ const bonusRuleRows = parseReviewNotes([
 ].join("\n"));
 assertEqual(bonusRuleRows.length, 5, "New bonus-rule platform fixture should parse every row.");
 assertEqual(bonusRuleRows[0].platform, "Amazon", "Amazon unverified photo fixture should detect Amazon.");
-assertEqual(bonusRuleRows[0].verifiedFiveStar, "Y", "Amazon unverified photo fixture should still export 5 star Y.");
+assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fixture should export verified N.");
 assertEqual(bonusRuleRows[0].amazonVerifiedPurchase, false, "Amazon unverified photo fixture should stay an unverified purchase.");
 assertEqual(bonusRuleRows[0].containsPictures, "Y", "Amazon unverified photo fixture should use the internal photo marker.");
 assertEqual(calculateBonus(bonusRuleRows[0]), 20, "Unverified Amazon with photo should be worth $20.");
@@ -533,11 +533,11 @@ const ratingUnclearRows = parseReviewNotes([
 ].join("\n"));
 assertEqual(ratingUnclearRows.length, 1, "Rating-unclear fixture should parse into one row.");
 assertEqual(ratingUnclearRows[0].ratingOrStatus, "", "Rating-unclear fixture should keep a blank rating/status output.");
-assertEqual(ratingUnclearRows[0].verifiedFiveStar, "Y", "A missing/unclear rating should still default to 5 star Y.");
+assertEqual(ratingUnclearRows[0].verifiedFiveStar, "N", "A missing/unclear rating should not imply verified Y.");
 assertFlags(ratingUnclearRows[0], [], "Rating unclear should not generate model reminders when the model is present.");
 
-// Every parsed review defaults to 5-star Y regardless of how the rating text is
-// formatted (missing entirely, or glued to the review on an Amazon row).
+// Rating text must not imply verified status, whether missing entirely or glued
+// to the review on an Amazon row.
 const noRatingTextRow = parseReviewNotes([
   "Ticket #100020",
   "https://support.ispringfilter.com/scp/tickets.php?id=100020",
@@ -546,7 +546,7 @@ const noRatingTextRow = parseReviewNotes([
   "Support sorted out my install quickly.",
   "Nina Norating - RCC7AK",
 ].join("\n"))[0];
-assertEqual(noRatingTextRow.verifiedFiveStar, "Y", "Google row with no rating text should default to 5 star Y.");
+assertEqual(noRatingTextRow.verifiedFiveStar, "N", "Google row with no verified wording should export verified N.");
 assertFlags(noRatingTextRow, [], "Missing rating text should not flag a row.");
 
 const gluedAmazonRatingRow = parseReviewNotes([
@@ -557,9 +557,41 @@ const gluedAmazonRatingRow = parseReviewNotes([
   "Gary Glued - WGB32B",
 ].join("\n"))[0];
 assertEqual(gluedAmazonRatingRow.platform, "Amazon", "Glued-rating fixture should still detect Amazon.");
-assertEqual(gluedAmazonRatingRow.verifiedFiveStar, "Y", "Glued Amazon rating text should still default to 5 star Y.");
+assertEqual(gluedAmazonRatingRow.verifiedFiveStar, "N", "Glued Amazon rating text should not imply verified Y.");
 assertEqual(gluedAmazonRatingRow.amazonVerifiedPurchase, false, "Amazon row without Verified wording stays unverified purchase.");
 assertEqual(calculateBonus(gluedAmazonRatingRow), 15, "Unverified Amazon (no photo) should still be worth $15.");
+
+const explicitVerificationRows = parseReviewNotes([
+  "Ticket #100022",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100022",
+  "https://www.amazon.com/review/amazon-standalone-verified",
+  "Verified",
+  "5 out of 5 stars",
+  "Works well after setup.",
+  "Vera Status - RCC7AK",
+  "",
+  "Ticket #100023",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100023",
+  "https://www.amazon.com/review/amazon-explicit-not-verified",
+  "Not verified",
+  "5 out of 5 stars",
+  "Works well after setup.",
+  "Nick Status - RCC7AK",
+  "",
+  "Ticket #100024",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100024",
+  "https://www.trustpilot.com/reviews/trustpilot-verified-buyer",
+  "Verified buyer",
+  "5 stars",
+  "Helpful support and clear instructions.",
+  "Tara Buyer - PH100",
+].join("\n"));
+assertEqual(explicitVerificationRows.length, 3, "Explicit verification fixture should parse every row.");
+assertEqual(explicitVerificationRows[0].verifiedFiveStar, "Y", "Amazon standalone Verified should export verified Y.");
+assertEqual(calculateBonus(explicitVerificationRows[0]), 25, "Verified Amazon should be worth $25.");
+assertEqual(explicitVerificationRows[1].verifiedFiveStar, "N", "Amazon explicitly not verified should export verified N.");
+assertEqual(calculateBonus(explicitVerificationRows[1]), 15, "Explicitly unverified Amazon should be worth $15.");
+assertEqual(explicitVerificationRows[2].verifiedFiveStar, "Y", "Non-Amazon explicit verified buyer wording should export verified Y.");
 
 const actualIssueRows = [
   googleRow,
