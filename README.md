@@ -1,90 +1,59 @@
 # RepReport
 
-RepReport is a small private local-first utility for turning messy Notepad review notes and KPI summaries into spreadsheet-ready rows.
+RepReport is a review parser and export helper for turning collected review notes into clean, report-ready output.
 
-## Current Modes
+It works alongside RepStack: RepStack is the review collection layer, and RepReport is the final parser/export tool.
 
-- Review Log Mode
-- KPI Report Mode
+## Why It Exists
 
-## Review Log Output
+Review notes and KPI summaries can become repetitive to clean up by hand, especially when the same fields need to be shaped for reporting. RepReport helps turn collected notes into a more consistent structure so the final output is easier to review, copy, and export.
 
-Default Review Log exports use exactly these 8 columns:
+The goal is practical workflow cleanup: less manual formatting, fewer missed details, and a simpler path from collected review information to report-ready rows.
 
-1. Ticket Link
-2. Link to review
-3. Model Number
-4. Verified 5 star?
-5. Contains video?
-6. Contains pictures?
-7. Customer contact/Ticket link
-8. Replacement sent
+## Core Features
 
-Date, Rep, and Review Upgrade are not included by default.
+- Parse collected review notes into a structured format
+- Prepare report-ready review output
+- Support review and KPI workflow cleanup
+- Reduce manual formatting work
+- Work alongside RepStack's review collection workflow
 
-`Replacement sent` is used as the non-Amazon review text column.
+## Tech Stack
 
-## KPI Output
+- Vite
+- TypeScript
+- React
+- ExcelJS
+- Lucide React
 
-KPI exports use exactly these 5 columns:
+## Local Development
 
-1. Top3Achievements
-2. 3BestTickets
-3. #1 of 3WorstTickets
-4. #2 of 3WorstTickets
-5. #3 of 3WorstTickets
+Install dependencies:
 
-## Local Setup
-
-```powershell
+```bash
 npm install
+```
+
+Run the development server:
+
+```bash
 npm run dev
-npm run build
 ```
 
-## Fast Validation
+Useful checks:
 
-```powershell
-npm run smoke
-npm run smoke:review
-npm run smoke:kpi
-npm run smoke:exports
+```bash
 npm run typecheck
+npm run smoke
 npm run build
 ```
 
-Use smoke/typecheck/build by default. Avoid Playwright or browser tests unless visual UI behavior specifically needs checking.
+## Current Status
 
-## Codex Skills
+RepReport is an active personal/internal workflow tool. It is built to support review reporting and reduce repetitive manual formatting.
 
-Repo-scoped skills live under `.agents/skills/`:
+## Related Projects
 
-- `repreport-review-parser`
-- `repreport-excel-export`
-- `repreport-kpi-report`
-
-## Scope Guard
-
-No backend, no database, no auth, no API calls, and no AI calls inside the app for now.
-
-## Handoff Style
-
-Use the `REPREPORT HANDOFF` format from `AGENTS.md`:
-
-```text
-REPREPORT HANDOFF
-
-Phase:
-Task completed:
-Files changed:
-Review Log behavior changed:
-KPI behavior changed:
-Export behavior changed:
-Parser behavior changed:
-Docs changed:
-Checks run:
-Known limitations:
-Next recommended step:
-Git status:
-Commit/push status:
-```
+- RepStack: review collection and pay-period tracking app
+- RepOS: customer support workflow system prototype
+- RepGuard: evidence and claim review workspace
