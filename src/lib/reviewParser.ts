@@ -13,13 +13,13 @@ const modelTokenRegex = /\b(?:ICEK|[A-Z]{1,8}\d[A-Z0-9]*(?:[-/][A-Z0-9]+)*)\b/g;
 const modelLabelRegex = /\b(?:model(?:\s+number)?|system|product|sku)\b\s*(?:#|no\.?|number)?\s*[:=-]?\s*/i;
 
 const platformMatchers: Array<[string, RegExp]> = [
-  ["Amazon", /amazon\.com/i],
+  ["Amazon", /(?:amazon\.(?:com|ca)|amzn\.to|a\.co)/i],
   ["Google", /google\.com/i],
   ["Trustpilot", /trustpilot\.com/i],
   ["Costco", /costco\.(?:com|ca)/i],
   ["Home Depot", /homedepot\.(?:com|ca)/i],
   ["Zoro", /zoro\.com/i],
-  ["iSpring Website", /https?:\/\/(?:www\.)?ispringfilter\.com\b/i],
+  ["iSpring Website", /https?:\/\/(?:www\.)?(?:ispringfilter|ispringwater|123filter)\.com\b/i],
   ["Lowe's", /lowes\.com/i],
 ];
 
@@ -66,7 +66,7 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   if (row.platform === "Trustpilot") {
-    return 15;
+    return 10;
   }
 
   if (row.platform === "Amazon") {

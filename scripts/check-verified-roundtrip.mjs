@@ -70,11 +70,11 @@ const checks = [
   ["row 5 text intact", rows[4].reviewText.includes("No ticket on this one")],
   ["summary photo 2 video 3", summary.photoReviewCount === 2 && summary.videoReviewCount === 3],
   ["row 3 google photo+video bonus is 30", calculateBonus(rows[2]) === 10 + 10 + 10],
-  ["row 4 trustpilot video bonus stays 15", calculateBonus(rows[3]) === 15],
+  ["row 4 trustpilot video bonus is 10", calculateBonus(rows[3]) === 10],
   ["row 5 amazon photo+video bonus is 30", calculateBonus(rows[4]) === 15 + 5 + 10],
   [
-    "bonus total (25 + 15 amazon, 30 google p/v, 15 trustpilot, 30 amazon p/v)",
-    summary.estimatedBonusTotal === 25 + 15 + 30 + 15 + 30,
+    "bonus total (25 + 15 amazon, 30 google p/v, 10 trustpilot, 30 amazon p/v)",
+    summary.estimatedBonusTotal === 25 + 15 + 30 + 10 + 30,
   ],
   // Copy Rows must paint every photo/video "Y" cell yellow. Across the five
   // rows that is: row3 photo+video, row4 video, row5 photo+video = 5 cells.

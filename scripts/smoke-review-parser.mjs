@@ -31,9 +31,9 @@ const flaggedVisibleRows = buildVisibleReviewRows(rows, true);
 const allVisibleRows = buildVisibleReviewRows(rows, false);
 
 assertEqual(rows.length, 10, "Review parser should return all 10 batch fixture rows.");
-assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 165, "Batch review fixture bonus total changed.");
+assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 155, "Batch review fixture bonus total changed.");
 assertEqual(bonusSummary.totalReviews, 10, "Batch bonus summary should include total review count.");
-assertEqual(bonusSummary.estimatedBonusTotal, 165, "Batch bonus summary should include estimated bonus total.");
+assertEqual(bonusSummary.estimatedBonusTotal, 155, "Batch bonus summary should include estimated bonus total.");
 assertEqual(platformCount("Amazon"), 3, "Batch bonus summary should count Amazon reviews.");
 assertEqual(platformCount("Google"), 3, "Batch bonus summary should count Google reviews.");
 assertEqual(platformCount("Trustpilot"), 2, "Batch bonus summary should count Trustpilot reviews.");
@@ -252,7 +252,7 @@ const trustpilotRow = rowByTicket("100006");
 assertEqual(trustpilotRow.platform, "Trustpilot", "Trustpilot row should detect Trustpilot platform.");
 assertEqual(trustpilotRow.verifiedFiveStar, "N", "Trustpilot row without verified wording should export verified N.");
 assertEqual(trustpilotRow.containsPictures, "N", "Trustpilot row without ***PHOTO*** should not mark pictures.");
-assertEqual(calculateBonus(trustpilotRow), 15, "Trustpilot should be worth $15.");
+assertEqual(calculateBonus(trustpilotRow), 10, "Trustpilot should be worth $10.");
 assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Replacement sent should contain the review text.");
 assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate model reminders.");
 
@@ -404,8 +404,32 @@ const bonusRuleRows = parseReviewNotes([
   "5 stars",
   "Website review after support helped finish installation.",
   "Wendy Website - RCC7",
+  "",
+  "Ticket #100030",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100030",
+  "https://www.amazon.ca/review/amazon-canada-verified",
+  "Verified Purchase",
+  "5 out of 5 stars",
+  "Great support and the filter works well.",
+  "Ava Canada - RCC7AK",
+  "",
+  "Ticket #100031",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100031",
+  "https://www.ispringwater.com/pages/reviews",
+  "Jun 5, 2026",
+  "5 stars",
+  "iSpring Water review after support helped finish installation.",
+  "Iris Water - WGB32B",
+  "",
+  "Ticket #100032",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100032",
+  "https://www.123filter.com/pages/reviews",
+  "Jun 5, 2026",
+  "5 stars",
+  "123Filter review after support helped finish installation.",
+  "Finn Filter - RO500",
 ].join("\n"));
-assertEqual(bonusRuleRows.length, 5, "New bonus-rule platform fixture should parse every row.");
+assertEqual(bonusRuleRows.length, 8, "New bonus-rule platform fixture should parse every row.");
 assertEqual(bonusRuleRows[0].platform, "Amazon", "Amazon unverified photo fixture should detect Amazon.");
 assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fixture should export verified N.");
 assertEqual(bonusRuleRows[0].amazonVerifiedPurchase, false, "Amazon unverified photo fixture should stay an unverified purchase.");
@@ -419,6 +443,13 @@ assertEqual(bonusRuleRows[3].platform, "Zoro", "Zoro should be detected.");
 assertEqual(calculateBonus(bonusRuleRows[3]), 25, "Zoro should be worth $25.");
 assertEqual(bonusRuleRows[4].platform, "iSpring Website", "iSpring website reviews should be detected.");
 assertEqual(calculateBonus(bonusRuleRows[4]), 25, "iSpring website reviews should be worth $25.");
+assertEqual(bonusRuleRows[5].platform, "Amazon", "Amazon Canada should use the Amazon bonus rule.");
+assertEqual(bonusRuleRows[5].verifiedFiveStar, "Y", "Amazon Canada verified fixture should export verified Y.");
+assertEqual(calculateBonus(bonusRuleRows[5]), 25, "Verified Amazon Canada should be worth $25.");
+assertEqual(bonusRuleRows[6].platform, "iSpring Website", "iSpring Water reviews should use the iSpring website rule.");
+assertEqual(calculateBonus(bonusRuleRows[6]), 25, "iSpring Water reviews should be worth $25.");
+assertEqual(bonusRuleRows[7].platform, "iSpring Website", "123Filter reviews should use the iSpring website rule.");
+assertEqual(calculateBonus(bonusRuleRows[7]), 25, "123Filter reviews should be worth $25.");
 
 const amazonMarketplaceRows = parseReviewNotes([
   "Ticket #237789",
