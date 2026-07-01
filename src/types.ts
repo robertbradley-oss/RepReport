@@ -68,6 +68,7 @@ export const REVIEW_PROMISE_PLATFORMS = [
   "Home Depot",
   "Home Depot Canada",
   "Zoro",
+  "Walmart",
   "Lowe's",
   "Other",
 ] as const;

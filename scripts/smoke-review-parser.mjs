@@ -399,6 +399,16 @@ const bonusRuleRows = parseReviewNotes([
   "",
   "Ticket #100018",
   "https://support.ispringfilter.com/scp/tickets.php?id=100018",
+  "https://www.walmart.com/reviews/walmart-basic",
+  "Jun 5, 2026",
+  "5 stars",
+  "***PHOTO***",
+  "***VIDEO***",
+  "Walmart review after support helped finish installation.",
+  "Willa Walmart - WM123",
+  "",
+  "Ticket #100019",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100019",
   "https://www.ispringfilter.com/pages/reviews",
   "Jun 5, 2026",
   "5 stars",
@@ -429,7 +439,7 @@ const bonusRuleRows = parseReviewNotes([
   "123Filter review after support helped finish installation.",
   "Finn Filter - RO500",
 ].join("\n"));
-assertEqual(bonusRuleRows.length, 8, "New bonus-rule platform fixture should parse every row.");
+assertEqual(bonusRuleRows.length, 9, "New bonus-rule platform fixture should parse every row.");
 assertEqual(bonusRuleRows[0].platform, "Amazon", "Amazon unverified photo fixture should detect Amazon.");
 assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fixture should export verified N.");
 assertEqual(bonusRuleRows[0].amazonVerifiedPurchase, false, "Amazon unverified photo fixture should stay an unverified purchase.");
@@ -441,15 +451,19 @@ assertEqual(bonusRuleRows[2].platform, "Home Depot", "Home Depot Canada should d
 assertEqual(calculateBonus(bonusRuleRows[2]), 25, "Home Depot Canada should be worth $25.");
 assertEqual(bonusRuleRows[3].platform, "Zoro", "Zoro should be detected.");
 assertEqual(calculateBonus(bonusRuleRows[3]), 25, "Zoro should be worth $25.");
-assertEqual(bonusRuleRows[4].platform, "iSpring Website", "iSpring website reviews should be detected.");
-assertEqual(calculateBonus(bonusRuleRows[4]), 25, "iSpring website reviews should be worth $25.");
-assertEqual(bonusRuleRows[5].platform, "Amazon", "Amazon Canada should use the Amazon bonus rule.");
-assertEqual(bonusRuleRows[5].verifiedFiveStar, "Y", "Amazon Canada verified fixture should export verified Y.");
-assertEqual(calculateBonus(bonusRuleRows[5]), 25, "Verified Amazon Canada should be worth $25.");
-assertEqual(bonusRuleRows[6].platform, "iSpring Website", "iSpring Water reviews should use the iSpring website rule.");
-assertEqual(calculateBonus(bonusRuleRows[6]), 25, "iSpring Water reviews should be worth $25.");
-assertEqual(bonusRuleRows[7].platform, "iSpring Website", "123Filter reviews should use the iSpring website rule.");
-assertEqual(calculateBonus(bonusRuleRows[7]), 25, "123Filter reviews should be worth $25.");
+assertEqual(bonusRuleRows[4].platform, "Walmart", "Walmart should be detected.");
+assertEqual(bonusRuleRows[4].containsPictures, "Y", "Walmart fixture should keep photo markers for exports.");
+assertEqual(bonusRuleRows[4].containsVideo, "Y", "Walmart fixture should keep video markers for exports.");
+assertEqual(calculateBonus(bonusRuleRows[4]), 25, "Walmart reviews should stay flat $25 even with media.");
+assertEqual(bonusRuleRows[5].platform, "iSpring Website", "iSpring website reviews should be detected.");
+assertEqual(calculateBonus(bonusRuleRows[5]), 25, "iSpring website reviews should be worth $25.");
+assertEqual(bonusRuleRows[6].platform, "Amazon", "Amazon Canada should use the Amazon bonus rule.");
+assertEqual(bonusRuleRows[6].verifiedFiveStar, "Y", "Amazon Canada verified fixture should export verified Y.");
+assertEqual(calculateBonus(bonusRuleRows[6]), 25, "Verified Amazon Canada should be worth $25.");
+assertEqual(bonusRuleRows[7].platform, "iSpring Website", "iSpring Water reviews should use the iSpring website rule.");
+assertEqual(calculateBonus(bonusRuleRows[7]), 25, "iSpring Water reviews should be worth $25.");
+assertEqual(bonusRuleRows[8].platform, "iSpring Website", "123Filter reviews should use the iSpring website rule.");
+assertEqual(calculateBonus(bonusRuleRows[8]), 25, "123Filter reviews should be worth $25.");
 
 const amazonMarketplaceRows = parseReviewNotes([
   "Ticket #237789",
