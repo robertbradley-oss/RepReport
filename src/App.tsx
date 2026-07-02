@@ -6,7 +6,6 @@ import { ReviewLogMode } from "./components/ReviewLogMode";
 type AppMode = "reviewLog" | "kpiReport";
 type Theme = "light" | "dark";
 
-const TAB_ORDER: AppMode[] = ["reviewLog", "kpiReport"];
 const THEME_STORAGE_KEY = "repreport-theme";
 
 function getInitialTheme(): Theme {
@@ -53,7 +52,7 @@ export default function App() {
     if (mode === activeMode) {
       return;
     }
-    setDirection(TAB_ORDER.indexOf(mode) > TAB_ORDER.indexOf(activeMode) ? "forward" : "back");
+    setDirection(mode === "kpiReport" ? "forward" : "back");
     setActiveMode(mode);
   }
 
@@ -61,7 +60,15 @@ export default function App() {
     <main className="appShell">
       <header className="appHeader">
         <div className="brandBlock">
-          <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={48} height={48} />
+          <button
+            className="brandMarkButton"
+            type="button"
+            onClick={() => selectMode("kpiReport")}
+            aria-label="Open KPI Analyzer"
+            title="Open KPI Analyzer"
+          >
+            <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={48} height={48} />
+          </button>
           <div className="brandLockup">
             <h1 className="brandWordmark">
               <span className="brandRep">Rep</span>
@@ -70,25 +77,6 @@ export default function App() {
             <p className="brandTagline">Reviews, reported.</p>
           </div>
         </div>
-
-        <nav className="modeTabs" aria-label="RepReport modes">
-          <button
-            className={`modeTab ${activeMode === "reviewLog" ? "active" : ""}`}
-            type="button"
-            onClick={() => selectMode("reviewLog")}
-            aria-pressed={activeMode === "reviewLog"}
-          >
-            Review Log
-          </button>
-          <button
-            className={`modeTab ${activeMode === "kpiReport" ? "active" : ""}`}
-            type="button"
-            onClick={() => selectMode("kpiReport")}
-            aria-pressed={activeMode === "kpiReport"}
-          >
-            KPI Report
-          </button>
-        </nav>
 
         <div className="headerActions">
           <label className="theme-switch" title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
@@ -110,7 +98,7 @@ export default function App() {
       </header>
 
       <div className={`modeContent ${direction === "forward" ? "slideForward" : "slideBack"}`} key={activeMode}>
-        {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode />}
+        {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode onReturnToReviewLog={() => selectMode("reviewLog")} />}
       </div>
     </main>
   );

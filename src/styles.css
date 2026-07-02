@@ -282,14 +282,13 @@ button:disabled {
   padding: 18px;
 }
 
-/* Transparent 3-column header, mirroring RepStack: brand lockup left,
-   mode tabs center, controls right. Collapses to two rows on small screens. */
+/* Transparent 2-column header: brand lockup left, controls right. */
 .appHeader {
   align-items: center;
   display: grid;
   gap: 16px;
-  grid-template-areas: "brand tabs actions";
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas: "brand actions";
+  grid-template-columns: 1fr auto;
   margin: 0 0 16px;
   padding: 8px 4px;
 }
@@ -303,9 +302,31 @@ button:disabled {
   min-width: 0;
 }
 
+.brandMarkButton {
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: none;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0;
+}
+
+.brandMarkButton:hover:not(:disabled) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.brandMarkButton:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.brandMarkButton:focus-visible {
+  box-shadow: 0 0 0 3px var(--rr-accent-ring);
+}
+
 .brandMark {
   display: block;
-  flex: 0 0 auto;
   height: 50px;
   width: 50px;
   filter: drop-shadow(0 8px 18px rgba(28, 72, 46, 0.12));
@@ -1005,6 +1026,29 @@ button:disabled {
   flex: 1 1 auto;
   justify-content: center;
   min-width: 86px;
+}
+
+.kpiModeUtility {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px -6px 2px 0;
+}
+
+.kpiReturnButton {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--rr-ink-secondary);
+}
+
+.kpiReturnButton:hover:not(:disabled) {
+  background: var(--rr-accent-soft);
+  box-shadow: none;
+  color: var(--rr-brand-text);
+}
+
+.kpiReturnButton:active:not(:disabled) {
+  box-shadow: none;
 }
 
 .panelLabel {
@@ -2498,16 +2542,10 @@ button:disabled {
 
   .appHeader {
     gap: 12px;
-    grid-template-areas:
-      "brand actions"
-      "tabs tabs";
+    grid-template-areas: "brand actions";
     grid-template-columns: 1fr auto;
     margin: 0 0 12px;
     padding: 6px 2px;
-  }
-
-  .appHeader .modeTabs {
-    justify-self: start;
   }
 
   .brandMark {

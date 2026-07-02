@@ -1,10 +1,15 @@
 import { useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
 
-export function KpiReportMode() {
+type KpiReportModeProps = {
+  onReturnToReviewLog: () => void;
+};
+
+export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
   const [notes, setNotes] = useState("");
   const [row, setRow] = useState<KpiReportRow>(createBlankKpiRow());
   const [copySuccess, setCopySuccess] = useState(false);
@@ -71,6 +76,17 @@ export function KpiReportMode() {
   return (
     <section className="kpiGrid" aria-label="KPI Report Mode">
       <div className="inputPanel">
+        <div className="kpiModeUtility">
+          <button
+            className="iconButton kpiReturnButton"
+            type="button"
+            onClick={onReturnToReviewLog}
+            aria-label="Return to Review Log"
+            title="Return to Review Log"
+          >
+            <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" focusable="false" />
+          </button>
+        </div>
         <label className="panelLabel" htmlFor="kpi-notes">
           KPI Notes
         </label>
