@@ -37,7 +37,7 @@ assertEqual(bonusSummary.estimatedBonusTotal, 155, "Batch bonus summary should i
 assertEqual(platformCount("Amazon"), 3, "Batch bonus summary should count Amazon reviews.");
 assertEqual(platformCount("Google"), 3, "Batch bonus summary should count Google reviews.");
 assertEqual(platformCount("Trustpilot"), 2, "Batch bonus summary should count Trustpilot reviews.");
-assertEqual(platformCount("Costco"), 1, "Batch bonus summary should count Costco reviews.");
+assertEqual(platformCount("Costco US"), 1, "Batch bonus summary should count Costco US reviews.");
 assertEqual(platformCount("Unknown"), 1, "Batch bonus summary should count unknown-platform reviews.");
 assertEqual(bonusSummary.verifiedAmazonCount, 2, "Batch bonus summary should count verified Amazon reviews.");
 assertEqual(bonusSummary.unverifiedAmazonCount, 1, "Batch bonus summary should count unverified Amazon reviews.");
@@ -257,11 +257,12 @@ assert(trustpilotRow.replacementSent.includes("Fast support"), "Trustpilot Repla
 assertFlags(trustpilotRow, [], "Clean Trustpilot row should not generate model reminders.");
 
 const costcoRow = rowByTicket("100007");
-assertEqual(costcoRow.platform, "Costco", "Costco row should detect Costco platform.");
-assertEqual(costcoRow.verifiedFiveStar, "N", "Costco row without verified wording should export verified N.");
-assertEqual(calculateBonus(costcoRow), 25, "Costco should be worth $25.");
-assert(costcoRow.replacementSent.includes("Good product"), "Costco Replacement sent should contain the review text.");
-assertFlags(costcoRow, [], "Clean Costco row should not generate model reminders.");
+assertEqual(costcoRow.platform, "Costco US", "Costco.com row should detect Costco US platform.");
+assertEqual(costcoRow.verifiedFiveStar, "N", "Costco US row without verified wording should export verified N.");
+assertEqual(calculateBonus(costcoRow), 25, "Costco US should be worth $25.");
+assertEqual(calculateBonus({ ...costcoRow, platform: "Costco" }), 25, "Legacy Costco rows should remain worth $25.");
+assert(costcoRow.replacementSent.includes("Good product"), "Costco US Replacement sent should contain the review text.");
+assertFlags(costcoRow, [], "Clean Costco US row should not generate model reminders.");
 
 const noTicketRow = rows.find((row) => row.customerName === "Henry Noticket");
 assert(noTicketRow, "No-ticket review should parse into a row.");
@@ -445,7 +446,7 @@ assertEqual(bonusRuleRows[0].verifiedFiveStar, "N", "Amazon unverified photo fix
 assertEqual(bonusRuleRows[0].amazonVerifiedPurchase, false, "Amazon unverified photo fixture should stay an unverified purchase.");
 assertEqual(bonusRuleRows[0].containsPictures, "Y", "Amazon unverified photo fixture should use the internal photo marker.");
 assertEqual(calculateBonus(bonusRuleRows[0]), 20, "Unverified Amazon with photo should be worth $20.");
-assertEqual(bonusRuleRows[1].platform, "Costco", "Costco.ca should detect as Costco.");
+assertEqual(bonusRuleRows[1].platform, "Costco.ca", "Costco.ca should detect as Costco.ca.");
 assertEqual(calculateBonus(bonusRuleRows[1]), 25, "Costco.ca should be worth $25.");
 assertEqual(bonusRuleRows[2].platform, "Home Depot", "Home Depot Canada should detect as Home Depot.");
 assertEqual(calculateBonus(bonusRuleRows[2]), 25, "Home Depot Canada should be worth $25.");

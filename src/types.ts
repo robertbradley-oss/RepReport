@@ -64,6 +64,7 @@ export const REVIEW_PROMISE_PLATFORMS = [
   "Trustpilot",
   "iSpring",
   "Costco",
+  "Costco US",
   "Costco.ca",
   "Home Depot",
   "Home Depot Canada",

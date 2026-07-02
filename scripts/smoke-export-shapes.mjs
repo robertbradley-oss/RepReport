@@ -288,7 +288,7 @@ assertEqual(batchSummarySheet.getRow(3).getCell(2).value, 155, "Summary sheet sh
 assertEqual(summaryValue("Amazon"), 3, "Summary sheet should include Amazon platform count.");
 assertEqual(summaryValue("Google"), 3, "Summary sheet should include Google platform count.");
 assertEqual(summaryValue("Trustpilot"), 2, "Summary sheet should include Trustpilot platform count.");
-assertEqual(summaryValue("Costco"), 1, "Summary sheet should include Costco platform count.");
+assertEqual(summaryValue("Costco US"), 1, "Summary sheet should include Costco US platform count.");
 assertEqual(summaryValue("Unknown"), 1, "Summary sheet should include unknown platform count.");
 assertEqual(summaryValue("Verified Amazon count"), 2, "Summary sheet should include verified Amazon count.");
 assertEqual(summaryValue("Unverified Amazon count"), 1, "Summary sheet should include unverified Amazon count.");

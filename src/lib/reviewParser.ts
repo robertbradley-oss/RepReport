@@ -16,7 +16,8 @@ const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /(?:amazon\.(?:com|ca)|amzn\.to|a\.co)/i],
   ["Google", /google\.com/i],
   ["Trustpilot", /trustpilot\.com/i],
-  ["Costco", /costco\.(?:com|ca)/i],
+  ["Costco US", /costco\.com/i],
+  ["Costco.ca", /costco\.ca/i],
   ["Home Depot", /homedepot\.(?:com|ca)/i],
   ["Zoro", /zoro\.com/i],
   ["Walmart", /walmart\.com/i],
@@ -24,7 +25,7 @@ const platformMatchers: Array<[string, RegExp]> = [
   ["Lowe's", /lowes\.com/i],
 ];
 
-const flatTwentyFiveDollarPlatforms = new Set(["Costco", "Home Depot", "iSpring Website", "Zoro", "Walmart"]);
+const flatTwentyFiveDollarPlatforms = new Set(["Costco", "Costco US", "Costco.ca", "Home Depot", "iSpring Website", "Zoro", "Walmart"]);
 
 export const flagMessages = {
   modelMissing: "Model missing",
@@ -683,7 +684,7 @@ function comparePlatformCounts(
   left: { platform: string; count: number },
   right: { platform: string; count: number },
 ): number {
-  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Home Depot", "Zoro", "Walmart", "iSpring Website", "Lowe's", "Unknown"];
+  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "iSpring Website", "Lowe's", "Unknown"];
   const leftIndex = preferredOrder.indexOf(left.platform);
   const rightIndex = preferredOrder.indexOf(right.platform);
 
