@@ -56,6 +56,12 @@ export default function App() {
     setActiveMode(mode);
   }
 
+  function handleLogoClick() {
+    selectMode(activeMode === "kpiReport" ? "reviewLog" : "kpiReport");
+  }
+
+  const logoActionLabel = activeMode === "kpiReport" ? "Return to Review Log" : "Open KPI Analyzer";
+
   return (
     <main className="appShell">
       <header className="appHeader">
@@ -63,9 +69,9 @@ export default function App() {
           <button
             className="brandMarkButton"
             type="button"
-            onClick={() => selectMode("kpiReport")}
-            aria-label="Open KPI Analyzer"
-            title="Open KPI Analyzer"
+            onClick={handleLogoClick}
+            aria-label={logoActionLabel}
+            title={logoActionLabel}
           >
             <img className="brandMark" src="/assets/repreport-mark.svg" alt="" aria-hidden="true" width={48} height={48} />
           </button>
