@@ -62,6 +62,7 @@ export const REVIEW_PROMISE_PLATFORMS = [
   "Google",
   "Amazon",
   "Trustpilot",
+  "Yelp",
   "iSpring",
   "Costco",
   "Costco US",

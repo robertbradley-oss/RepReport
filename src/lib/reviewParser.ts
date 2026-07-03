@@ -16,6 +16,7 @@ const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /(?:amazon\.(?:com|ca)|amzn\.to|a\.co)/i],
   ["Google", /google\.com/i],
   ["Trustpilot", /trustpilot\.com/i],
+  ["Yelp", /https?:\/\/(?:[^/]+\.)*yelp\.com\b/i],
   ["Costco US", /costco\.com/i],
   ["Costco.ca", /costco\.ca/i],
   ["Home Depot", /homedepot\.(?:com|ca)/i],
@@ -69,6 +70,10 @@ export function calculateBonus(row: ReviewRow): number {
 
   if (row.platform === "Trustpilot") {
     return 10;
+  }
+
+  if (row.platform === "Yelp") {
+    return 20;
   }
 
   if (row.platform === "Amazon") {
@@ -684,7 +689,7 @@ function comparePlatformCounts(
   left: { platform: string; count: number },
   right: { platform: string; count: number },
 ): number {
-  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "iSpring Website", "Lowe's", "Unknown"];
+  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Yelp", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "iSpring Website", "Lowe's", "Unknown"];
   const leftIndex = preferredOrder.indexOf(left.platform);
   const rightIndex = preferredOrder.indexOf(right.platform);
 

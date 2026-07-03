@@ -547,6 +547,20 @@ assert(
 );
 assertFlags(lowesBonusRows[0], [], "Clean Lowe's row should not generate model reminders.");
 
+const yelpBonusRows = parseReviewNotes([
+  "Ticket #100033",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100033",
+  "https://www.yelp.com/biz/ispring-filter-yelp-review",
+  "Jun 5, 2026",
+  "5 stars",
+  "Yelp review after support helped finish installation.",
+  "Yara Yelp - YP123",
+].join("\n"));
+assertEqual(yelpBonusRows.length, 1, "Yelp review should parse.");
+assertEqual(yelpBonusRows[0].platform, "Yelp", "Yelp platform should be detected.");
+assertEqual(calculateBonus(yelpBonusRows[0]), 20, "Yelp reviews should use the confirmed $20 bonus.");
+assertFlags(yelpBonusRows[0], [], "Clean Yelp row should not generate model reminders.");
+
 const ticketMismatchRows = parseReviewNotes([
   "Ticket #238336",
   "https://support.ispringfilter.com/scp/tickets.php?id=238337",
