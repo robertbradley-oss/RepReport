@@ -44,11 +44,11 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
     }
 
     setIsReadingNotes(true);
-    // Matches the 2.3s single-pass scan in styles.css (--rr-scan).
+    // Matches the 1.8s single-pass scan in styles.css (--rr-scan).
     window.setTimeout(() => {
       setIsReadingNotes(false);
       applyFormattedRow(result.row, true);
-    }, 2300);
+    }, 1800);
   }
 
   function handleClear() {
