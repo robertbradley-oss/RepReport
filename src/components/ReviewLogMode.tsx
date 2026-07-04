@@ -9,9 +9,7 @@ import { copyText } from "../lib/clipboard";
 import { copyReviewRows } from "../lib/reviewClipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
 import {
-  buildVisibleReviewRows,
   formatSourceNotesSummary,
-  mergeVisibleReviewRowEdits,
   shouldCollapseSourceNotesAfterParse,
 } from "../lib/reviewWorkspace";
 import type { ReviewRow } from "../types";
@@ -24,7 +22,6 @@ export function ReviewLogMode() {
   const [parseStatus, setParseStatus] = useState("");
   const [templateStatus, setTemplateStatus] = useState("");
   const [isSourceNotesCollapsed, setIsSourceNotesCollapsed] = useState(false);
-  const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [rowsEntering, setRowsEntering] = useState(false);
@@ -35,9 +32,7 @@ export function ReviewLogMode() {
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
-  const visibleReviewRows = useMemo(() => buildVisibleReviewRows(rows, flaggedOnly), [rows, flaggedOnly]);
-  const visibleRows = useMemo(() => visibleReviewRows.map(({ row }) => row), [visibleReviewRows]);
-  const visibleRowNumbers = useMemo(() => visibleReviewRows.map(({ sourceIndex }) => sourceIndex + 1), [visibleReviewRows]);
+  const rowNumbers = useMemo(() => rows.map((_, index) => index + 1), [rows]);
   const sourceNotesSummary = formatSourceNotesSummary(rows.length);
   const notesCharacterCount = notes.length;
   const notesLineCount = notes.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
@@ -50,7 +45,6 @@ export function ReviewLogMode() {
     }
     setRows(parsedRows);
     setIsSourceNotesCollapsed(shouldCollapseSourceNotesAfterParse(parsedRows.length));
-    setFlaggedOnly(false);
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
@@ -94,28 +88,15 @@ export function ReviewLogMode() {
     setParseStatus("");
     setTemplateStatus("");
     setIsSourceNotesCollapsed(false);
-    setFlaggedOnly(false);
   }
 
   const handleRowsChange = useCallback((nextRows: ReviewRow[]) => {
     setRows(nextRows);
-    if (nextRows.length === 0) {
-      setFlaggedOnly(false);
-    }
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
     setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
   }, []);
-
-  const handleVisibleRowsChange = useCallback(
-    (nextVisibleRows: ReviewRow[]) => {
-      handleRowsChange(
-        visibleReviewRows.length === rows.length ? nextVisibleRows : mergeVisibleReviewRowEdits(rows, visibleReviewRows, nextVisibleRows),
-      );
-    },
-    [handleRowsChange, rows, visibleReviewRows],
-  );
 
   async function handleCopyRows() {
     const copied = await copyReviewRows(rows);
@@ -255,18 +236,9 @@ export function ReviewLogMode() {
                     <CopyResultIcon copied={copySuccess} />
                     Copy Rows
                   </button>
-                  <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
+                  <button className="container-btn-file excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={rows.length === 0}>
                     <UiIcon name="excel" size={18} />
-                    Export Excel
-                  </button>
-                  <button
-                    className={flaggedOnly ? "filterButton active" : "filterButton"}
-                    type="button"
-                    aria-pressed={flaggedOnly}
-                    onClick={() => setFlaggedOnly((enabled) => !enabled)}
-                  >
-                    <UiIcon name="filter" />
-                    Show Missing Models ({flags.length})
+                    Export To Excel
                   </button>
                 </div>
               </div>
@@ -274,10 +246,9 @@ export function ReviewLogMode() {
 
             <EditableReviewTable
               density="compact"
-              rows={visibleRows}
-              rowNumbers={visibleRowNumbers}
-              onRowsChange={handleVisibleRowsChange}
-              emptyMessage={flaggedOnly ? "No rows missing models." : undefined}
+              rows={rows}
+              rowNumbers={rowNumbers}
+              onRowsChange={handleRowsChange}
             />
             {rows.length > 0 && (
               <p className="pasteFormatNote">Copy Rows includes yellow photo/video highlights when supported by the paste target. Excel export always includes highlights.</p>

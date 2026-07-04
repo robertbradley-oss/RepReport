@@ -67,44 +67,18 @@ function ParseIcon({ size = 24 }: LucideProps): ReactElement {
   );
 }
 
-function ExcelIcon({ size = 24 }: LucideProps): ReactElement {
+function ExcelIcon({ size = 18 }: LucideProps): ReactElement {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="square"
-      strokeMiterlimit={10}
-      strokeWidth={2}
+      viewBox="0 0 50 50"
+      fill="currentColor"
       aria-hidden="true"
       focusable="false"
     >
-      <path d="m3,16v3c0,1.105.895,2,2,2h14c1.105,0,2-.895,2-2v-3" />
-      <polyline points="12 15 12 3 12 4" />
-      <polyline points="17 8 12 3 7 8" />
-    </svg>
-  );
-}
-
-function FilterIcon({ size = 24 }: LucideProps): ReactElement {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="square"
-      strokeMiterlimit={10}
-      strokeWidth={2}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <polygon points="3 3 21 3 21 5 14 13 14 20 10 22 10 13 3 5 3 3" />
+      <path d="M28.813.031.813 5.344A1.01 1.01 0 0 0 0 6.344v37.312c0 .481.34.91.813 1L28.813 49.97c.289.054.589-.02.82-.207.23-.192.367-.465.367-.762V1c0-.297-.137-.57-.367-.762a.976.976 0 0 0-.82-.207ZM32 6v7h2v2h-2v5h2v2h-2v5h2v2h-2v6h2v2h-2v7h15c1.102 0 2-.898 2-2V8c0-1.102-.898-2-2-2Zm4 7h8v2h-8ZM6.688 15.688h5.124l2.688 5.593c.211.442.398.985.563 1.594h.03c.106-.363.31-.934.595-1.656l2.968-5.531h4.688l-5.594 9.25 5.75 9.437h-4.969l-3.25-6.094c-.12-.226-.246-.644-.375-1.25h-.031c-.063.286-.21.73-.438 1.313l-3.25 6.031h-5l5.97-9.344Zm29.312 4.312h8v2h-8Zm0 7h8v2h-8Zm0 8h8v2h-8Z" />
     </svg>
   );
 }
@@ -211,7 +185,6 @@ const icons = {
   copy: CopyIcon,
   download: Download,
   excel: ExcelIcon,
-  filter: FilterIcon,
   kpiReport: KpiReportIcon,
   loadSample: RotateCcw,
   moon: Moon,

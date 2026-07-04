@@ -137,7 +137,7 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
               <CopyResultIcon copied={copySuccess} />
               Copy KPI Row
             </button>
-            <button className="primaryButton excelPrimaryButton neuButton" type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
+            <button className="container-btn-file excelPrimaryButton" type="button" onClick={handleExportExcel} disabled={isKpiRowEmpty(row)}>
               <UiIcon name="excel" />
               Export KPI Excel
             </button>
