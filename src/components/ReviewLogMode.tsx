@@ -14,6 +14,8 @@ import {
 } from "../lib/reviewWorkspace";
 import type { ReviewRow } from "../types";
 
+type ReviewRowsUpdater = (rows: ReviewRow[]) => ReviewRow[];
+
 export function ReviewLogMode() {
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<ReviewRow[]>([]);
@@ -90,13 +92,13 @@ export function ReviewLogMode() {
     setIsSourceNotesCollapsed(false);
   }
 
-  const handleRowsChange = useCallback((nextRows: ReviewRow[]) => {
-    setRows(nextRows);
+  const handleRowsChange = useCallback((updateRows: ReviewRowsUpdater) => {
+    setRows(updateRows);
     setCopyStatus("");
     setExportStatus("");
     setTemplateStatus("");
-    setParseStatus(`${nextRows.length} editable row${nextRows.length === 1 ? "" : "s"} in the table.`);
-  }, []);
+    setParseStatus(`${rows.length} editable row${rows.length === 1 ? "" : "s"} in the table.`);
+  }, [rows.length]);
 
   async function handleCopyRows() {
     const copied = await copyReviewRows(rows);

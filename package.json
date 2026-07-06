@@ -11,7 +11,8 @@
     "smoke:kpi": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/smoke-kpi-parser.mjs",
     "smoke:exports": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/smoke-export-shapes.mjs",
     "smoke:roundtrip": "node --experimental-strip-types --import ./scripts/register-ts-loader.mjs scripts/check-verified-roundtrip.mjs",
-    "smoke": "npm run smoke:review && npm run smoke:kpi && npm run smoke:exports && npm run smoke:roundtrip"
+    "smoke:ui": "node scripts/smoke-review-ui.mjs",
+    "smoke": "npm run smoke:review && npm run smoke:kpi && npm run smoke:exports && npm run smoke:roundtrip && npm run smoke:ui"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "playwright": "^1.61.1",
     "typescript": "^5.9.3"
   }
 }

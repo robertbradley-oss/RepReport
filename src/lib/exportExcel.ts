@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import type ExcelJS from "exceljs";
 import { KPI_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
 import { buildReviewExportPackage, type ReviewExportPackage } from "./exportPackage";
 
@@ -18,12 +18,13 @@ const border: Partial<ExcelJS.Borders> = {
 };
 
 export async function exportExcel(rows: ReviewRow[]): Promise<void> {
-  const workbook = buildReviewWorkbook(rows);
+  const workbook = await buildReviewWorkbook(rows);
   await downloadWorkbook(workbook, "repreport-review-log.xlsx");
 }
 
-export function buildReviewWorkbook(rows: ReviewRow[]): ExcelJS.Workbook {
-  const workbook = new ExcelJS.Workbook();
+export async function buildReviewWorkbook(rows: ReviewRow[]): Promise<ExcelJS.Workbook> {
+  const ExcelRuntime = await loadExcelJS();
+  const workbook = new ExcelRuntime.Workbook();
   workbook.creator = "RepReport";
   workbook.created = new Date();
   const exportPackage = buildReviewExportPackage(rows);
@@ -37,12 +38,13 @@ export function buildReviewWorkbook(rows: ReviewRow[]): ExcelJS.Workbook {
 }
 
 export async function exportKpiExcel(row: KpiReportRow): Promise<void> {
-  const workbook = buildKpiWorkbook(row);
+  const workbook = await buildKpiWorkbook(row);
   await downloadWorkbook(workbook, "repreport-kpi-report.xlsx");
 }
 
-export function buildKpiWorkbook(row: KpiReportRow): ExcelJS.Workbook {
-  const workbook = new ExcelJS.Workbook();
+export async function buildKpiWorkbook(row: KpiReportRow): Promise<ExcelJS.Workbook> {
+  const ExcelRuntime = await loadExcelJS();
+  const workbook = new ExcelRuntime.Workbook();
   workbook.creator = "RepReport";
   workbook.created = new Date();
 
@@ -216,4 +218,9 @@ async function downloadWorkbook(workbook: ExcelJS.Workbook, fileName: string): P
   anchor.download = fileName;
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+async function loadExcelJS(): Promise<typeof ExcelJS> {
+  const module = await import("exceljs");
+  return module.default;
 }

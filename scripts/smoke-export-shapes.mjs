@@ -196,10 +196,10 @@ for (const [index, row] of batchReviewRows.entries()) {
   assertEqual(REVIEW_COLUMNS.map((column) => row[column.key]).length, 8, `Batch export row ${index + 1} should map to 8 review columns.`);
 }
 
-const reviewWorkbook = buildReviewWorkbook(reviewRows);
-const batchReviewWorkbook = buildReviewWorkbook(batchReviewRows);
-const markerExportWorkbook = buildReviewWorkbook(markerExportRows);
-const kpiWorkbook = buildKpiWorkbook(kpiRow);
+const reviewWorkbook = await buildReviewWorkbook(reviewRows);
+const batchReviewWorkbook = await buildReviewWorkbook(batchReviewRows);
+const markerExportWorkbook = await buildReviewWorkbook(markerExportRows);
+const kpiWorkbook = await buildKpiWorkbook(kpiRow);
 
 assertEqual(reviewWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "Paste Rows|Summary|Flags|Read Me", "Review workbook sheet order changed.");
 assertEqual(batchReviewWorkbook.worksheets.map((sheet) => sheet.name).join("|"), "Paste Rows|Summary|Flags|Read Me", "Batch review workbook sheet order changed.");
@@ -232,7 +232,7 @@ assertWorkbookNoInternalPhotoMarker(markerExportWorkbook, "Marker variant review
 assertYellowFill(markerPasteRowsSheet.getRow(2).getCell(6), "Marker **PHOTO** Y cell F2");
 assertYellowFill(markerPasteRowsSheet.getRow(3).getCell(6), "Marker standalone PHOTO Y cell F3");
 
-const highlightWorkbook = buildReviewWorkbook([
+const highlightWorkbook = await buildReviewWorkbook([
   {
     ...batchReviewRows[0],
     containsVideo: "Y",
