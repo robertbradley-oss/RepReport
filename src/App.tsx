@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { KpiReportMode } from "./components/KpiReportMode";
 import { ReviewLogMode } from "./components/ReviewLogMode";
 
 type AppMode = "reviewLog" | "kpiReport";
 type Theme = "light" | "dark";
 
 const THEME_STORAGE_KEY = "repreport-theme";
+const KpiReportMode = lazy(() => import("./components/KpiReportMode").then((module) => ({ default: module.KpiReportMode })));
 
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") {
@@ -104,7 +104,13 @@ export default function App() {
       </header>
 
       <div className={`modeContent ${direction === "forward" ? "slideForward" : "slideBack"}`} key={activeMode}>
-        {activeMode === "reviewLog" ? <ReviewLogMode /> : <KpiReportMode onReturnToReviewLog={() => selectMode("reviewLog")} />}
+        {activeMode === "reviewLog" ? (
+          <ReviewLogMode />
+        ) : (
+          <Suspense fallback={null}>
+            <KpiReportMode onReturnToReviewLog={() => selectMode("reviewLog")} />
+          </Suspense>
+        )}
       </div>
     </main>
   );
