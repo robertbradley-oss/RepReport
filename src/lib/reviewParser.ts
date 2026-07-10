@@ -22,11 +22,13 @@ const platformMatchers: Array<[string, RegExp]> = [
   ["Home Depot", /homedepot\.(?:com|ca)/i],
   ["Zoro", /zoro\.com/i],
   ["Walmart", /walmart\.com/i],
+  ["PureDrop", /https?:\/\/(?:[^/]+\.)*puredropfilter\.com\b/i],
   ["iSpring Website", /https?:\/\/(?:www\.)?(?:ispringfilter|ispringwater|123filter)\.com\b/i],
   ["Lowe's", /lowes\.com/i],
 ];
 
-const flatTwentyFiveDollarPlatforms = new Set(["Costco", "Costco US", "Costco.ca", "Home Depot", "iSpring Website", "Zoro", "Walmart"]);
+const costcoPlatforms = new Set(["Costco", "Costco US", "Costco.ca"]);
+const flatTwentyFiveDollarPlatforms = new Set(["Home Depot", "iSpring Website", "PureDrop", "Zoro", "Walmart"]);
 
 export const flagMessages = {
   modelMissing: "Model missing",
@@ -82,6 +84,10 @@ export function calculateBonus(row: ReviewRow): number {
   }
 
   if (row.platform === "Home Depot" || row.platform === "Lowe's") {
+    return 25 + (hasPhoto ? 5 : 0) + (hasVideo ? 10 : 0);
+  }
+
+  if (costcoPlatforms.has(row.platform)) {
     return 25 + (hasPhoto ? 5 : 0) + (hasVideo ? 10 : 0);
   }
 
@@ -689,7 +695,7 @@ function comparePlatformCounts(
   left: { platform: string; count: number },
   right: { platform: string; count: number },
 ): number {
-  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Yelp", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "iSpring Website", "Lowe's", "Unknown"];
+  const preferredOrder = ["Amazon", "Google", "Trustpilot", "Yelp", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "iSpring Website", "PureDrop", "Lowe's", "Unknown"];
   const leftIndex = preferredOrder.indexOf(left.platform);
   const rightIndex = preferredOrder.indexOf(right.platform);
 

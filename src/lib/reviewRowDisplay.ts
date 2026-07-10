@@ -2,7 +2,7 @@ import type { ReviewColumnKey, ReviewRow, YesNo } from "../types";
 import { stripInternalNoteMarkers } from "./internalNoteMarkers";
 import { flagMessages } from "./reviewParser";
 
-const knownPlatforms = ["Amazon", "Google", "Trustpilot", "Yelp", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "Lowe's", "Unknown"];
+const knownPlatforms = ["Amazon", "Google", "Trustpilot", "Yelp", "Costco", "Costco US", "Costco.ca", "Home Depot", "Zoro", "Walmart", "PureDrop", "Lowe's", "Unknown"];
 
 export function updateReviewRowCell(row: ReviewRow, key: ReviewColumnKey, value: string): ReviewRow {
   const nextValue = key === "customerContactTicketLink" || key === "replacementSent" ? stripInternalNoteMarkers(value) : value;

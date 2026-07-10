@@ -30,14 +30,15 @@ const bonusSummary = calculateBonusSummary(rows);
 const flaggedVisibleRows = buildVisibleReviewRows(rows, true);
 const allVisibleRows = buildVisibleReviewRows(rows, false);
 
-assertEqual(rows.length, 10, "Review parser should return all 10 batch fixture rows.");
-assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 155, "Batch review fixture bonus total changed.");
-assertEqual(bonusSummary.totalReviews, 10, "Batch bonus summary should include total review count.");
-assertEqual(bonusSummary.estimatedBonusTotal, 155, "Batch bonus summary should include estimated bonus total.");
+assertEqual(rows.length, 11, "Review parser should return all 11 batch fixture rows.");
+assertEqual(rows.reduce((sum, row) => sum + calculateBonus(row), 0), 180, "Batch review fixture bonus total changed.");
+assertEqual(bonusSummary.totalReviews, 11, "Batch bonus summary should include total review count.");
+assertEqual(bonusSummary.estimatedBonusTotal, 180, "Batch bonus summary should include estimated bonus total.");
 assertEqual(platformCount("Amazon"), 3, "Batch bonus summary should count Amazon reviews.");
 assertEqual(platformCount("Google"), 3, "Batch bonus summary should count Google reviews.");
 assertEqual(platformCount("Trustpilot"), 2, "Batch bonus summary should count Trustpilot reviews.");
 assertEqual(platformCount("Costco US"), 1, "Batch bonus summary should count Costco US reviews.");
+assertEqual(platformCount("PureDrop"), 1, "Batch bonus summary should count PureDrop reviews.");
 assertEqual(platformCount("Unknown"), 1, "Batch bonus summary should count unknown-platform reviews.");
 assertEqual(bonusSummary.verifiedAmazonCount, 2, "Batch bonus summary should count verified Amazon reviews.");
 assertEqual(bonusSummary.unverifiedAmazonCount, 1, "Batch bonus summary should count unverified Amazon reviews.");
@@ -261,8 +262,73 @@ assertEqual(costcoRow.platform, "Costco US", "Costco.com row should detect Costc
 assertEqual(costcoRow.verifiedFiveStar, "N", "Costco US row without verified wording should export verified N.");
 assertEqual(calculateBonus(costcoRow), 25, "Costco US should be worth $25.");
 assertEqual(calculateBonus({ ...costcoRow, platform: "Costco" }), 25, "Legacy Costco rows should remain worth $25.");
+assertEqual(
+  calculateBonus({ ...costcoRow, platform: "Costco", containsPictures: "Y", containsVideo: "Y" }),
+  40,
+  "Legacy Costco US rows should receive stacking photo and video bonuses.",
+);
 assert(costcoRow.replacementSent.includes("Good product"), "Costco US Replacement sent should contain the review text.");
 assertFlags(costcoRow, [], "Clean Costco US row should not generate model reminders.");
+
+const costcoMediaRows = parseReviewNotes([
+  "Ticket #100011 - photo/video",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100011",
+  "https://www.costco.com/reviews/costco-us-photo-video",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support helped with installation.",
+  "Casey Costco - RO500",
+  "",
+  "Ticket #100012 - photo",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100012",
+  "https://www.costco.ca/reviews/costco-ca-photo",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support helped with installation.",
+  "Parker Costco - RCC7",
+  "",
+  "Ticket #100013 - video",
+  "https://support.ispringfilter.com/scp/tickets.php?id=100013",
+  "https://www.costco.ca/reviews/costco-ca-video",
+  "Jun 5, 2026",
+  "5 stars",
+  "Support helped with installation.",
+  "Vera Costco - WGB32B",
+].join("\n"));
+assertEqual(costcoMediaRows.length, 3, "RepStack Costco media exports should parse every review.");
+assertEqual(costcoMediaRows[0].platform, "Costco US", "Costco.com media exports should detect Costco US.");
+assertEqual(costcoMediaRows[0].containsPictures, "Y", "Costco US photo/video exports should keep the photo marker.");
+assertEqual(costcoMediaRows[0].containsVideo, "Y", "Costco US photo/video exports should keep the video marker.");
+assertEqual(calculateBonus(costcoMediaRows[0]), 40, "Costco US photo and video bonuses should stack to $40.");
+assertEqual(costcoMediaRows[1].platform, "Costco.ca", "Costco.ca photo exports should detect Costco.ca.");
+assertEqual(calculateBonus(costcoMediaRows[1]), 30, "Costco Canada photo reviews should be worth $30.");
+assertEqual(costcoMediaRows[2].platform, "Costco.ca", "Costco.ca video exports should detect Costco.ca.");
+assertEqual(calculateBonus(costcoMediaRows[2]), 35, "Costco Canada video reviews should be worth $35.");
+assertEqual(
+  calculateBonusSummary(costcoMediaRows).estimatedBonusTotal,
+  105,
+  "Costco media bonuses should flow into bonus summaries and exported totals.",
+);
+
+const pureDropRow = rowByTicket("100011");
+assertEqual(pureDropRow.platform, "PureDrop", "puredropfilter.com rows should detect PureDrop.");
+assertEqual(calculateBonus(pureDropRow), 25, "PureDrop reviews should be worth $25.");
+assertEqual(
+  formatCustomerContactSummary(pureDropRow),
+  "Ticket #100011 - Priya PureDrop - PureDrop - Jun 6, 2026",
+  "PureDrop should display with its clean platform label.",
+);
+assert(pureDropRow.replacementSent.includes("PureDrop support helped"), "PureDrop review text should export in Replacement sent.");
+assertFlags(pureDropRow, [], "Clean PureDrop rows should not generate parser flags.");
+const pureDropExport = buildReviewExportPackage([pureDropRow]);
+assertEqual(pureDropExport.pasteRows.rows.length, 1, "PureDrop should export one Review Log row.");
+assertEqual(pureDropExport.pasteRows.rows[0].length, 8, "PureDrop should preserve the 8-column Review Log export.");
+assertEqual(pureDropExport.summary.summary.estimatedBonusTotal, 25, "PureDrop exports should include the $25 bonus.");
+assertEqual(
+  pureDropExport.summary.summary.platformCounts.find(({ platform }) => platform === "PureDrop")?.count,
+  1,
+  "PureDrop exports should include the PureDrop platform summary.",
+);
 
 const noTicketRow = rows.find((row) => row.customerName === "Henry Noticket");
 assert(noTicketRow, "No-ticket review should parse into a row.");

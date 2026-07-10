@@ -44,7 +44,7 @@ async function runGoldenPath({ width, height, expectedInternalTableScroll }) {
     await page.locator("#review-notes").fill(reviewNotes);
     await page.getByRole("button", { name: "Generate Review Table" }).click();
 
-    await expectText(page.locator(".statusLine"), "Parsed 10 rows with 1 model reminder.");
+    await expectText(page.locator(".statusLine"), "Parsed 11 rows with 1 model reminder.");
     await expectReviewColumns(page);
     await expectRowShape(page);
     await expectResponsiveContainment(page, expectedInternalTableScroll);
@@ -52,7 +52,7 @@ async function runGoldenPath({ width, height, expectedInternalTableScroll }) {
     const missingModelInput = page.getByLabel("Model number row 9");
     await missingModelInput.fill("RCC7AK");
     await missingModelInput.press("Enter");
-    await expectText(page.locator(".statusLine"), "10 editable rows in the table.");
+    await expectText(page.locator(".statusLine"), "11 editable rows in the table.");
     await expectNoModelReminderRows(page);
 
     await expectEnabled(page.getByRole("button", { name: "Copy Rows" }));
@@ -80,7 +80,7 @@ async function expectRowShape(page) {
   assertEqual(firstRowCellCount, 9, "Review Log browser table should render row number plus 8 export columns.");
 
   const modelInputs = await page.locator(".reviewOutputCard .modelInput").count();
-  assertEqual(modelInputs, 10, "Review Log browser table should render one editable model input per parsed row.");
+  assertEqual(modelInputs, 11, "Review Log browser table should render one editable model input per parsed row.");
 }
 
 async function expectResponsiveContainment(page, expectedInternalTableScroll) {
