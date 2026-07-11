@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/repreport-logo.png" alt="RepReport" width="760">
+</p>
+
 # RepReport
 
 RepReport is a review parser and export helper for turning collected review notes into clean, report-ready output.
