@@ -199,7 +199,33 @@ function removeTicketMarker(value: string): string {
 }
 
 function cleanListItem(value: string): string {
-  return value.replace(/^\s*(?:[-*]|(?:\d+|#[1-3])[\.)-]?)\s*/, "").trim();
+  let cleaned = value.trim();
+
+  if (/^(?:\*{3,}|_{3,}|-{3,})$/.test(cleaned)) {
+    return "";
+  }
+
+  cleaned = cleaned
+    .replace(/^#{1,6}\s+/, "")
+    .replace(/^>\s?/, "")
+    .replace(/^(?:[-+*])\s+/, "")
+    .replace(/^(?:\d+|#[1-3])[\.)-]?\s*/, "")
+    .trim();
+
+  return unwrapMarkdownEmphasis(cleaned);
+}
+
+function unwrapMarkdownEmphasis(value: string): string {
+  let cleaned = value.trim();
+
+  for (const marker of ["***", "___", "**", "__", "*", "_"]) {
+    if (cleaned.startsWith(marker) && cleaned.endsWith(marker) && cleaned.length > marker.length * 2) {
+      cleaned = cleaned.slice(marker.length, -marker.length).trim();
+      break;
+    }
+  }
+
+  return cleaned;
 }
 
 function collectKpiIssues(row: KpiReportRow, unsectioned: string[]): string[] {

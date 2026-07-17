@@ -2305,6 +2305,14 @@ button:disabled {
   padding-left: 20px;
 }
 
+.kpiIssues {
+  background: #fff8e6;
+  border: 1px solid #ead59a;
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 12px 14px;
+}
+
 .kpiIssues h2 {
   font-size: 18px;
   font-weight: 500;
@@ -2532,6 +2540,11 @@ button:disabled {
 [data-theme="dark"] .emptyState span,
 [data-theme="dark"] .flagsPanel p {
   color: var(--d-muted);
+}
+
+[data-theme="dark"] .kpiIssues {
+  background: #241f14;
+  border-color: #5d4e2c;
 }
 
 /* Buttons (generic) */

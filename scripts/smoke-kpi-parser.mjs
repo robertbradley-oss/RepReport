@@ -25,6 +25,26 @@ Messy RO troubleshooting with unclear symptoms, pressure/tank confusion, phone p
 
 Ticket #190512
 ED2000 satisfaction-policy issue needed correction after the first response denied refund/replacement too strongly.`;
+const markdownKpiFixture = `**Top 3 Achievements**
+---
+1. **Successfully managed a high-risk UV leak and property-damage escalation.**
+2. **Generated strong review activity through warranty registrations.**
+3. **Resolved several difficult support cases.**
+
+**3 Best Tickets**
+- **Ticket #247812**
+- **Ticket #251869**
+- **Ticket #252364**
+
+**3 Worst Tickets**
+**Ticket #251729**
+This UVF55FS leak involved claimed property damage, plumbing costs, a full refund, repeated escalation, and later approval for additional parts.
+
+**Ticket #236788**
+The RCC7AK noise case required extensive troubleshooting across the tank, pressure, ASO valve, check valve, faucet, tubing, and replacement components.
+
+**Ticket #161122**
+Two WF150K systems reportedly released black media and debris into the plumbing.`;
 
 assertEqual(issues.length, 0, "Representative KPI template should parse without issues.");
 assertEqual(Object.keys(row).length, 5, "KPI row should contain exactly 5 fields.");
@@ -87,6 +107,38 @@ assertEqual(worstTicketTsvRecords.length, 1, "Worst-ticket KPI TSV should contai
 assertEqual(worstTicketTsvRecords[0].length, 5, "Worst-ticket KPI TSV should contain exactly 5 cells.");
 assertEqual(worstTicketTsvRecords[0][4], worstTicketRow.worstTicket3, "KPI TSV should preserve third worst-ticket multiline content inside one cell.");
 assert(worstTicketTsvRecords[0][4].includes("\nED2000"), "KPI TSV should preserve the third worst-ticket explanation line break.");
+
+const { row: markdownKpiRow, issues: markdownKpiIssues } = parseKpiNotes(markdownKpiFixture);
+assertEqual(markdownKpiIssues.length, 0, "Markdown-formatted KPI notes should parse without issues.");
+assertEqual(
+  markdownKpiRow.top3Achievements,
+  "1. Successfully managed a high-risk UV leak and property-damage escalation.\n2. Generated strong review activity through warranty registrations.\n3. Resolved several difficult support cases.",
+  "Markdown emphasis and dividers should not become achievement content.",
+);
+assertEqual(
+  markdownKpiRow.threeBestTickets,
+  "Ticket #247812\nTicket #251869\nTicket #252364",
+  "Markdown-formatted best tickets should remain ticket-number-only.",
+);
+assertEqual(
+  markdownKpiRow.worstTicket1,
+  "Ticket #251729\nThis UVF55FS leak involved claimed property damage, plumbing costs, a full refund, repeated escalation, and later approval for additional parts.",
+  "The first Markdown-formatted worst ticket should stay in its own column.",
+);
+assertEqual(
+  markdownKpiRow.worstTicket2,
+  "Ticket #236788\nThe RCC7AK noise case required extensive troubleshooting across the tank, pressure, ASO valve, check valve, faucet, tubing, and replacement components.",
+  "The second Markdown-formatted worst ticket should stay in its own column.",
+);
+assertEqual(
+  markdownKpiRow.worstTicket3,
+  "Ticket #161122\nTwo WF150K systems reportedly released black media and debris into the plumbing.",
+  "The third Markdown-formatted worst ticket should stay in its own column.",
+);
+assert(
+  Object.values(markdownKpiRow).every((value) => !value.includes("**") && !value.includes("---")),
+  "Structural Markdown should not leak into the KPI row.",
+);
 
 const quotedKpiTsvRecords = parseTsvRecords(
   buildKpiTsv({

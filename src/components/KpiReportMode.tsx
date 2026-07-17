@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
+import { kpiNotesTemplate } from "../sampleData";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
 
 type KpiReportModeProps = {
@@ -15,16 +16,20 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [isReadingNotes, setIsReadingNotes] = useState(false);
   const [rowEntering, setRowEntering] = useState(false);
+  const [issues, setIssues] = useState<string[]>([]);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const [templateStatus, setTemplateStatus] = useState("");
   const copySuccessTimer = useRef<number | undefined>(undefined);
   const rowEnteringTimer = useRef<number | undefined>(undefined);
 
-  function applyFormattedRow(formattedRow: KpiReportRow, transferred: boolean) {
+  function applyFormattedRow(formattedRow: KpiReportRow, formattedIssues: string[], transferred: boolean) {
     setRowEntering(transferred);
     window.clearTimeout(rowEnteringTimer.current);
     if (transferred) {
       rowEnteringTimer.current = window.setTimeout(() => setRowEntering(false), 1600);
     }
     setRow(formattedRow);
+    setIssues(formattedIssues);
   }
 
   /** Same two-beat transfer as the Review Log: scan the notes, then the KPI
@@ -39,7 +44,7 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!animate) {
-      applyFormattedRow(result.row, false);
+      applyFormattedRow(result.row, result.issues, false);
       return;
     }
 
@@ -47,13 +52,15 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
     // Matches the 1.8s single-pass scan in styles.css (--rr-scan).
     window.setTimeout(() => {
       setIsReadingNotes(false);
-      applyFormattedRow(result.row, true);
+      applyFormattedRow(result.row, result.issues, true);
     }, 1800);
   }
 
   function handleClear() {
     setNotes("");
     setRow(createBlankKpiRow());
+    setIssues([]);
+    setTemplateStatus("");
   }
 
   function updateCell(key: KpiColumnKey, value: string) {
@@ -71,6 +78,11 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
 
   async function handleExportExcel() {
     await exportKpiExcel(row);
+  }
+
+  async function handleCopyTemplate() {
+    const copied = await copyText(kpiNotesTemplate);
+    setTemplateStatus(copied ? "KPI template copied." : "Copy failed. Select the template text and copy manually.");
   }
 
   return (
@@ -94,7 +106,10 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
           <textarea
             id="kpi-notes"
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={(event) => {
+              setNotes(event.target.value);
+              setIssues([]);
+            }}
             placeholder=""
             spellCheck={false}
             data-gramm="false"
@@ -125,6 +140,42 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
             Clear
           </button>
         </div>
+        <div className="templateHelper">
+          <button
+            type="button"
+            className="templateSummary"
+            aria-expanded={isTemplateOpen}
+            aria-controls="kpi-template-drawer"
+            onClick={() => setIsTemplateOpen((open) => !open)}
+          >
+            <UiIcon name="template" />
+            KPI format guide
+          </button>
+          <div className={`templateDrawer${isTemplateOpen ? " open" : ""}`} id="kpi-template-drawer">
+            <div className="templateDrawerInner">
+              <div className="buttonRow templateActions">
+                <button className="secondaryButton" type="button" onClick={handleCopyTemplate}>
+                  <UiIcon name="copy" />
+                  Copy Template
+                </button>
+              </div>
+              <pre className="templateBlock">{kpiNotesTemplate}</pre>
+              <div className="templateStatus" aria-live="polite">
+                {templateStatus}
+              </div>
+            </div>
+          </div>
+        </div>
+        {issues.length > 0 && (
+          <section className="kpiIssues" aria-live="polite">
+            <h2>Check KPI format</h2>
+            <ul>
+              {issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       <div className={`resultsPanel${rowEntering ? " kpiTransferIn" : ""}`}>
