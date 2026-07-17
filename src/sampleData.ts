@@ -71,3 +71,23 @@ Replacement request needed extra verification because the receipt and issue deta
 
 Ticket #237333
 Customer had repeated install confusion and needed a clearer step-by-step explanation.`;
+
+export const kpiFormatGuide = `Top 3 Achievements
+1. First achievement
+2. Second achievement
+3. Third achievement
+
+3 Best Tickets
+Ticket #
+Ticket #
+Ticket #
+
+3 Worst Tickets
+Ticket #
+Explanation for this ticket.
+
+Ticket #
+Explanation for this ticket.
+
+Ticket #
+Explanation for this ticket.`;

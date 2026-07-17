@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { exportKpiExcel } from "../lib/exportExcel";
 import { buildKpiTsv, createBlankKpiRow, parseKpiNotes } from "../lib/kpiReportParser";
-import { kpiNotesTemplate } from "../sampleData";
+import { kpiFormatGuide } from "../sampleData";
 import { KPI_COLUMNS, type KpiColumnKey, type KpiReportRow } from "../types";
 
 type KpiReportModeProps = {
@@ -81,7 +81,7 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
   }
 
   async function handleCopyTemplate() {
-    const copied = await copyText(kpiNotesTemplate);
+    const copied = await copyText(kpiFormatGuide);
     setTemplateStatus(copied ? "KPI template copied." : "Copy failed. Select the template text and copy manually.");
   }
 
@@ -159,7 +159,7 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
                   Copy Template
                 </button>
               </div>
-              <pre className="templateBlock">{kpiNotesTemplate}</pre>
+              <pre className="templateBlock">{kpiFormatGuide}</pre>
               <div className="templateStatus" aria-live="polite">
                 {templateStatus}
               </div>
