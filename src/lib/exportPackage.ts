@@ -1,6 +1,6 @@
 import { REVIEW_COLUMNS, type ReviewRow } from "../types";
 import { stripInternalNoteMarkers } from "./internalNoteMarkers";
-import { calculateBonusSummary, type BonusSummary } from "./reviewParser";
+import { calculateBonusSummary, detectReviewPlatform, type BonusSummary } from "./reviewParser";
 
 export type ExportCell = string | number | null;
 
@@ -27,7 +27,29 @@ export type ReviewExportPackage = {
   };
 };
 
+export type ReviewOutputBlocker = {
+  rowNumber: number;
+  reason: "missing review link" | "unrecognized review link";
+};
+
 const flagColumns = ["Source Row", "Customer", "Model", "Platform", "Flag"];
+
+export function getReviewOutputBlockers(rows: ReviewRow[]): ReviewOutputBlocker[] {
+  const blockers: ReviewOutputBlocker[] = [];
+
+  rows.forEach((row, index) => {
+    if (!row.reviewLink.trim()) {
+      blockers.push({ rowNumber: index + 1, reason: "missing review link" });
+      return;
+    }
+
+    if (row.platform === "Unknown" || detectReviewPlatform(row.reviewLink) === "Unknown") {
+      blockers.push({ rowNumber: index + 1, reason: "unrecognized review link" });
+    }
+  });
+
+  return blockers;
+}
 
 export function buildReviewExportPackage(rows: ReviewRow[]): ReviewExportPackage {
   const pasteColumns = REVIEW_COLUMNS.map((column) => column.label);

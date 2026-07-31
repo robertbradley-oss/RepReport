@@ -13,18 +13,18 @@ const modelTokenRegex = /\b(?:ICEK|[A-Z]{1,8}\d[A-Z0-9]*(?:[-/][A-Z0-9]+)*)\b/g;
 const modelLabelRegex = /\b(?:model(?:\s+number)?|system|product|sku)\b\s*(?:#|no\.?|number)?\s*[:=-]?\s*/i;
 
 const platformMatchers: Array<[string, RegExp]> = [
-  ["Amazon", /(?:amazon\.(?:com|ca)|amzn\.to|a\.co)/i],
-  ["Google", /google\.com/i],
-  ["Trustpilot", /trustpilot\.com/i],
-  ["Yelp", /https?:\/\/(?:[^/]+\.)*yelp\.com\b/i],
-  ["Costco US", /costco\.com/i],
-  ["Costco.ca", /costco\.ca/i],
-  ["Home Depot", /homedepot\.(?:com|ca)/i],
-  ["Zoro", /zoro\.com/i],
-  ["Walmart", /walmart\.com/i],
-  ["PureDrop", /https?:\/\/(?:[^/]+\.)*puredropfilter\.com\b/i],
-  ["iSpring Website", /https?:\/\/(?:www\.)?(?:ispringfilter|ispringwater|123filter)\.com\b/i],
-  ["Lowe's", /lowes\.com/i],
+  ["Amazon", /(^|\.)(?:amazon\.(?:com|ca)|amzn\.to|a\.co)$/i],
+  ["Google", /(^|\.)(?:google\.com|g\.page|goo\.gl)$/i],
+  ["Trustpilot", /(^|\.)trustpilot\.com$/i],
+  ["Yelp", /(^|\.)yelp\.com$/i],
+  ["Costco US", /(^|\.)costco\.com$/i],
+  ["Costco.ca", /(^|\.)costco\.ca$/i],
+  ["Home Depot", /(^|\.)homedepot\.(?:com|ca)$/i],
+  ["Zoro", /(^|\.)zoro\.com$/i],
+  ["Walmart", /(^|\.)walmart\.com$/i],
+  ["PureDrop", /(^|\.)puredropfilter\.com$/i],
+  ["iSpring Website", /(^|\.)(?:ispringfilter|ispringwater|123filter)\.com$/i],
+  ["Lowe's", /(^|\.)lowes\.com$/i],
 ];
 
 const costcoPlatforms = new Set(["Costco", "Costco US", "Costco.ca"]);
@@ -171,12 +171,12 @@ function normalizePastedNotes(input: string): string {
 
   const expanded = input
     .replace(/\r\n/g, "\n")
-    // Bare ticket numbers with a media suffix (RepStack export first lines).
-    // Rewritten to the canonical "Ticket #N" form so the line both starts a
-    // new block and keeps its media markers attached to the right review.
+    // Bare ticket numbers, with or without a media suffix (RepStack export
+    // first lines). Rewriting these is important because RepStack does not add
+    // the literal "Ticket #" prefix.
     .replace(
-      new RegExp(`^(\\d{3,})\\s*-\\s*(${mediaSuffixPattern})\\s*$`, "gim"),
-      (_match, ticket: string, media: string) =>
+      new RegExp(`^(\\d{3,})(?:[ \\t]*-[ \\t]*(${mediaSuffixPattern}))?[ \\t]*$`, "gim"),
+      (_match, ticket: string, media: string | undefined) =>
         `Ticket #${ticket}\n${mediaSuffixToMarkers(media)}`,
     )
     .replace(
@@ -217,7 +217,7 @@ function parseBlock(block: string): ReviewRow {
   const ticketNumber = parseTicketNumber(lines);
   const ticketLink = allUrls.find(isSupportTicketUrl) ?? "";
   const reviewLink = allUrls.find((url) => !isSupportTicketUrl(url)) ?? "";
-  const platform = reviewLink ? detectPlatform(reviewLink) : "Unknown";
+  const platform = reviewLink ? detectReviewPlatform(reviewLink) : "Unknown";
   const customerModel = parseCustomerModel(lines);
   const parsedRating = parseRating(lines, platform);
   const ratingOrStatus = parsedRating.value;
@@ -320,11 +320,30 @@ function parseTicketNumber(lines: string[]): string | undefined {
 }
 
 function isSupportTicketUrl(url: string): boolean {
-  return /support|zendesk|freshdesk|osticket|ticket|tickets/i.test(url);
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const pathname = parsedUrl.pathname.toLowerCase();
+    const hasTicketQueryParameter = Array.from(parsedUrl.searchParams.keys()).some((key) => /^(?:ticket|ticket_id|ticketid|id)$/i.test(key));
+
+    return (
+      /(^|\.)(?:support|tickets?)\./i.test(hostname) ||
+      /(?:zendesk|freshdesk|osticket)/i.test(hostname) ||
+      /\/(?:scp\/)?tickets?(?:\.php)?(?:\/|$)/i.test(pathname) ||
+      (hasTicketQueryParameter && /(?:support|help|ticket)/i.test(hostname))
+    );
+  } catch {
+    return false;
+  }
 }
 
-function detectPlatform(url: string): string {
-  return platformMatchers.find(([, matcher]) => matcher.test(url))?.[0] ?? "Unknown";
+export function detectReviewPlatform(url: string): string {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./i, "");
+    return platformMatchers.find(([, matcher]) => matcher.test(hostname))?.[0] ?? "Unknown";
+  } catch {
+    return "Unknown";
+  }
 }
 
 type ParsedCustomerModel = {
@@ -665,7 +684,7 @@ function buildCustomerContactCell(parts: {
 function hasReviewUrl(lines: string[]): boolean {
   return lines.some((line) => {
     const urls = line.match(urlRegex) ?? [];
-    return urls.some((url) => detectPlatform(url) !== "Unknown");
+    return urls.some((url) => !isSupportTicketUrl(url) && detectReviewPlatform(url) !== "Unknown");
   });
 }
 
@@ -684,7 +703,7 @@ function isTicketStart(line: string): boolean {
 function isBlockStart(line: string): boolean {
   if (isTicketStart(line)) return true;
   const urls = line.match(urlRegex) ?? [];
-  return urls.some((url) => isSupportTicketUrl(url) || detectPlatform(url) !== "Unknown");
+  return urls.some((url) => isSupportTicketUrl(url) || detectReviewPlatform(url) !== "Unknown");
 }
 
 function stripTrailingPunctuation(value: string): string {

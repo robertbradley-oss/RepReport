@@ -431,6 +431,42 @@ assertEqual(
 );
 assertFlags(unknownPlatformRows[0], [], "Unknown platform row should not generate model reminders when the model is present.");
 
+const repStackGoogleLinkRows = parseReviewNotes([
+  "238610",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238610",
+  "https://g.page/r/example/review",
+  "7/30/26",
+  "Robert helped with setup.",
+  "Gina Shortlink - RCC7",
+  "",
+  "238611",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238611",
+  "https://goo.gl/maps/example",
+  "7/30/26",
+  "Setup was easy after support helped.",
+  "Grant Maplink - WGB32B",
+].join("\n"));
+assertEqual(repStackGoogleLinkRows.length, 2, "RepStack Google short links should split into separate rows.");
+assertEqual(repStackGoogleLinkRows[0].ticketNumber, "238610", "Bare RepStack ticket numbers should be preserved.");
+assertEqual(repStackGoogleLinkRows[1].ticketNumber, "238611", "Consecutive bare RepStack ticket numbers should start new rows.");
+assertEqual(repStackGoogleLinkRows[0].platform, "Google", "g.page review links should parse as Google.");
+assertEqual(repStackGoogleLinkRows[1].platform, "Google", "goo.gl map links should parse as Google.");
+
+const reviewLinkWithSupportWordRows = parseReviewNotes([
+  "238612",
+  "https://support.ispringfilter.com/scp/tickets.php?id=238612",
+  "https://www.google.com/maps/reviews/support-was-great",
+  "7/30/26",
+  "Support was great.",
+  "Greta Support - RCC7AK",
+].join("\n"));
+assertEqual(reviewLinkWithSupportWordRows[0].platform, "Google", "Review URL paths may contain the word support.");
+assertEqual(
+  reviewLinkWithSupportWordRows[0].reviewLink,
+  "https://www.google.com/maps/reviews/support-was-great",
+  "A review URL containing support should not be mistaken for the ticket link.",
+);
+
 const bonusRuleRows = parseReviewNotes([
   "Ticket #100014",
   "https://support.ispringfilter.com/scp/tickets.php?id=100014",

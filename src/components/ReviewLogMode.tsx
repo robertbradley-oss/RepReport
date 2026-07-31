@@ -8,6 +8,7 @@ import { exportExcel } from "../lib/exportExcel";
 import { copyText } from "../lib/clipboard";
 import { copyReviewRows } from "../lib/reviewClipboard";
 import { calculateBonusSummary, collectFlags, parseReviewNotes } from "../lib/reviewParser";
+import { getReviewOutputBlockers } from "../lib/exportPackage";
 import {
   formatSourceNotesSummary,
   shouldCollapseSourceNotesAfterParse,
@@ -101,6 +102,12 @@ export function ReviewLogMode() {
   }, [rows.length]);
 
   async function handleCopyRows() {
+    const blockers = getReviewOutputBlockers(rows);
+    if (blockers.length > 0) {
+      setCopyStatus(formatBlockedOutputStatus("Copy", blockers.map((blocker) => blocker.rowNumber)));
+      return;
+    }
+
     const copied = await copyReviewRows(rows);
     setCopyStatus(copied ? `Copied ${rows.length} row${rows.length === 1 ? "" : "s"}.` : "Copy failed. Select the table cells and copy manually.");
     if (copied) {
@@ -111,6 +118,12 @@ export function ReviewLogMode() {
   }
 
   async function handleExportExcel() {
+    const blockers = getReviewOutputBlockers(rows);
+    if (blockers.length > 0) {
+      setExportStatus(formatBlockedOutputStatus("Export", blockers.map((blocker) => blocker.rowNumber)));
+      return;
+    }
+
     setExportStatus("Building Excel file...");
     await exportExcel(rows);
     setExportStatus("Excel export downloaded.");
@@ -261,4 +274,10 @@ export function ReviewLogMode() {
           </div>
     </section>
   );
+}
+
+function formatBlockedOutputStatus(action: "Copy" | "Export", rowNumbers: number[]): string {
+  const uniqueRows = [...new Set(rowNumbers)];
+  const rowLabel = uniqueRows.length === 1 ? "row" : "rows";
+  return `${action} blocked: ${rowLabel} ${uniqueRows.join(", ")} ${uniqueRows.length === 1 ? "has" : "have"} a missing or unrecognized review link. Fix the source notes and generate the table again.`;
 }
