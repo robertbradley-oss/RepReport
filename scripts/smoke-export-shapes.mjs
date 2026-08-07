@@ -1,6 +1,6 @@
 import { buildCsv, buildKpiCsv, buildTsv } from "../src/lib/exportCsv.ts";
 import { buildKpiWorkbook, buildReviewWorkbook } from "../src/lib/exportExcel.ts";
-import { buildReviewExportPackage } from "../src/lib/exportPackage.ts";
+import { buildReviewExportPackage, getReviewOutputBlockers } from "../src/lib/exportPackage.ts";
 import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { buildReviewClipboardPayload } from "../src/lib/reviewClipboard.ts";
@@ -37,6 +37,7 @@ const markerExportPackage = buildReviewExportPackage(markerExportRows);
 const flaggedDisplayRows = buildVisibleReviewRows(batchReviewRows, true);
 const batchReviewClipboardPayload = buildReviewClipboardPayload(batchReviewRows);
 const markerClipboardPayload = buildReviewClipboardPayload(markerExportRows);
+const batchOutputBlockers = getReviewOutputBlockers(batchReviewRows);
 
 const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
@@ -47,6 +48,15 @@ assertEqual(reviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(",")
 assertEqual(batchReviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Batch Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewTsvHeader, REVIEW_COLUMNS.map((column) => column.label).join("\t"), "Batch Review TSV header should match the 8 default columns.");
 assertEqual(kpiHeader, KPI_COLUMNS.map((column) => column.label).join(","), "KPI CSV header should match the 5 default columns.");
+assertEqual(batchOutputBlockers.length, 1, "A batch with an unresolved review link should be blocked from output.");
+assertEqual(batchOutputBlockers[0].rowNumber, 10, "The output blocker should identify the unresolved source row.");
+assertEqual(batchOutputBlockers[0].reason, "missing review link", "The output blocker should explain a missing review link.");
+assertEqual(getReviewOutputBlockers(markerExportRows).length, 0, "Recognized review rows should remain copy/export ready.");
+assertEqual(
+  getReviewOutputBlockers([{ ...markerExportRows[0], reviewLink: "Unknown Link" }])[0]?.reason,
+  "unrecognized review link",
+  "An invalid edited review link should be blocked even if the row previously had a recognized platform.",
+);
 
 assertEqual(Object.keys(batchReviewPackage).join("|"), "pasteRows|summary|flags", "Review export package should keep Paste Rows first.");
 assertEqual(batchReviewPackage.pasteRows.name, "Paste Rows", "Review export package primary section should be Paste Rows.");
