@@ -8,12 +8,12 @@ export const REVIEW_TABLE_DENSITIES: readonly ReviewTableDensity[] = ["compact",
 
 export const REVIEW_TABLE_COLUMN_WIDTHS: Record<ReviewColumnKey, number> = {
   ticketLink: 8,
-  reviewLink: 9,
+  reviewLink: 10.5,
   modelNumber: 9,
   verifiedFiveStar: 10,
   containsVideo: 6.5,
   containsPictures: 6.5,
-  customerContactTicketLink: 28,
+  customerContactTicketLink: 26.5,
   replacementSent: 23,
 };
 

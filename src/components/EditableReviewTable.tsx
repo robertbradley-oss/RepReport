@@ -186,16 +186,18 @@ function UrlDisplayCell({
 }) {
   const value = row[keyName];
   const label = keyName === "ticketLink" ? getTicketLinkChipLabel(row) : getReviewLinkChipLabel(row);
+  const visibleLabel = keyName === "ticketLink" ? "Ticket" : "Open Review";
+  const visibleMissingLabel = keyName === "ticketLink" ? "Missing Link" : label;
   const href = getHttpUrlHref(value);
 
   return (
     <div className="urlCell">
       {href ? (
-        <a className="urlChip" href={href} target="_blank" rel="noreferrer" title={href}>
-          {label}
+        <a className="urlChip" href={href} target="_blank" rel="noreferrer" title={href} aria-label={label}>
+          {visibleLabel}
         </a>
       ) : (
-        <span className="missingLinkChip">{label}</span>
+        <span className="missingLinkChip" aria-label={label}>{visibleMissingLabel}</span>
       )}
     </div>
   );

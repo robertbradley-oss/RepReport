@@ -47,8 +47,14 @@ async function runGoldenPath({ width, height, expectedInternalTableScroll }) {
     await expectText(page.locator(".statusLine"), "Parsed 11 rows with 1 model reminder.");
     await expectReviewColumns(page);
     await expectRowShape(page);
-    await expectText(page.locator(".urlChip").nth(0), "support.ispringfilter.com");
-    await expectText(page.locator(".urlChip").nth(1), "www.amazon.com");
+    await expectExactText(page.locator(".urlChip").nth(0), "Ticket");
+    await expectExactText(page.locator(".urlChip").nth(1), "Open Review");
+    await expectAttribute(page.locator(".urlChip").nth(0), "aria-label", "Ticket #100001 · support.ispringfilter.com");
+    await expectAttribute(page.locator(".urlChip").nth(1), "aria-label", "Open Review · www.amazon.com");
+    await expectExactText(page.locator(".reviewCol-ticketLink .missingLinkChip").first(), "Missing Link");
+    await expectAttribute(page.locator(".reviewCol-ticketLink .missingLinkChip").first(), "aria-label", "Missing ticket link");
+    await expectCompactUrlChips(page);
+    await expectCenteredUrlChips(page);
     await expectResponsiveContainment(page, expectedInternalTableScroll);
 
     const missingModelInput = page.getByLabel("Model number row 9");
@@ -109,10 +115,77 @@ async function expectResponsiveContainment(page, expectedInternalTableScroll) {
   }
 }
 
+async function expectCompactUrlChips(page) {
+  const chipHeights = await page.locator(".urlChip").evaluateAll((chips) =>
+    chips.map((chip) => chip.getBoundingClientRect().height),
+  );
+  assert(chipHeights.length > 0, "Review Log should render valid URL chips for the fixture.");
+  assert(
+    chipHeights.every((height) => height <= 30),
+    `Review Log URL chips should stay single-line and compact. heights=${chipHeights.join(",")}`,
+  );
+
+  const reviewChipMetrics = await page.locator(".reviewCol-reviewLink .urlChip").first().evaluate((chip) => ({
+    clientWidth: chip.clientWidth,
+    scrollWidth: chip.scrollWidth,
+  }));
+  assert(
+    reviewChipMetrics.scrollWidth <= reviewChipMetrics.clientWidth,
+    `Review URL chips should show the complete Open Review label without truncation. client=${reviewChipMetrics.clientWidth}, scroll=${reviewChipMetrics.scrollWidth}`,
+  );
+
+  const missingLinkHeights = await page.locator(".reviewCol-ticketLink .missingLinkChip").evaluateAll((chips) =>
+    chips.map((chip) => chip.getBoundingClientRect().height),
+  );
+  assert(missingLinkHeights.length > 0, "Review Log fixture should render a missing-link chip.");
+  assert(
+    missingLinkHeights.every((height) => height <= 30),
+    `Missing-link chips should stay compact. heights=${missingLinkHeights.join(",")}`,
+  );
+}
+
+async function expectCenteredUrlChips(page) {
+  const centerOffsets = await page.locator(".reviewCol-ticketLink .urlChip, .reviewCol-ticketLink .missingLinkChip, .reviewCol-reviewLink .urlChip, .reviewCol-reviewLink .missingLinkChip").evaluateAll((chips) =>
+    chips.map((chip) => {
+      const cell = chip.closest("td");
+      if (!cell) return Number.POSITIVE_INFINITY;
+
+      const chipRect = chip.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      return Math.abs((chipRect.left + chipRect.right) / 2 - (cellRect.left + cellRect.right) / 2);
+    }),
+  );
+
+  assert(centerOffsets.length > 0, "Review Log should render URL chips for alignment checks.");
+  assert(
+    centerOffsets.every((offset) => offset <= 1),
+    `Review Log URL chips should be horizontally centered in their cells. offsets=${centerOffsets.join(",")}`,
+  );
+
+  const missingLinkTextAlignments = await page.locator(".missingLinkChip").evaluateAll((chips) =>
+    chips.map((chip) => getComputedStyle(chip).textAlign),
+  );
+  assert(missingLinkTextAlignments.length > 0, "Review Log fixture should render a missing-link chip.");
+  assert(
+    missingLinkTextAlignments.every((textAlign) => textAlign === "center"),
+    `Missing-link chip text should be centered. alignments=${missingLinkTextAlignments.join(",")}`,
+  );
+}
+
 async function expectText(locator, expected) {
   await locator.waitFor();
   const text = normalize(await locator.textContent());
   assert(text.includes(expected), `Expected text "${expected}" but found "${text}".`);
+}
+
+async function expectExactText(locator, expected) {
+  await locator.waitFor();
+  assertEqual(normalize(await locator.textContent()), expected, `Expected exact text "${expected}".`);
+}
+
+async function expectAttribute(locator, attributeName, expected) {
+  await locator.waitFor();
+  assertEqual(await locator.getAttribute(attributeName), expected, `Expected ${attributeName}="${expected}".`);
 }
 
 async function expectNoModelReminderRows(page) {
