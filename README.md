@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/repreport-logo.png" alt="RepReport" width="760">
+  <img src="docs/assets/repreport-logo-transparent.png" alt="RepReport" width="480">
 </p>
 
 # RepReport
