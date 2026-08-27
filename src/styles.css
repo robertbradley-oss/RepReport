@@ -2037,6 +2037,7 @@ button:disabled {
   line-height: 1.2;
   max-width: 100%;
   min-height: 26px;
+  overflow-wrap: anywhere;
   padding: 5px 8px;
   text-decoration: none;
   width: fit-content;

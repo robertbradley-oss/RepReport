@@ -47,6 +47,8 @@ async function runGoldenPath({ width, height, expectedInternalTableScroll }) {
     await expectText(page.locator(".statusLine"), "Parsed 11 rows with 1 model reminder.");
     await expectReviewColumns(page);
     await expectRowShape(page);
+    await expectText(page.locator(".urlChip").nth(0), "support.ispringfilter.com");
+    await expectText(page.locator(".urlChip").nth(1), "www.amazon.com");
     await expectResponsiveContainment(page, expectedInternalTableScroll);
 
     const missingModelInput = page.getByLabel("Model number row 9");

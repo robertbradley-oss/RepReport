@@ -5,7 +5,7 @@ import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { buildReviewClipboardPayload } from "../src/lib/reviewClipboard.ts";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
-import { getReviewLinkChipLabel, getTicketLinkChipLabel } from "../src/lib/reviewUrlDisplay.ts";
+import { getReviewLinkChipLabel, getTicketLinkChipLabel, isHttpUrl } from "../src/lib/reviewUrlDisplay.ts";
 import { buildVisibleReviewRows } from "../src/lib/reviewWorkspace.ts";
 import { kpiNotesTemplate, reviewLogTemplate } from "../src/sampleData.ts";
 import { KPI_COLUMNS, REVIEW_COLUMNS } from "../src/types.ts";
@@ -165,8 +165,35 @@ assert(batchReviewHtmlRows[0].includes("<td>Y</td><td>N</td><td>N</td>"), "Forma
 assert(batchReviewHtmlRows[1].includes("<td>N</td><td>N</td><td>N</td>"), "Formatted clipboard HTML should show corrected N cells for unverified Amazon.");
 assertEqual(clipboardTsvRecords[0][0], batchReviewRows[0].ticketLink, "Review clipboard TSV should start with the first review row.");
 assert(!batchReviewClipboardPayload.tsv.startsWith("Ticket Link"), "Review clipboard TSV should not include the Review Log header row.");
-assertEqual(getTicketLinkChipLabel(batchReviewRows[0]), "Ticket #100001", "Ticket Link display chip should use a compact ticket label.");
-assertEqual(getReviewLinkChipLabel(batchReviewRows[0]), "Open Review", "Review Link display chip should use a compact review label.");
+assertEqual(
+  getTicketLinkChipLabel(batchReviewRows[0]),
+  "Ticket #100001 · support.ispringfilter.com",
+  "Ticket Link display chip should disclose its destination hostname.",
+);
+assertEqual(
+  getReviewLinkChipLabel(batchReviewRows[0]),
+  "Open Review · www.amazon.com",
+  "Review Link display chip should disclose its destination hostname.",
+);
+const untrustedTicketRow = {
+  ...batchReviewRows[0],
+  ticketLink: "https://attacker.example/tickets/123456",
+  ticketNumber: undefined,
+};
+assertEqual(
+  getTicketLinkChipLabel(untrustedTicketRow),
+  "Ticket #123456 · attacker.example",
+  "Ticket-shaped links on arbitrary hosts must expose the real destination.",
+);
+assertEqual(
+  getReviewLinkChipLabel({ ...batchReviewRows[0], reviewLink: "https://attacker.example/reviews/claim" }),
+  "Open Review · attacker.example",
+  "Unknown review hosts must expose the real destination.",
+);
+assert(
+  !isHttpUrl("https://support.ispringfilter.com@attacker.example/tickets/123456"),
+  "Credential-bearing URLs should not be rendered as clickable support links.",
+);
 assertEqual(
   batchReviewPackage.pasteRows.rows[0][0],
   batchReviewRows[0].ticketLink,
