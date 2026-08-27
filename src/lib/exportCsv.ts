@@ -1,5 +1,6 @@
 import { KPI_COLUMNS, type KpiReportRow, type ReviewRow } from "../types";
 import { buildReviewExportPackage } from "./exportPackage";
+import { neutralizeSpreadsheetFormula } from "./spreadsheetCell";
 
 export function buildTsv(rows: ReviewRow[], includeHeader = false): string {
   const exportPackage = buildReviewExportPackage(rows);
@@ -26,7 +27,7 @@ export function buildKpiCsv(row: KpiReportRow): string {
 }
 
 function escapeCsv(value: string): string {
-  const text = String(value ?? "");
+  const text = neutralizeSpreadsheetFormula(String(value ?? ""));
   if (/[",\n\r]/.test(text)) {
     return `"${text.replace(/"/g, '""')}"`;
   }

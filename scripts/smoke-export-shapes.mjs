@@ -44,6 +44,44 @@ const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
 const batchReviewTsvHeader = parseTsvRecords(buildTsv(batchReviewRows, true))[0].join("\t");
 const kpiHeader = buildKpiCsv(kpiRow).split("\n")[0];
 
+const formulaReviewRow = {
+  ...batchReviewRows[3],
+  ticketLink: "=1+1",
+  modelNumber: "+SUM(1,1)",
+  customerContactTicketLink: " \t-1+2",
+  replacementSent: "@SUM(1,1)",
+};
+const formulaReviewTsvRecord = parseTsvRecords(buildTsv([formulaReviewRow]))[0];
+const formulaReviewCsvRecord = parseCsvRecords(buildCsv([formulaReviewRow]))[1];
+const formulaReviewClipboardHtml = buildReviewClipboardPayload([formulaReviewRow]).html;
+assertEqual(formulaReviewTsvRecord[0], "'=1+1", "Review TSV should neutralize equals-prefixed formulas.");
+assertEqual(formulaReviewTsvRecord[2], "'+SUM(1,1)", "Review TSV should neutralize plus-prefixed formulas.");
+assertEqual(formulaReviewTsvRecord[6], "'  -1+2", "Review TSV should neutralize formulas after leading whitespace.");
+assertEqual(formulaReviewTsvRecord[7], "'@SUM(1,1)", "Review TSV should neutralize at-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[0], "'=1+1", "Review CSV should neutralize equals-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[2], "'+SUM(1,1)", "Review CSV should neutralize plus-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[6], "' \t-1+2", "Review CSV should neutralize formulas after leading whitespace.");
+assertEqual(formulaReviewCsvRecord[7], "'@SUM(1,1)", "Review CSV should neutralize at-prefixed formulas.");
+assert(
+  formulaReviewClipboardHtml.includes("<td>&#39;=1+1</td>") && formulaReviewClipboardHtml.includes("<td>&#39;@SUM(1,1)</td>"),
+  "Review rich clipboard cells should neutralize formulas instead of bypassing safe TSV output.",
+);
+
+const formulaKpiCsvRecord = parseCsvRecords(
+  buildKpiCsv({
+    top3Achievements: "=1+1",
+    threeBestTickets: "+SUM(1,1)",
+    worstTicket1: "-1+2",
+    worstTicket2: "@SUM(1,1)",
+    worstTicket3: " \t=HYPERLINK(\"https://attacker.example\",\"Open\")",
+  }),
+)[1];
+assertEqual(
+  formulaKpiCsvRecord.join("|"),
+  "'=1+1|'+SUM(1,1)|'-1+2|'@SUM(1,1)|' \t=HYPERLINK(\"https://attacker.example\",\"Open\")",
+  "KPI CSV should preserve formula-prefixed cells as literal spreadsheet text.",
+);
+
 assertEqual(reviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Batch Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewTsvHeader, REVIEW_COLUMNS.map((column) => column.label).join("\t"), "Batch Review TSV header should match the 8 default columns.");

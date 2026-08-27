@@ -150,6 +150,21 @@ assertEqual(quotedKpiTsvRecords.length, 1, "Quoted KPI TSV should still parse as
 assertEqual(quotedKpiTsvRecords[0].length, 5, "Quoted KPI TSV should still parse as 5 cells.");
 assertEqual(quotedKpiTsvRecords[0][0], '1. Quoted "win"\n2. Follow-up with tab', "KPI TSV should escape quotes and keep tabs inside a cell from becoming column separators.");
 
+const formulaKpiTsvRecord = parseTsvRecords(
+  buildKpiTsv({
+    top3Achievements: "=1+1",
+    threeBestTickets: "+SUM(1,1)",
+    worstTicket1: "-1+2",
+    worstTicket2: "@SUM(1,1)",
+    worstTicket3: " \t=HYPERLINK(\"https://attacker.example\",\"Open\")",
+  }),
+)[0];
+assertEqual(
+  formulaKpiTsvRecord.join("|"),
+  "'=1+1|'+SUM(1,1)|'-1+2|'@SUM(1,1)|'  =HYPERLINK(\"https://attacker.example\",\"Open\")",
+  "KPI TSV should preserve formula-prefixed cells as literal spreadsheet text.",
+);
+
 console.log("smoke:kpi passed");
 
 function assert(condition, message) {
