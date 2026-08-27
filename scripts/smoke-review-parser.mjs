@@ -115,6 +115,50 @@ assertEqual(
 );
 assertEqual(formatFlagsForClipboard([]), "No model reminders.", "Copy model reminders empty-state text changed.");
 
+const approvedNameExamples = [
+  ["Robert", "Robert was helpful"],
+  ["John", "John was helpful"],
+  ["Jonathan", "Jonathan was helpful"],
+  ["Jon", "Thanks Jon!"],
+  ["Sean", "Sean was great"],
+  ["Shawn", "Shawn helped me"],
+  ["Matt", "Matt was helpful"],
+  ["Nick", "Nick was helpful"],
+  ["Nicholas", "Nicholas was helpful"],
+  ["Nicolas", "Nicolas was helpful"],
+  ["Nikolas", "Nikolas was helpful"],
+  ["Nickolas", "Nickolas was helpful"],
+];
+for (const [index, [approvedName, reviewText]] of approvedNameExamples.entries()) {
+  const row = parseNameMentionExample(reviewText, 101000 + index);
+  assertEqual(
+    row.customerContactTicketLink.split("\n").at(-1),
+    "Review mentions name",
+    `${approvedName} should be detected as an approved complete name.`,
+  );
+}
+
+assertEqual(
+  parseNameMentionExample("ROBERT was helpful", 101020).customerContactTicketLink.split("\n").at(-1),
+  "Review mentions name",
+  "Approved-name detection should be case-insensitive.",
+);
+assertEqual(
+  parseNameMentionExample("Johnson helped me", 101021).customerContactTicketLink.split("\n").at(-1),
+  "Review does not mention name",
+  "John should not partially match Johnson.",
+);
+assertEqual(
+  parseNameMentionExample("Matthew helped me", 101022).customerContactTicketLink.split("\n").at(-1),
+  "Review does not mention name",
+  "Matt should not partially match Matthew.",
+);
+assertEqual(
+  parseNameMentionExample("", 101023).customerContactTicketLink.split("\n").at(-1),
+  "Review does not mention name",
+  "Blank review text should report that no approved name was mentioned.",
+);
+
 for (const [index, row] of rows.entries()) {
   for (const column of REVIEW_COLUMNS) {
     assert(column.key in row, `Row ${index + 1} is missing export field ${column.key}.`);
@@ -788,6 +832,21 @@ function rowByTicket(ticketNumber) {
   const row = rows.find((candidate) => candidate.ticketNumber === ticketNumber);
   assert(row, `Expected row for ticket ${ticketNumber}.`);
   return row;
+}
+
+function parseNameMentionExample(reviewText, ticketNumber) {
+  const lines = [
+    `Ticket #${ticketNumber}`,
+    `https://support.ispringfilter.com/scp/tickets.php?id=${ticketNumber}`,
+    `https://www.google.com/maps/reviews/name-mention-${ticketNumber}`,
+    "6/5/26",
+  ];
+  if (reviewText) lines.push(reviewText);
+  lines.push("Case Tester - RCC7AK");
+
+  const parsedRows = parseReviewNotes(lines.join("\n"));
+  assertEqual(parsedRows.length, 1, `Name-mention fixture ${ticketNumber} should parse into one row.`);
+  return parsedRows[0];
 }
 
 function assert(condition, message) {

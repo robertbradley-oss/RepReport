@@ -11,6 +11,7 @@ const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
 const ticketLineRegex = /^(?:ticket\s*#?\s*|#)(\d{3,})\b/i;
 const modelTokenRegex = /\b(?:ICEK|[A-Z]{1,8}\d[A-Z0-9]*(?:[-/][A-Z0-9]+)*)\b/g;
 const modelLabelRegex = /\b(?:model(?:\s+number)?|system|product|sku)\b\s*(?:#|no\.?|number)?\s*[:=-]?\s*/i;
+const approvedReviewNameRegex = /\b(?:robert|john|jonathan|jon|sean|shawn|matt|nick|nicholas|nicolas|nikolas|nickolas)\b/i;
 
 const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /(^|\.)(?:amazon\.(?:com|ca)|amzn\.to|a\.co)$/i],
@@ -633,11 +634,7 @@ function parseReviewText(
 }
 
 function parseMentionStatus(reviewText: string): string {
-  if (!reviewText.trim()) {
-    return "";
-  }
-
-  if (/\brobert\b/i.test(reviewText)) {
+  if (approvedReviewNameRegex.test(reviewText)) {
     return "Review mentions name";
   }
 
