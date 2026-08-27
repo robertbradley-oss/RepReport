@@ -11,7 +11,8 @@ const singleUrlRegex = /^https?:\/\/[^\s]+$/i;
 const ticketLineRegex = /^(?:ticket\s*#?\s*|#)(\d{3,})\b/i;
 const modelTokenRegex = /\b(?:ICEK|[A-Z]{1,8}\d[A-Z0-9]*(?:[-/][A-Z0-9]+)*)\b/g;
 const modelLabelRegex = /\b(?:model(?:\s+number)?|system|product|sku)\b\s*(?:#|no\.?|number)?\s*[:=-]?\s*/i;
-const approvedReviewNameRegex = /\b(?:robert|john|jonathan|jon|sean|shawn|matt|nick|nicholas|nicolas|nikolas|nickolas)\b/i;
+const reviewMentionsNameStatus = "Review mentions name";
+const reviewDoesNotMentionNameStatus = "Review does not mention name";
 
 const platformMatchers: Array<[string, RegExp]> = [
   ["Amazon", /(^|\.)(?:amazon\.(?:com|ca)|amzn\.to|a\.co)$/i],
@@ -228,7 +229,7 @@ function parseBlock(block: string): ReviewRow {
   const containsVideo = containsInternalVideoMarker(block) ? "Y" : "N";
   const verifiedFiveStar = parseVerifiedStatus(lines, customerModel?.linesToOmit ?? []);
   const amazonVerifiedPurchase = platform === "Amazon" && verifiedFiveStar === "Y";
-  const mentionStatus = parseMentionStatus(reviewText);
+  const mentionStatus = parseMentionStatus(lines);
 
   flags.push(
     ...buildReviewFlags({
@@ -355,7 +356,9 @@ type ParsedCustomerModel = {
 };
 
 function parseCustomerModel(lines: string[]): ParsedCustomerModel | undefined {
-  const usefulLines = lines.filter((line) => !singleUrlRegex.test(line) && !ticketLineRegex.test(line));
+  const usefulLines = lines.filter(
+    (line) => !singleUrlRegex.test(line) && !ticketLineRegex.test(line) && !isMentionStatusLine(line),
+  );
   let missingModelMatch: RegExpMatchArray | undefined;
 
   for (const line of [...usefulLines].reverse()) {
@@ -400,7 +403,7 @@ function parseCustomerModel(lines: string[]): ParsedCustomerModel | undefined {
 }
 
 function findModelCandidate(lines: string[]): { modelNumber: string; line: string; omitLine: boolean } | undefined {
-  const searchableLines = lines.filter((line) => !singleUrlRegex.test(line));
+  const searchableLines = lines.filter((line) => !singleUrlRegex.test(line) && !isMentionStatusLine(line));
 
   for (const line of searchableLines) {
     const labeledModel = extractLabeledModel(line);
@@ -454,6 +457,7 @@ function shouldSkipInlineModelSearch(line: string): boolean {
   return (
     ticketLineRegex.test(line) ||
     isInternalNoteMarkerLine(line) ||
+    isMentionStatusLine(line) ||
     isVerificationStatusLine(line) ||
     /\b\d+(?:\.\d+)?\s*(?:out of\s*)?5\s*stars?\b/i.test(line) ||
     /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{2,4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/i.test(line)
@@ -626,6 +630,7 @@ function parseReviewText(
     if (line === ratingOrStatus) return false;
     if (line === reviewDateOrStatus) return false;
     if (isInternalNoteMarkerLine(line)) return false;
+    if (isMentionStatusLine(line)) return false;
     if (isVerificationStatusLine(line)) return false;
     return true;
   });
@@ -633,12 +638,18 @@ function parseReviewText(
   return textLines.join("\n").trim();
 }
 
-function parseMentionStatus(reviewText: string): string {
-  if (approvedReviewNameRegex.test(reviewText)) {
-    return "Review mentions name";
-  }
+function parseMentionStatus(lines: string[]): string {
+  return lines.some((line) => line.trim().toLowerCase() === reviewMentionsNameStatus.toLowerCase())
+    ? reviewMentionsNameStatus
+    : reviewDoesNotMentionNameStatus;
+}
 
-  return "Review does not mention name";
+function isMentionStatusLine(line: string): boolean {
+  const normalizedLine = line.trim().toLowerCase();
+  return (
+    normalizedLine === reviewMentionsNameStatus.toLowerCase() ||
+    normalizedLine === reviewDoesNotMentionNameStatus.toLowerCase()
+  );
 }
 
 // Shorten Amazon's US marketplace status (e.g. "Reviewed in the United States

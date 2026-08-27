@@ -153,7 +153,7 @@ function addReadMeSheet(workbook: ExcelJS.Workbook): void {
     ["Verified is marked Y only when the pasted text clearly says Verified, Verified Purchase, or another explicit verified status."],
     ["Contains video and Contains pictures default to N unless an internal photo marker appears in the source notes."],
     ["Customer contact/Ticket link only includes Ticket # when an actual ticket number is present."],
-    ["Customer contact/Ticket link says Review mentions name only when Robert is clearly present in the pasted review text; otherwise it says Review does not mention name."],
+    ["Customer contact/Ticket link says Review mentions name only when the pasted RepStack block includes that exact standalone marker; otherwise it says Review does not mention name."],
     ["Links are formatted blue to match the review log style; body font is Arial 10."],
     ["Cells with Y in Contains video? or Contains pictures? are highlighted yellow."],
   ]);

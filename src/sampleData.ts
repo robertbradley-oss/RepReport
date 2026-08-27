@@ -2,6 +2,7 @@ export const sampleReviewNotes = `Ticket #123456
 https://support.example.com/tickets/123456
 https://www.amazon.com/review/R123EXAMPLE
 May 12, 2026 - Verified Purchase - 5 stars
+Review mentions name
 Robert helped me find the right filter setup and it arrived quickly.
 Mario Anzueto - RCC7AK
 
@@ -49,6 +50,7 @@ export const reviewLogTemplate = `[ticket number] - [photo/video]
 [ost link]
 [review link]
 [date]
+Review mentions name
 [review]
 [customer name] - [system]`;
 
