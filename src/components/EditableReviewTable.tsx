@@ -3,7 +3,7 @@ import { REVIEW_COLUMNS, type ReviewColumnKey, type ReviewRow } from "../types";
 import { stripInternalNoteMarkers } from "../lib/internalNoteMarkers";
 import { REVIEW_TABLE_COLUMN_WIDTHS, getReviewTableColumnClassName, type ReviewTableDensity } from "../lib/reviewTableLayout";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../lib/reviewRowDisplay";
-import { getReviewLinkChipLabel, getTicketLinkChipLabel, isHttpUrl } from "../lib/reviewUrlDisplay";
+import { getHttpUrlHref, getReviewLinkChipLabel, getTicketLinkChipLabel } from "../lib/reviewUrlDisplay";
 import { UiIcon } from "./UiIcon";
 
 type EditableReviewTableProps = {
@@ -186,16 +186,18 @@ function UrlDisplayCell({
 }) {
   const value = row[keyName];
   const label = keyName === "ticketLink" ? getTicketLinkChipLabel(row) : getReviewLinkChipLabel(row);
-  const isValidLink = isHttpUrl(value);
+  const visibleLabel = keyName === "ticketLink" ? "Ticket" : "Open Review";
+  const visibleMissingLabel = keyName === "ticketLink" ? "Missing Link" : label;
+  const href = getHttpUrlHref(value);
 
   return (
     <div className="urlCell">
-      {isValidLink ? (
-        <a className="urlChip" href={value} target="_blank" rel="noreferrer" title={value}>
-          {label}
+      {href ? (
+        <a className="urlChip" href={href} target="_blank" rel="noreferrer" title={href} aria-label={label}>
+          {visibleLabel}
         </a>
       ) : (
-        <span className="missingLinkChip">{label}</span>
+        <span className="missingLinkChip" aria-label={label}>{visibleMissingLabel}</span>
       )}
     </div>
   );

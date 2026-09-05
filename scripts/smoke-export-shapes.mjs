@@ -5,7 +5,7 @@ import { parseKpiNotes } from "../src/lib/kpiReportParser.ts";
 import { parseReviewNotes } from "../src/lib/reviewParser.ts";
 import { buildReviewClipboardPayload } from "../src/lib/reviewClipboard.ts";
 import { formatCustomerContactSummary, formatReplacementSummary, updateReviewRowCell } from "../src/lib/reviewRowDisplay.ts";
-import { getReviewLinkChipLabel, getTicketLinkChipLabel } from "../src/lib/reviewUrlDisplay.ts";
+import { getReviewLinkChipLabel, getTicketLinkChipLabel, isHttpUrl } from "../src/lib/reviewUrlDisplay.ts";
 import { buildVisibleReviewRows } from "../src/lib/reviewWorkspace.ts";
 import { kpiNotesTemplate, reviewLogTemplate } from "../src/sampleData.ts";
 import { KPI_COLUMNS, REVIEW_COLUMNS } from "../src/types.ts";
@@ -43,6 +43,44 @@ const reviewHeader = buildCsv(reviewRows).split("\n")[0];
 const batchReviewHeader = buildCsv(batchReviewRows).split("\n")[0];
 const batchReviewTsvHeader = parseTsvRecords(buildTsv(batchReviewRows, true))[0].join("\t");
 const kpiHeader = buildKpiCsv(kpiRow).split("\n")[0];
+
+const formulaReviewRow = {
+  ...batchReviewRows[3],
+  ticketLink: "=1+1",
+  modelNumber: "+SUM(1,1)",
+  customerContactTicketLink: " \t-1+2",
+  replacementSent: "@SUM(1,1)",
+};
+const formulaReviewTsvRecord = parseTsvRecords(buildTsv([formulaReviewRow]))[0];
+const formulaReviewCsvRecord = parseCsvRecords(buildCsv([formulaReviewRow]))[1];
+const formulaReviewClipboardHtml = buildReviewClipboardPayload([formulaReviewRow]).html;
+assertEqual(formulaReviewTsvRecord[0], "'=1+1", "Review TSV should neutralize equals-prefixed formulas.");
+assertEqual(formulaReviewTsvRecord[2], "'+SUM(1,1)", "Review TSV should neutralize plus-prefixed formulas.");
+assertEqual(formulaReviewTsvRecord[6], "'  -1+2", "Review TSV should neutralize formulas after leading whitespace.");
+assertEqual(formulaReviewTsvRecord[7], "'@SUM(1,1)", "Review TSV should neutralize at-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[0], "'=1+1", "Review CSV should neutralize equals-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[2], "'+SUM(1,1)", "Review CSV should neutralize plus-prefixed formulas.");
+assertEqual(formulaReviewCsvRecord[6], "' \t-1+2", "Review CSV should neutralize formulas after leading whitespace.");
+assertEqual(formulaReviewCsvRecord[7], "'@SUM(1,1)", "Review CSV should neutralize at-prefixed formulas.");
+assert(
+  formulaReviewClipboardHtml.includes("<td>&#39;=1+1</td>") && formulaReviewClipboardHtml.includes("<td>&#39;@SUM(1,1)</td>"),
+  "Review rich clipboard cells should neutralize formulas instead of bypassing safe TSV output.",
+);
+
+const formulaKpiCsvRecord = parseCsvRecords(
+  buildKpiCsv({
+    top3Achievements: "=1+1",
+    threeBestTickets: "+SUM(1,1)",
+    worstTicket1: "-1+2",
+    worstTicket2: "@SUM(1,1)",
+    worstTicket3: " \t=HYPERLINK(\"https://attacker.example\",\"Open\")",
+  }),
+)[1];
+assertEqual(
+  formulaKpiCsvRecord.join("|"),
+  "'=1+1|'+SUM(1,1)|'-1+2|'@SUM(1,1)|' \t=HYPERLINK(\"https://attacker.example\",\"Open\")",
+  "KPI CSV should preserve formula-prefixed cells as literal spreadsheet text.",
+);
 
 assertEqual(reviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Review CSV header should match the 8 default columns.");
 assertEqual(batchReviewHeader, REVIEW_COLUMNS.map((column) => column.label).join(","), "Batch Review CSV header should match the 8 default columns.");
@@ -127,8 +165,35 @@ assert(batchReviewHtmlRows[0].includes("<td>Y</td><td>N</td><td>N</td>"), "Forma
 assert(batchReviewHtmlRows[1].includes("<td>N</td><td>N</td><td>N</td>"), "Formatted clipboard HTML should show corrected N cells for unverified Amazon.");
 assertEqual(clipboardTsvRecords[0][0], batchReviewRows[0].ticketLink, "Review clipboard TSV should start with the first review row.");
 assert(!batchReviewClipboardPayload.tsv.startsWith("Ticket Link"), "Review clipboard TSV should not include the Review Log header row.");
-assertEqual(getTicketLinkChipLabel(batchReviewRows[0]), "Ticket #100001", "Ticket Link display chip should use a compact ticket label.");
-assertEqual(getReviewLinkChipLabel(batchReviewRows[0]), "Open Review", "Review Link display chip should use a compact review label.");
+assertEqual(
+  getTicketLinkChipLabel(batchReviewRows[0]),
+  "Ticket #100001 · support.ispringfilter.com",
+  "Ticket Link display chip should disclose its destination hostname.",
+);
+assertEqual(
+  getReviewLinkChipLabel(batchReviewRows[0]),
+  "Open Review · www.amazon.com",
+  "Review Link display chip should disclose its destination hostname.",
+);
+const untrustedTicketRow = {
+  ...batchReviewRows[0],
+  ticketLink: "https://attacker.example/tickets/123456",
+  ticketNumber: undefined,
+};
+assertEqual(
+  getTicketLinkChipLabel(untrustedTicketRow),
+  "Ticket #123456 · attacker.example",
+  "Ticket-shaped links on arbitrary hosts must expose the real destination.",
+);
+assertEqual(
+  getReviewLinkChipLabel({ ...batchReviewRows[0], reviewLink: "https://attacker.example/reviews/claim" }),
+  "Open Review · attacker.example",
+  "Unknown review hosts must expose the real destination.",
+);
+assert(
+  !isHttpUrl("https://support.ispringfilter.com@attacker.example/tickets/123456"),
+  "Credential-bearing URLs should not be rendered as clickable support links.",
+);
 assertEqual(
   batchReviewPackage.pasteRows.rows[0][0],
   batchReviewRows[0].ticketLink,

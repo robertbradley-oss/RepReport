@@ -1,6 +1,7 @@
 import { REVIEW_COLUMNS, type ReviewRow } from "../types";
 import { stripInternalNoteMarkers } from "./internalNoteMarkers";
 import { calculateBonusSummary, detectReviewPlatform, type BonusSummary } from "./reviewParser";
+import { neutralizeSpreadsheetFormula } from "./spreadsheetCell";
 
 export type ExportCell = string | number | null;
 
@@ -117,7 +118,7 @@ function normalizeDelimitedCell(value: ExportCell): string {
 }
 
 function escapeTsvCell(value: ExportCell): string {
-  const text = normalizeDelimitedCell(value).replace(/\t/g, " ");
+  const text = neutralizeSpreadsheetFormula(normalizeDelimitedCell(value).replace(/\t/g, " "));
   if (/["\n]/.test(text)) {
     return `"${text.replace(/"/g, '""')}"`;
   }
@@ -126,7 +127,7 @@ function escapeTsvCell(value: ExportCell): string {
 }
 
 function escapeCsvCell(value: ExportCell): string {
-  const text = normalizeDelimitedCell(value);
+  const text = neutralizeSpreadsheetFormula(normalizeDelimitedCell(value));
   if (/[",\n]/.test(text)) {
     return `"${text.replace(/"/g, '""')}"`;
   }

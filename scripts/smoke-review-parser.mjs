@@ -115,6 +115,88 @@ assertEqual(
 );
 assertEqual(formatFlagsForClipboard([]), "No model reminders.", "Copy model reminders empty-state text changed.");
 
+const explicitMentionMarkerRow = parseMentionStatusExample(
+  {
+    statusLine: "Review mentions name",
+    reviewText: "The support team was helpful.",
+  },
+  101000,
+);
+assertMentionStatus(
+  explicitMentionMarkerRow,
+  "Review mentions name",
+  "The explicit RepStack marker should produce a positive mention status without a rep name in the review.",
+);
+assertEqual(explicitMentionMarkerRow.reviewText, "The support team was helpful.", "The positive marker should be stripped from reviewText.");
+assertEqual(explicitMentionMarkerRow.replacementSent, "The support team was helpful.", "The positive marker should be stripped from Replacement sent.");
+assertEqual(explicitMentionMarkerRow.customerName, "Case Tester", "The positive marker should not alter customer parsing.");
+assertEqual(explicitMentionMarkerRow.modelNumber, "RCC7AK", "The positive marker should not alter model parsing.");
+
+const absentMarkerWithRepNamesRow = parseMentionStatusExample(
+  {
+    reviewText: "Robert, John, Jonathan, Jon, Sean, Shawn, Matt, Nick, Nicholas, Nicolas, Nikolas, and Nickolas helped me.",
+    customerModelLine: "Robert Customer - RCC7AK",
+  },
+  101001,
+);
+assertMentionStatus(
+  absentMarkerWithRepNamesRow,
+  "Review does not mention name",
+  "Rep names in review or customer text should not produce a positive mention status without the marker.",
+);
+assert(
+  absentMarkerWithRepNamesRow.reviewText.includes("Robert, John, Jonathan"),
+  "Ordinary review text containing rep names should remain intact.",
+);
+assertFlags(absentMarkerWithRepNamesRow, [], "A missing mention marker should not generate a parser flag.");
+
+const mixedCaseMentionMarkerRow = parseMentionStatusExample(
+  {
+    statusLine: "  rEvIeW mEnTiOnS nAmE  ",
+    reviewText: "Fast and clear support.",
+  },
+  101002,
+);
+assertMentionStatus(
+  mixedCaseMentionMarkerRow,
+  "Review mentions name",
+  "The exact standalone mention marker should match case-insensitively after trimming.",
+);
+assertEqual(mixedCaseMentionMarkerRow.reviewText, "Fast and clear support.", "The mixed-case positive marker should be stripped from reviewText.");
+assertEqual(mixedCaseMentionMarkerRow.replacementSent, "Fast and clear support.", "The mixed-case positive marker should be stripped from Replacement sent.");
+
+const explicitNegativeMarkerRow = parseMentionStatusExample(
+  {
+    statusLine: "Review does not mention name",
+    reviewText: "Robert helped me with the installation.",
+  },
+  101003,
+);
+assertMentionStatus(
+  explicitNegativeMarkerRow,
+  "Review does not mention name",
+  "The safe-reprocessing negative marker should not produce a positive mention status.",
+);
+assertEqual(explicitNegativeMarkerRow.reviewText, "Robert helped me with the installation.", "The negative marker should be stripped from reviewText.");
+assertEqual(explicitNegativeMarkerRow.replacementSent, "Robert helped me with the installation.", "The negative marker should be stripped from Replacement sent.");
+
+const nonExactMarkerRow = parseMentionStatusExample(
+  {
+    statusLine: "Review mentions name in this sentence",
+    reviewText: "The filter works well.",
+  },
+  101004,
+);
+assertMentionStatus(
+  nonExactMarkerRow,
+  "Review does not mention name",
+  "Only the exact standalone RepStack marker should produce a positive mention status.",
+);
+assert(
+  nonExactMarkerRow.reviewText.includes("Review mentions name in this sentence"),
+  "Non-marker review text should not be stripped.",
+);
+
 for (const [index, row] of rows.entries()) {
   for (const column of REVIEW_COLUMNS) {
     assert(column.key in row, `Row ${index + 1} is missing export field ${column.key}.`);
@@ -788,6 +870,26 @@ function rowByTicket(ticketNumber) {
   const row = rows.find((candidate) => candidate.ticketNumber === ticketNumber);
   assert(row, `Expected row for ticket ${ticketNumber}.`);
   return row;
+}
+
+function parseMentionStatusExample({ statusLine, reviewText, customerModelLine = "Case Tester - RCC7AK" }, ticketNumber) {
+  const lines = [
+    `Ticket #${ticketNumber}`,
+    `https://support.ispringfilter.com/scp/tickets.php?id=${ticketNumber}`,
+    `https://www.google.com/maps/reviews/mention-status-${ticketNumber}`,
+    "6/5/26",
+  ];
+  if (statusLine) lines.push(statusLine);
+  if (reviewText) lines.push(reviewText);
+  lines.push(customerModelLine);
+
+  const parsedRows = parseReviewNotes(lines.join("\n"));
+  assertEqual(parsedRows.length, 1, `Mention-status fixture ${ticketNumber} should parse into one row.`);
+  return parsedRows[0];
+}
+
+function assertMentionStatus(row, expectedStatus, message) {
+  assertEqual(row.customerContactTicketLink.split("\n").at(-1), expectedStatus, message);
 }
 
 function assert(condition, message) {

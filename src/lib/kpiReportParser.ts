@@ -1,4 +1,5 @@
 import type { KpiReportRow } from "../types";
+import { neutralizeSpreadsheetFormula } from "./spreadsheetCell";
 
 type KpiSection = "achievements" | "bestTickets" | "worstTickets" | "worstTicket1" | "worstTicket2" | "worstTicket3";
 
@@ -76,7 +77,9 @@ export function buildKpiTsv(row: KpiReportRow): string {
 }
 
 function escapeKpiTsvCell(value: string): string {
-  const text = String(value ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\t/g, " ");
+  const text = neutralizeSpreadsheetFormula(
+    String(value ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\t/g, " "),
+  );
 
   if (/["\n]/.test(text)) {
     return `"${text.replace(/"/g, '""')}"`;
