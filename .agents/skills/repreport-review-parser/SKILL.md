@@ -1,6 +1,6 @@
 ---
 name: repreport-review-parser
-description: Use when changing RepReport review-note parsing, review block splitting, platform detection, verified/photo/rating rules, customer/model extraction, manual flags, or sample Notepad review cases.
+description: "Modify RepReport review-note parsing and field-extraction rules."
 ---
 
 # RepReport Review Parser
@@ -9,15 +9,7 @@ Use this skill for parser-only work in `src/lib/reviewParser.ts` and representat
 
 ## Rules
 
-- Preserve the default 8-column Review Log output:
-  1. Ticket Link
-  2. Link to review
-  3. Model Number
-  4. Verified 5 star?
-  5. Contains video?
-  6. Contains pictures?
-  7. Customer contact/Ticket link
-  8. Replacement sent
+- Preserve the default Review Log column contract in the repository `AGENTS.md`.
 - Do not add Date, Rep, or Review Upgrade to default output.
 - Review entries may start with `Ticket #`, a support ticket link, or directly with a review link.
 - No-ticket entries must parse as valid blocks.
@@ -43,4 +35,4 @@ Use this skill for parser-only work in `src/lib/reviewParser.ts` and representat
 - Make the smallest parser change that fixes the case.
 - Update or add representative sample data if it helps protect the behavior.
 - Do not change export/UI/KPI behavior during parser-only tasks unless explicitly asked.
-- Run `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` before handoff.
+- Run the relevant checks documented in the repository `AGENTS.md`; verify the changed behavior and fix regressions caused by the change.

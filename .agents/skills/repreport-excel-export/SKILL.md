@@ -1,6 +1,6 @@
 ---
 name: repreport-excel-export
-description: Use when changing RepReport TSV copy, CSV export, Excel export, workbook sheets, column order, hyperlink styling, multiline cells, summary, flags, or Excel formatting.
+description: "Modify RepReport Review Log TSV, CSV, or Excel export behavior."
 ---
 
 # RepReport Excel Export
@@ -9,16 +9,7 @@ Use this skill for spreadsheet output work in `src/lib/exportCsv.ts`, `src/lib/e
 
 ## Columns
 
-Export must preserve only the 8 default Review Log columns:
-
-1. Ticket Link
-2. Link to review
-3. Model Number
-4. Verified 5 star?
-5. Contains video?
-6. Contains pictures?
-7. Customer contact/Ticket link
-8. Replacement sent
+Preserve the default Review Log column contract in the repository `AGENTS.md`. This skill's eight-column rules do not apply to KPI output.
 
 Do not include Date, Rep, or Review Upgrade in default output.
 
@@ -45,4 +36,4 @@ Do not include Date, Rep, or Review Upgrade in default output.
 
 - Keep formatting practical and close to `RepReport Format Example.xlsx` when present.
 - Verify generated workbooks directly when changing Excel output.
-- Run `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` before handoff.
+- Run the relevant checks documented in the repository `AGENTS.md`; verify the changed behavior and fix regressions caused by the change.

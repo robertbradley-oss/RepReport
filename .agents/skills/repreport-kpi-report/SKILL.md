@@ -1,11 +1,11 @@
 ---
 name: repreport-kpi-report
-description: Use when building or changing RepReport KPI Report Mode, KPI summary parsing, Top3Achievements, 3BestTickets, worst-ticket columns, KPI copy/export, or KPI Excel formatting.
+description: "Modify RepReport KPI parsing, output columns, or spreadsheet formatting."
 ---
 
 # RepReport KPI Report
 
-Use this skill for future KPI Report Mode work. Keep KPI work separate from Review Log Mode unless the user explicitly asks for shared changes.
+Use this skill for the existing KPI Report Mode. Keep KPI work separate from Review Log Mode unless the user explicitly asks for shared changes.
 
 ## Output Columns
 
@@ -42,4 +42,4 @@ KPI output columns:
 
 - KPI Mode should remain simple: paste/create summary, preview/edit row, copy/export.
 - Do not add backend, database, auth, API, or AI calls.
-- Run `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` before handoff.
+- Run the relevant checks documented in the repository `AGENTS.md`; verify the changed behavior and fix regressions caused by the change.
