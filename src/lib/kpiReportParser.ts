@@ -134,7 +134,11 @@ function formatAchievements(lines: string[]): string {
 }
 
 function formatBestTickets(lines: string[]): string {
-  const tickets = lines.flatMap((line) => extractTicketNumbers(line)).slice(0, 3);
+  const cleanedLines = lines.map(cleanListItem).filter(Boolean);
+  const explicitTickets = cleanedLines.flatMap((line) => findTicketMarkers(line, false).map((match) => match[1]));
+  const tickets = (explicitTickets.length > 0
+    ? explicitTickets
+    : cleanedLines.flatMap((line) => extractTicketNumbers(line))).slice(0, 3);
 
   if (tickets.length > 0) {
     return tickets.map((ticket) => `Ticket #${ticket}`).join("\n");
@@ -173,12 +177,16 @@ function splitWorstTicketSection(lines: string[]): string[][] {
 }
 
 function isWorstTicketStart(line: string): boolean {
-  return /^ticket\s*#?\s*\d{4,}\b/i.test(cleanListItem(line));
+  return findTicketMarkers(cleanListItem(line)).some((match) => match.index === 0);
 }
 
 function formatWorstTicket(lines: string[]): string {
   const cleanedLines = lines.map(cleanListItem).filter(Boolean);
-  const ticketLineIndex = cleanedLines.findIndex((line) => extractTicketNumbers(line).length > 0);
+  // Prefer a labeled ticket anywhere in the summary over an unlabeled number.
+  const explicitLineIndex = cleanedLines.findIndex((line) => findTicketMarkers(line, false).length > 0);
+  const ticketLineIndex = explicitLineIndex >= 0
+    ? explicitLineIndex
+    : cleanedLines.findIndex((line) => extractTicketNumbers(line).length > 0);
   const ticketNumber = ticketLineIndex >= 0 ? extractTicketNumbers(cleanedLines[ticketLineIndex])[0] : "";
   const ticketLineDetail = ticketLineIndex >= 0 ? removeTicketMarker(cleanedLines[ticketLineIndex]) : "";
   const detailLines = ticketNumber
@@ -194,11 +202,26 @@ function formatWorstTicket(lines: string[]): string {
 }
 
 function extractTicketNumbers(value: string): string[] {
-  return [...value.matchAll(/(?:ticket\s*#?\s*)?(\d{4,})/gi)].map((match) => match[1]);
+  return findTicketMarkers(value).map((match) => match[1]);
+}
+
+function findTicketMarkers(value: string, allowBare = true): RegExpMatchArray[] {
+  const explicit = [...value.matchAll(/(?:\bticket\s*(?:(?:number|no\.?)\s*)?[:#]?\s*|(?<!\w)#\s*)(\d{4,})\b/gi)];
+  if (explicit.length > 0 || !allowBare) {
+    return explicit;
+  }
+
+  // Bare IDs are supported only at the start of a ticket entry, not in prose.
+  return [...value.matchAll(/^(\d{4,})(?=\s*(?:$|[:;–—-]))/g)];
 }
 
 function removeTicketMarker(value: string): string {
-  return value.replace(/(?:ticket\s*#?\s*)?\d{4,}\s*[:;-]?\s*/i, "").trim();
+  const marker = findTicketMarkers(value)[0];
+  if (!marker || marker.index === undefined) {
+    return value;
+  }
+  const after = value.slice(marker.index + marker[0].length).replace(/^\s*[:;–—-]?\s*/, "");
+  return `${value.slice(0, marker.index)}${after}`.trim();
 }
 
 function cleanListItem(value: string): string {
@@ -212,7 +235,7 @@ function cleanListItem(value: string): string {
     .replace(/^#{1,6}\s+/, "")
     .replace(/^>\s?/, "")
     .replace(/^(?:[-+*])\s+/, "")
-    .replace(/^(?:\d+|#[1-3])[\.)-]?\s*/, "")
+    .replace(/^(?:\d{1,3}|#[1-3])(?:[\.)-]\s*|\s+)/, "")
     .trim();
 
   return unwrapMarkdownEmphasis(cleaned);
