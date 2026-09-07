@@ -165,6 +165,62 @@ assertEqual(
   "KPI TSV should preserve formula-prefixed cells as literal spreadsheet text.",
 );
 
+const misleadingNumbers = parseKpiNotes(`3 Best Tickets
+RO0000 troubleshooting — Ticket #247812
+ED2000 follow-up — Ticket number: 251869
+2026 warranty case — #252364
+#1 of 3 Worst Tickets
+RO0000 replacement cost 1000 in 2026.
+Ticket #251729
+Resolved the leak.
+#2 of 3 Worst Tickets
+236788 - Resolved the pressure issue.
+#3 of 3 Worst Tickets
+ED2000 troubleshooting — Ticket #161122: Corrected the response.`).row;
+assertEqual(misleadingNumbers.threeBestTickets, "Ticket #247812\nTicket #251869\nTicket #252364", "Models and dates must not replace best-ticket numbers.");
+assertEqual(misleadingNumbers.worstTicket1, "Ticket #251729\nRO0000 replacement cost 1000 in 2026.\nResolved the leak.", "The labeled ticket must win over earlier model, cost, and year numbers.");
+assertEqual(misleadingNumbers.worstTicket2, "Ticket #236788\nResolved the pressure issue.", "Bare ticket IDs must survive list cleanup.");
+assertEqual(misleadingNumbers.worstTicket3, "Ticket #161122\nED2000 troubleshooting — Corrected the response.", "Removing the ticket marker must preserve model numbers on the same line.");
+const noTicket = parseKpiNotes("#1 of 3 Worst Tickets\nED2000 replacement cost 1000 in 2026.").row;
+assertEqual(noTicket.worstTicket1, "ED2000 replacement cost 1000 in 2026.", "Unrelated numbers must not fabricate a ticket ID.");
+assertEqual(parseKpiNotes("Best Tickets:\n2026 - Weekly summary\nTicket #270041\n1000\nTicket #270014\nTicket #258573").row.threeBestTickets,
+  "Ticket #270041\nTicket #270014\nTicket #258573", "Labeled best tickets must take priority over standalone dates and quantities across the section.");
+assertEqual(parseKpiNotes("Best Tickets:\n1. 270041\n2. 270014\n3. 258573").row.threeBestTickets,
+  "Ticket #270041\nTicket #270014\nTicket #258573", "Numbered lists of bare best-ticket IDs should still parse.");
+
+const reportedSummary = parseKpiNotes(`KPI Summary:
+
+Top 3 Achievements:
+
+1. Maintained strong weekly replacement output while continuing to handle complex troubleshooting and customer follow-ups.
+2. Consistently isolated component-level RO and filtration issues before escalating to full-system replacement.
+3. Provided strong product guidance across residential, whole-house, UV, softener, and commercial RO applications.
+
+Best Tickets:
+
+**Ticket #270041**
+Provided a detailed commercial RO consultation for a hydrostatic-testing application, comparing the RCB3P, RCS5T, and CRO1000 and helping narrow the solution to the customer’s actual production and storage needs.
+
+**Ticket #270014**
+Handled a new UVF20 failure with a logical staged approach, replacing the power adapter first before unnecessarily replacing the entire system.
+
+**Ticket #258573**
+Used tank isolation and sound-location testing to narrow an RCC7AK chatter issue to the ASO/check-valve area rather than replacing unrelated components.
+
+Worst Tickets:
+
+**Ticket #265610**
+A highly frustrating damaged-product claim with inconsistent information and scam-like documentation that required unusually careful handling and verification.
+
+**Ticket #269576**
+A difficult RO500 case involving a nonstandard refrigerator/tank setup and repeated frustration, making diagnosis and expectations harder to manage.
+
+**Ticket #250825**
+A lengthy CRO2000 case involving repeated pressure, clamp, gauge, and system-head issues that required multiple rounds of troubleshooting before reaching a replacement resolution.`).row;
+assertEqual(reportedSummary.threeBestTickets, "Ticket #270041\nTicket #270014\nTicket #258573", "The reported summary must retain all three actual best tickets and exclude CRO1000.");
+assertEqual([reportedSummary.worstTicket1, reportedSummary.worstTicket2, reportedSummary.worstTicket3].map((value) => value.split("\n")[0]).join("|"), "Ticket #265610|Ticket #269576|Ticket #250825", "The reported summary must retain the correct worst tickets.");
+assert(reportedSummary.worstTicket3.includes("CRO2000"), "Model names must remain in the explanation.");
+
 console.log("smoke:kpi passed");
 
 function assert(condition, message) {
