@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditableReviewTable } from "./EditableReviewTable";
 import { FlagsPanel } from "./FlagsPanel";
 import { SummaryPanel } from "./SummaryPanel";
@@ -31,7 +31,20 @@ export function ReviewLogMode() {
   const [isReadingNotes, setIsReadingNotes] = useState(false);
   const copySuccessTimer = useRef<number | undefined>(undefined);
   const rowsEnteringTimer = useRef<number | undefined>(undefined);
+  const parseTimer = useRef<number | undefined>(undefined);
   const notesFieldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => () => {
+    window.clearTimeout(parseTimer.current);
+    window.clearTimeout(rowsEnteringTimer.current);
+    window.clearTimeout(copySuccessTimer.current);
+  }, []);
+
+  function cancelPendingParse() {
+    window.clearTimeout(parseTimer.current);
+    parseTimer.current = undefined;
+    setIsReadingNotes(false);
+  }
 
   const flags = useMemo(() => collectFlags(rows), [rows]);
   const bonusSummary = useMemo(() => calculateBonusSummary(rows), [rows]);
@@ -77,13 +90,19 @@ export function ReviewLogMode() {
 
     setIsReadingNotes(true);
     // Matches the 1.8s single-pass scan in styles.css (--rr-scan).
-    window.setTimeout(() => {
+    parseTimer.current = window.setTimeout(() => {
+      parseTimer.current = undefined;
       setIsReadingNotes(false);
       applyParsedRows(parsedRows, true);
     }, 1800);
   }
 
   function handleClear() {
+    cancelPendingParse();
+    window.clearTimeout(rowsEnteringTimer.current);
+    window.clearTimeout(copySuccessTimer.current);
+    setRowsEntering(false);
+    setCopySuccess(false);
     setNotes("");
     setRows([]);
     setCopyStatus("");
@@ -166,7 +185,10 @@ export function ReviewLogMode() {
                     <textarea
                       id="review-notes"
                       value={notes}
-                      onChange={(event) => setNotes(event.target.value)}
+                      onChange={(event) => {
+                        cancelPendingParse();
+                        setNotes(event.target.value);
+                      }}
                       placeholder=""
                       spellCheck={false}
                       data-gramm="false"

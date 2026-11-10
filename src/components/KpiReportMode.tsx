@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { CopyResultIcon, UiIcon } from "./UiIcon";
 import { exportKpiExcel } from "../lib/exportExcel";
@@ -21,6 +21,19 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
   const [templateStatus, setTemplateStatus] = useState("");
   const copySuccessTimer = useRef<number | undefined>(undefined);
   const rowEnteringTimer = useRef<number | undefined>(undefined);
+  const formatTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => {
+    window.clearTimeout(formatTimer.current);
+    window.clearTimeout(rowEnteringTimer.current);
+    window.clearTimeout(copySuccessTimer.current);
+  }, []);
+
+  function cancelPendingFormat() {
+    window.clearTimeout(formatTimer.current);
+    formatTimer.current = undefined;
+    setIsReadingNotes(false);
+  }
 
   function applyFormattedRow(formattedRow: KpiReportRow, formattedIssues: string[], transferred: boolean) {
     setRowEntering(transferred);
@@ -50,13 +63,19 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
 
     setIsReadingNotes(true);
     // Matches the 1.8s single-pass scan in styles.css (--rr-scan).
-    window.setTimeout(() => {
+    formatTimer.current = window.setTimeout(() => {
+      formatTimer.current = undefined;
       setIsReadingNotes(false);
       applyFormattedRow(result.row, result.issues, true);
     }, 1800);
   }
 
   function handleClear() {
+    cancelPendingFormat();
+    window.clearTimeout(rowEnteringTimer.current);
+    window.clearTimeout(copySuccessTimer.current);
+    setRowEntering(false);
+    setCopySuccess(false);
     setNotes("");
     setRow(createBlankKpiRow());
     setIssues([]);
@@ -107,6 +126,7 @@ export function KpiReportMode({ onReturnToReviewLog }: KpiReportModeProps) {
             id="kpi-notes"
             value={notes}
             onChange={(event) => {
+              cancelPendingFormat();
               setNotes(event.target.value);
               setIssues([]);
             }}
