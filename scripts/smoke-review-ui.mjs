@@ -22,9 +22,76 @@ try {
   await server.listen();
   await runGoldenPath({ width: 1440, height: 980, expectedInternalTableScroll: false });
   await runGoldenPath({ width: 390, height: 844, expectedInternalTableScroll: true });
+  await runInterruptedFormatting({ width: 1440, height: 980 });
+  await runInterruptedFormatting({ width: 390, height: 844 });
   console.log("smoke:ui passed");
 } finally {
   await server.close();
+}
+
+async function runInterruptedFormatting(viewport) {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport, reducedMotion: "no-preference" });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    const now = new Date();
+    await page.clock.install({ time: now });
+    await page.clock.pauseAt(now);
+    const reviewInput = page.getByLabel("Review Notes", { exact: true });
+    const generate = page.getByRole("button", { name: "Generate Review Table", exact: true });
+    await reviewInput.fill(reviewNotes);
+    await generate.click();
+    assert(!(await generate.isEnabled()), "Review parse should be pending with motion enabled.");
+    await page.getByRole("button", { name: "Clear", exact: true }).click();
+    assert(await generate.isEnabled(), "Clear should immediately cancel the pending review parse.");
+    await page.clock.fastForward(2500);
+    assertEqual(await page.locator(".reviewOutputCard tbody tr").count(), 0, "Cleared review rows must not return.");
+
+    await reviewInput.fill(reviewNotes);
+    await generate.click();
+    const updatedNotes = reviewNotes.replaceAll("100001", "200001");
+    await reviewInput.fill(updatedNotes);
+    await page.clock.fastForward(2500);
+    assertEqual(await page.locator(".reviewOutputCard tbody tr").count(), 0, "An edited source must cancel its old pending output.");
+    await generate.click();
+    await page.clock.fastForward(2500);
+    await expectAttribute(page.locator(".urlChip").nth(0), "aria-label", "Ticket #200001 · support.ispringfilter.com");
+
+    await page.getByRole("button", { name: "Open KPI Analyzer", exact: true }).click();
+    const kpiInput = page.getByLabel("KPI Notes", { exact: true });
+    await kpiInput.waitFor();
+    const kpiNotes = "Top 3 Achievements\n1. Synthetic first achievement\n2. Synthetic second achievement\n3. Synthetic third achievement\n3 Best Tickets\nTicket #200001\nTicket #200002\nTicket #200003\n3 Worst Tickets\nTicket #200004 - First case\nTicket #200005 - Second case\nTicket #200006 - Third case";
+    const format = page.getByRole("button", { name: "Format KPI", exact: true });
+    await kpiInput.fill(kpiNotes);
+    await format.click();
+    assert(!(await format.isEnabled()), "KPI format should be pending with motion enabled.");
+    await page.getByRole("button", { name: "Clear", exact: true }).click();
+    assert(await format.isEnabled(), "Clear should immediately cancel pending KPI formatting.");
+    await page.clock.fastForward(2500);
+    assertEqual(await page.getByLabel("Top 3 Achievements", { exact: true }).inputValue(), "", "Cleared KPI output must not return.");
+    await kpiInput.fill(kpiNotes);
+    await format.click();
+    await kpiInput.fill(kpiNotes.replace("Synthetic first", "Updated first"));
+    await page.clock.fastForward(2500);
+    assertEqual(await page.getByLabel("Top 3 Achievements", { exact: true }).inputValue(), "", "Edited KPI source must cancel its old pending output.");
+    await format.click();
+    await page.clock.fastForward(2500);
+    assert((await page.getByLabel("Top 3 Achievements", { exact: true }).inputValue()).includes("Updated first"), "New KPI formatting must use the current source.");
+    await page.getByRole("button", { name: "Clear", exact: true }).click();
+    await kpiInput.fill(kpiNotes);
+    await format.click();
+    await page.getByRole("button", { name: "Return to Review Log", exact: true }).first().click();
+    await page.clock.fastForward(2500);
+    await reviewInput.waitFor();
+    assertEqual(await page.locator(".reviewOutputCard tbody tr").count(), 0, "Leaving a mode must not publish its pending result.");
+    assertEqual(errors.length, 0, `Interrupted formatting caused browser errors: ${errors.join(", ")}`);
+  } finally {
+    await context.close();
+    await browser.close();
+  }
 }
 
 async function runGoldenPath({ width, height, expectedInternalTableScroll }) {
